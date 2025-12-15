@@ -1,0 +1,75 @@
+.container {
+	padding: 100rpx 100rpx;
+}
+
+.title {
+	text-align: center;
+	padding-top: 40px;
+	font-size: 30px;
+}
+
+.info {
+	margin-top: 280rpx;
+
+}
+
+.info-input {
+	margin-top: 10px;
+	height: 60rpx;
+	border-bottom: 1px solid #f4f4f4;
+}
+
+.info-bottom {
+	margin-top: 10px;
+	display: flex;
+	justify-content: space-between;
+	color: #afafaf;
+	font-size: 24rpx;
+}
+
+.info_right{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.login {
+	margin-top: 100rpx;
+}
+
+.fotter {
+	margin-top: 300rpx;
+}
+
+button {
+	color: #fff;
+	background-color: coral;
+	border-radius: 20px;
+}
+
+image {
+	width: 60rpx;
+	height: 60rpx;
+}
+
+.other-login {
+	display: flex;
+	justify-content: space-between;
+	padding: 0 250rpx;
+}
+
+.other-item {
+	text-align: center;
+}
+
+
+.icp-container {
+  text-align: center;
+  padding: 10px;
+  background-color: #f0f0f0;
+  color: #666;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
