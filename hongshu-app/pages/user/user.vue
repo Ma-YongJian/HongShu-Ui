@@ -1,106 +1,84 @@
 <template>
-	<view class="content" :style="'margin-top:'+vHeight+'rpx'">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="true" :isOpacity="false" v-if='top_show'>
-			<view class="fixed-top">
-				<view class="fixed-user">
-					<image :src="userInfo.avatar" class="avatar" mode="aspectFill"
-						@click="previewImgae(userInfo.avatar)" />
-					<view class="username">{{ userInfo.username }}</view>
-				</view>
-			</view>
-		</tui-navigation-bar>
-
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false" v-else>
-			<view class="top">
-				<view class="right">
-					<view class="item">
-						<tui-icon name="manage" class="icon-item-manage" color="#686868" size="30"></tui-icon>
+	<view class="content" :style="{ '--mine-nav-h': navHeight + 'px' }">
+		<view class="mine-sticky" :class="{ 'is-on': top_show }" :style="{ paddingTop: statusBarHeight + 'px' }">
+			<view class="mine-sticky-bar">
+				<view class="mine-sticky-side"></view>
+				<view class="mine-sticky-center">
+					<view class="fixed-user" v-show="top_show">
+						<image :src="avatarSrc" class="avatar" mode="aspectFill" @click="previewImgae(avatarSrc)" />
+						<view class="username">{{ userInfo.username }}</view>
 					</view>
-					<view class="item">
-						<navigator url="/pages/setting/setting">
-							<tui-icon name="setup" class="icon-item-setup" color="#686868" size="30"></tui-icon>
-						</navigator>
+				</view>
+				<view class="mine-sticky-side mine-sticky-right">
+					<view class="cover-action" @click="editUserInfo">
+						<tui-icon name="manage" :color="top_show ? '#111827' : '#ffffff'" :size="22"></tui-icon>
+					</view>
+					<view class="cover-action" @click="setting">
+						<tui-icon name="setup" :color="top_show ? '#111827' : '#ffffff'" :size="22"></tui-icon>
 					</view>
 				</view>
 			</view>
-		</tui-navigation-bar>
-
-		<!-- 显示图片 -->
-		<view class="image">
-			<image :src="userInfo.userCover" v-if="userInfo" mode="aspectFill"
-				@click="previewImgae(userInfo.userCover)" />
-			<image src="/static/images/toast/img_nodata.png" v-else mode="aspectFill" />
 		</view>
 
-		<!-- 主体 -->
-		<view class="main">
-			<view class="top">
-				<view class="user">
-					<view class="user-left">
-						<image :src="userInfo.avatar" class="avatar" mode="aspectFill"
-							@click="previewImgae(userInfo.avatar)" />
-						<view class="name">{{ userInfo.username }}</view>
-						<view class="user-id f">红薯号：{{ userInfo.hsId }}</view>
-						<view class="ip f">IP属地：{{ userInfo.address }} </view>
-						<view class="user-content">
-							<view v-if="userInfo.description === null" class="descrpition-null">这个人什么都没有写～</view>
-							<view v-else class="descrpition">{{ userInfo.description }} </view>
-						</view>
-					</view>
-					<view class="user-right">
-						<tui-button type="danger" shape="circle" @click="editUserInfo" height="60rpx" width="140rpx"
-							:size="28">编辑</tui-button>
-					</view>
-				</view>
-				<!-- <view class="info">
-					<p @click="getAllFriend(1)">关注 {{ userInfo.followerCount }}</p>
-					<p @click="getAllFriend(0)">粉丝 {{ userInfo.fanCount }}</p>
-					<p>动态 {{ userInfo.trendCount }}</p>
-				</view> -->
-				<view class="info">
-					<p class="info-item follow" @click="getAllFriend(1)">
-						<view class="info-count">{{ userInfo.followerCount }}</view>
-						<view class="info-title">关注</view>
-					</p>
-					<p class="info-item fan" @click="getAllFriend(0)">
-						<view class="info-count">{{ userInfo.fanCount }}</view>
-						<view class="info-title">粉丝</view>
+		<view class="cover">
+			<image :src="coverSrc" mode="aspectFill" @click="previewImgae(coverSrc)" />
+		</view>
 
-					</p>
-					<p class="info-item trend">
-						<view class="info-count">{{ userInfo.trendCount }}</view>
-						<view class="info-title">动态</view>
-					</p>
+		<view class="main">
+			<view class="profile-head">
+				<view class="profile-row">
+					<image :src="avatarSrc" class="profile-avatar" mode="aspectFill"
+						@error="onAvatarError" @click="previewImgae(avatarSrc)" />
+					<view class="profile-meta">
+						<view class="name">{{ userInfo.username }}</view>
+						<view class="sub">来因号：{{ userInfo.hsId }}</view>
+						<view class="sub">IP属地：{{ userInfo.address }}</view>
+					</view>
+					<view class="profile-edit" @click="editUserInfo">编辑</view>
 				</view>
-				<view class="">
-					<!-- <tui-tabs :tabs="tabs" :currentTab="currentTab" @change="change" sliderBgColor="red"
-						selectedColor="red" itemWidth="50%"></tui-tabs> -->
-					<!-- tabs 切换按钮 -->
-					<tui-tabs :tabs="tabs" :currentTab="currentTab" @change="changeTab" sliderBgColor="red"
-						selectedColor="red" itemWidth="50%"></tui-tabs>
+				<view class="bio">{{ userInfo.description || '这个人什么都没有写～' }}</view>
+				<view class="stats">
+					<view class="stat" @click="getAllFriend(1)">
+						<text class="stat-num">{{ userInfo.followerCount || 0 }}</text>
+						<text class="stat-label">关注</text>
+					</view>
+					<view class="stat" @click="getAllFriend(0)">
+						<text class="stat-num">{{ userInfo.fanCount || 0 }}</text>
+						<text class="stat-label">粉丝</text>
+					</view>
+					<view class="stat">
+						<text class="stat-num">{{ userInfo.trendCount || 0 }}</text>
+						<text class="stat-label">动态</text>
+					</view>
+				</view>
+			</view>
+
+			<view class="mine-tabs-ph" v-show="top_show"></view>
+			<view id="mineTabs" class="mine-tabs" :class="{ 'is-pinned': top_show }"
+				:style="tabsPinStyle">
+				<view class="mine-tab" v-for="(tab, index) in tabs" :key="index"
+					:class="{ 'is-active': currentTab === index }" @click="switchTab(index)">
+					<text class="mine-tab-text">{{ tab.name }}</text>
+					<view class="mine-tab-line"></view>
 				</view>
 			</view>
 
 			<view class="zhuti">
-				<view v-if="userInfo">
-					<!-- <Note v-if="currentTab == 0" :uid='userId' @cancelUp='cancelUp' :seed='seed'> </Note>
-					<Like v-if="currentTab == 1" :seed='seed' :uid='userId'></Like>
-					<Collect v-if="currentTab == 2" :uid='userId' :seed='seed'></Collect> -->
-					<!-- 监听触摸事件 -->
+				<view v-if="userInfo && userInfo.id">
 					<view class="tab-content" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
-						<view v-if="currentTab === 0">
+						<view v-show="currentTab === 0">
 							<Note :uid='userId' @cancelUp='cancelUp' :seed='seed'></Note>
 						</view>
-						<view v-if="currentTab === 1">
+						<view v-show="currentTab === 1">
 							<Like :seed='seed' :uid='userId'></Like>
 						</view>
-						<view v-if="currentTab === 2">
+						<view v-show="currentTab === 2">
 							<Collect :uid='userId' :seed='seed'></Collect>
 						</view>
 					</view>
 				</view>
 				<view class="nologin" v-else>
-					<button @click="login">请先登录</button>
+					<hs-empty title="登录后查看个人主页" action="去登录" @action="login"></hs-empty>
 				</view>
 			</view>
 		</view>
@@ -124,6 +102,8 @@
 	import {
 		deleteImgs
 	} from '@/api/imgDetail.js'
+	import { mediaUrl } from '@/utils/upload.js'
+	import { emitNoteDeleted } from '@/utils/noteNav.js'
 	export default {
 		components: {
 			// Trend,
@@ -155,7 +135,7 @@
 					},
 					{
 						text: '确定',
-						type: 'red',
+						type: 'primary',
 					}
 				],
 
@@ -165,7 +145,8 @@
 				screenHeight: 0,
 
 				top_show: false,
-
+				statusBarHeight: 0,
+				stickAt: 180,
 				vHeight: 0,
 				startX: 0, // 记录触摸开始时的X坐标
 				startY: 0, // 记录触摸开始时的Y坐标
@@ -175,33 +156,65 @@
 			if (typeof options.currentTab != 'undefined' || options.currentTab != null) {
 				this.currentTab = options.currentTab
 			}
-			this.screenHeight = uni.getSystemInfoSync().screenHeight;
+			this.screenHeight = uni.getSystemInfoSync().screenHeight
+			this.statusBarHeight = (uni.getSystemInfoSync() || {}).statusBarHeight || 0
+			const cached = uni.getStorageSync("userInfo") || {}
+			this.userId = cached.id || ''
+			if (cached.id) this.userInfo = cached
 		},
 
 		onReachBottom() {
 			this.seed = Math.random()
 		},
+		onReady() {
+			this.$nextTick(() => this.measureStick())
+		},
 		onShow() {
 			this.getUser()
-			this.userId = uni.getStorageSync("userInfo").id
-			this.seed = Math.random()
-
+			this.userId = (uni.getStorageSync("userInfo") || {}).id
+			this.$nextTick(() => this.measureStick())
 		},
 		onPageScroll(e) {
-			const that = this
-			if (e.scrollTop >= 20) {
-				this.top_show = true
-				uni.createSelectorQuery().select('.content').boundingClientRect(function(data) {
-					that.vHeight = 220
-				}).exec()
-			} else {
-				this.top_show = false
-				uni.createSelectorQuery().select('.content').boundingClientRect(function(data) {
-					that.vHeight = 0
-				}).exec()
+			this._scrollTop = e.scrollTop || 0
+			this.top_show = this._scrollTop >= this.stickAt
+		},
+		computed: {
+			navHeight() {
+				return (Number(this.statusBarHeight) || 0) + 44
+			},
+			avatarSrc() {
+				const u = this.userInfo || {}
+				return mediaUrl(u.avatar || u.avatarUrl)
+			},
+			coverSrc() {
+				const u = this.userInfo || {}
+				if (!u.userCover) return '/static/images/toast/img_nodata.png'
+				return mediaUrl(u.userCover)
+			},
+			tabsPinStyle() {
+				if (!this.top_show) return ''
+				return 'top:' + this.navHeight + 'px'
 			}
 		},
 		methods: {
+			switchTab(index) {
+				this.currentTab = index
+			},
+			measureStick() {
+				if (this.top_show) return
+				uni.createSelectorQuery().in(this)
+					.select('#mineTabs')
+					.boundingClientRect()
+					.exec((res) => {
+						const rect = res && res[0]
+						if (!rect) return
+						const scrollTop = this._scrollTop || 0
+						this.stickAt = Math.max(80, Math.round(rect.top + scrollTop - this.navHeight))
+					})
+			},
+			onAvatarError() {
+				this.$set(this.userInfo, 'avatar', '/static/logo.png')
+			},
 			// 记录触摸开始时的位置
 			handleTouchStart(event) {
 				this.startX = event.touches[0].pageX;
@@ -243,27 +256,43 @@
 			},
 
 			confirm(e) {
-				let index = e.index;
 				if (e.index == 0) {
 					this.show = false
-				} else {
-					let arr = []
-					arr.push(this.mid)
-					deleteImgs(arr, this.userInfo.id).then(res => {
-						uni.showToast({
-							title: "取消成功"
-						})
-						this.show = false
-					})
+					return
 				}
+				deleteImgs([this.mid]).then(res => {
+					if (!res || res.code !== 200) {
+						uni.showToast({
+							title: (res && (res.message || res.msg)) || '删除失败',
+							icon: 'none'
+						})
+						return
+					}
+					uni.showToast({
+						title: '删除成功',
+						icon: 'none'
+					})
+					this.show = false
+					emitNoteDeleted(this.mid)
+					this.seed = Math.random()
+				})
 			},
 			hide() {
 				this.show = false
 			},
 
 			editUserInfo() {
+				const cached = uni.getStorageSync("userInfo") || {}
+				const uid = this.userId || cached.id
+				if (!uid) {
+					uni.showToast({
+						title: '请先登录',
+						icon: 'none'
+					})
+					return
+				}
 				uni.navigateTo({
-					url: "/pages/user/info/info?userId= " + this.userId
+					url: "/pages/user/info/info?userId=" + uid
 				})
 			},
 			login() {
@@ -272,15 +301,24 @@
 				})
 			},
 			getUser() {
-
-				let params = {
-					userId: uni.getStorageSync("userInfo").id
+				const cached = uni.getStorageSync("userInfo") || {}
+				if (!cached.id) {
+					return
 				}
-
-				getUserInfo(params).then(res => {
-					this.userInfo = res.data
+				getUserInfo({
+					userId: cached.id
+				}).then(res => {
+					if (res.code !== 200 || !res.data) {
+						this.userInfo = cached
+						this.$nextTick(() => this.measureStick())
+						return
+					}
+					const data = res.data
+					this.userInfo = data
+					this.userId = data.id || cached.id
+					uni.setStorageSync("userInfo", Object.assign({}, cached, data))
+					this.$nextTick(() => this.measureStick())
 				})
-
 			},
 
 			getAllFriend(type) {

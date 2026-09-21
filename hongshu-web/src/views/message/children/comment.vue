@@ -1,6 +1,7 @@
 <template>
   <div>
-    <ul class="message-container" v-infinite-scroll="loadMore">
+    <el-empty v-if="dataList.length === 0" description="暂无评论和@" />
+    <ul v-else class="message-container" v-infinite-scroll="loadMore">
       <li class="message-item" v-for="(item, index) in dataList" :key="index">
         <a class="user-avatar">
           <!-- https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png -->
@@ -91,7 +92,7 @@
 <script lang="ts" setup>
 // import { ChatRound, Star } from "@element-plus/icons-vue";
 import { ref } from "vue";
-import { formateTime } from "@/utils/util";
+import { formatSessionListTime } from "@/utils/util";
 import { getNoticeComment } from "@/api/comment";
 import { useUserStore } from "@/store/userStore";
 import { useRouter } from "vue-router";
@@ -124,7 +125,7 @@ const getPageData = () => {
     const { records, total } = res.data;
     dataTotal.value = total;
     records.forEach((item: any) => {
-      item.time = formateTime(item.time);
+      item.time = formatSessionListTime(item.time);
       dataList.value.push(item);
     });
   });
@@ -143,8 +144,7 @@ textarea {
 }
 
 .message-container {
-  width: 40rem;
-  height: 90vh;
+  width: 100%;
 
   .message-item {
     display: flex;
@@ -214,7 +214,7 @@ textarea {
             line-height: 20px;
             font-size: 13px;
             color: #fff;
-            background-color: red;
+            background-color: var(--el-color-primary);
             text-align: center;
             border-radius: 100%;
           }

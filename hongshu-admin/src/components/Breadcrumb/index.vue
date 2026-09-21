@@ -18,19 +18,15 @@ function getBreadcrumb() {
   // only show routes with meta.title
   let matched = route.matched.filter(item => item.meta && item.meta.title);
   const first = matched[0]
-  // 判断是否为首页
   if (!isDashboard(first)) {
-    matched = [{ path: '/index', meta: { title: '首页' } }].concat(matched)
+    matched = [{ path: '/dashboard', meta: { title: '数据中心' } }].concat(matched)
   }
 
   levelList.value = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
 }
 function isDashboard(route) {
-  const name = route && route.name
-  if (!name) {
-    return false
-  }
-  return name.trim() === 'Index'
+  const path = route && route.path
+  return path === '/dashboard' || path === 'dashboard'
 }
 function handleLink(item) {
   const { redirect, path } = item

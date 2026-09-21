@@ -25,99 +25,24 @@ li {
 
 .container {
 	position: relative;
-	margin-top: 100rpx;
+	margin-top: 0;
+	background-color: #f8fafc;
 }
 
 .page {
-	margin-top: 90rpx;
-	height: 95vh;
+	margin-top: var(--nav-h, 88rpx);
+	height: calc(100vh - var(--nav-h, 88rpx));
 }
 
 .main {
-	width: 95%;
+	width: 96%;
 	margin: auto;
-	background-color: #f4f4f4;
+	background-color: transparent;
 }
 
 .waterfall-item__image image {
-	-webkit-animation: fadeinout 2s linear forwards;
-	animation: fadeinout 2s linear forwards;
-}
-
-@-webkit-keyframes fadeinout {
-	0% {
-		opacity: 1;
-	}
-
-	50% {
-		opacity: 0.5;
-	}
-
-	100% {
-		opacity: 0;
-	}
-}
-
-@keyframes fadeinout {
-	0% {
-		opacity: 1;
-	}
-
-	50% {
-		opacity: 0.5;
-	}
-
-	100% {
-		opacity: 0;
-	}
-}
-
-@-webkit-keyframes fadeinout {
-	0% {
-		opacity: 0;
-	}
-
-	50% {
-		opacity: 0.5;
-	}
-
-	100% {
-		opacity: 1;
-	}
-}
-
-@keyframes fadeinout {
-	0% {
-		opacity: 0;
-	}
-
-	50% {
-		opacity: 0.5;
-	}
-
-	100% {
-		opacity: 1;
-	}
-}
-
-@-webkit-keyframes fadeinout {
-	0% {
-		opacity: 0;
-	}
-
-	50% {
-		opacity: 1;
-	}
-}
-
-@keyframes fadeinout {
-	0% {
-		opacity: 0;
-	}
-
-	50% {
-		opacity: 1;
-	}
+	display: block;
+	width: 100%;
 }
 
 .d-container {
@@ -364,8 +289,9 @@ image {
 .waterfall-item {
 	background-color: #fff;
 	overflow: hidden;
-	margin-bottom: 10rpx;
-	border-radius: 6px;
+	margin-bottom: 16rpx;
+	border-radius: 16rpx;
+	box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.04);
 }
 
 .loadStyle {
@@ -384,7 +310,7 @@ image {
 }
 
 .card .cont {
-	margin-left: 10px;
+	padding: 12rpx 16rpx 16rpx;
 }
 
 .card .cont p {
@@ -394,17 +320,17 @@ image {
 
 .card .card-nums {
 	position: absolute;
-	bottom: 75rpx;
-	left: 275rpx;
-	background-color: #7a7a7a;
-	width: 70rpx;
-	height: 30rpx;
+	right: 12rpx;
+	bottom: 108rpx;
+	background-color: rgba(17, 24, 39, 0.55);
+	min-width: 72rpx;
+	height: 36rpx;
+	padding: 0 10rpx;
 	text-align: center;
 	color: #fff;
-	opacity: 0.8;
 	border-radius: 20rpx;
-	/* 添加圆角 */
-	font-size: 24rpx;
+	font-size: 22rpx;
+	line-height: 36rpx;
 }
 
 .userInfo {

@@ -1,10 +1,5 @@
 <template>
   <div class="dashboard-editor-container">
-    <!-- 右上角github图标 -->
-    <el-tooltip content="Github源码" effect="dark" placement="bottom">
-      <GithubCorner style="position: absolute; top: 0px; border: 0; right: 0" />
-    </el-tooltip>
-
     <!-- 顶部内容 -->
     <el-row class="panel-group" :gutter="40">
       <!-- IP数 -->
@@ -82,47 +77,54 @@
       <CalendarChart />
     </el-row>
 
-    <!-- 分类图-->
     <el-row :gutter="32">
-      <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <PieChart
-            ref="blogSortPie"
-            @clickPie="clickBlogSortPie"
-            v-if="showPieBlogSortChart"
-            :value="blogCountByBlogSort"
-            :tagName="blogSortNameArray"
-          />
+      <el-col :xs="24" :sm="24" :lg="10">
+        <div class="chart-wrapper pie-card">
+          <div class="chart-title pie-card__title">
+            <span class="pie-card__title-icon">
+              <svg-icon icon-class="form" />
+            </span>
+            <span class="pie-card__title-text">分类占比</span>
+          </div>
+          <div class="pie-chart-panel">
+            <PieChart
+              ref="blogSortPie"
+              @clickPie="clickBlogSortPie"
+              v-if="showPieBlogSortChart"
+              :value="blogCountByBlogSort"
+              :tagName="blogSortNameArray"
+              height="340px"
+            />
+          </div>
         </div>
       </el-col>
-
-      <!-- <el-col :xs="24" :sm="24" :lg="8">
-        <div class="chart-wrapper">
-          <PieChart
-            v-if="showPieChart"
-            @clickPie="clickBlogTagPie"
-            :value="blogCountByTag"
-            :tagName="tagNameArray"
-          />
+      <el-col :xs="24" :sm="24" :lg="14">
+        <div class="chart-wrapper line-card">
+          <div class="chart-title pie-card__title">
+            <span class="pie-card__title-icon line-card__title-icon">
+              <svg-icon icon-class="eye" />
+            </span>
+            <span class="pie-card__title-text">近 7 日访问</span>
+          </div>
+          <div class="pie-chart-panel">
+            <LineChart v-if="showLineChart" :chart-data="lineChartData" height="340px" />
+            <el-empty v-else description="暂无访问数据" :image-size="80" />
+          </div>
         </div>
-      </el-col> -->
+      </el-col>
     </el-row>
+
   </div>
 </template>
 
 <script setup>
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
-import {
-  init,
-  getVisitByWeek,
-  getBlogCountByTag,
-  getBlogCountByBlogSort,
-} from "@/api/web/index";
+import { init, getVisitByWeek, getBlogCountByBlogSort } from "@/api/web/index";
 import CountTo from "@/components/CountTo/index.js";
-import GithubCorner from "@/components/GithubCorner";
 import CalendarChart from "@/components/CalendarChart";
 import PieChart from "@/components/PieChart";
+import LineChart from "@/components/LineChart";
 
 const router = useRouter();
 
@@ -136,39 +138,30 @@ const lineChartData = ref({
   expectedData: [],
   actualData: [],
 });
-const blogCountByTag = ref({});
-const blogCountByBlogSort = ref({});
-const tagNameArray = ref([]);
+const blogCountByBlogSort = ref([]);
 const blogSortNameArray = ref([]);
 const showLineChart = ref(false);
-const showPieChart = ref(false);
 const showPieBlogSortChart = ref(false);
 
-function clickBlogSortPie(index) {
-  const blogSort = blogCountByBlogSort.value[index];
+function clickBlogSortPie(payload) {
+  const blogSort =
+    payload && typeof payload === "object"
+      ? payload
+      : blogCountByBlogSort.value[payload];
+  if (!blogSort || blogSort.__others) return;
   router.push({
     path: "/note/note",
     query: { blogSort: JSON.stringify(blogSort) },
   });
 }
 
-function clickBlogTagPie(index) {
-  const tag = blogCountByTag.value[index];
-  router.push({
-    path: "/note/note",
-    query: { tag: JSON.stringify(tag) },
-  });
-}
-
 async function fetchData() {
   try {
-    const [initResponse, visitResponse, tagResponse, blogSortResponse] =
-      await Promise.all([
-        init(),
-        getVisitByWeek(),
-        getBlogCountByTag(),
-        getBlogCountByBlogSort(),
-      ]);
+    const [initResponse, visitResponse, blogSortResponse] = await Promise.all([
+      init(),
+      getVisitByWeek(),
+      getBlogCountByBlogSort(),
+    ]);
 
     if (initResponse.code === 200) {
       blogTotal.value = initResponse.data.blogCount;
@@ -180,22 +173,15 @@ async function fetchData() {
     }
 
     if (visitResponse.code === 200) {
-      const visitByWeek = visitResponse.data;
-      lineChartData.date = visitByWeek.date;
-      lineChartData.expectedData = visitByWeek.pv;
-      lineChartData.actualData = visitByWeek.uv;
-      showLineChart.value = true;
+      const visitByWeek = visitResponse.data || {};
+      lineChartData.value = {
+        date: visitByWeek.date || [],
+        expectedData: visitByWeek.pv || [],
+        actualData: visitByWeek.uv || [],
+      };
+      showLineChart.value = (visitByWeek.date || []).length > 0;
     } else {
       console.error("Failed to fetch visit data");
-    }
-
-    if (tagResponse.code === 200) {
-      blogCountByTag.value = tagResponse.data;
-      const tagList = tagResponse.data;
-      tagNameArray.value = tagList.map((tag) => tag.name);
-      showPieChart.value = true;
-    } else {
-      console.error("Failed to fetch blog count by tag");
     }
 
     if (blogSortResponse.code === 200) {
@@ -230,8 +216,68 @@ onMounted(fetchData);
   background-color: rgb(240, 242, 245);
   .chart-wrapper {
     background: #fff;
-    padding: 16px 16px 0;
+    padding: 16px 16px 8px;
     margin-bottom: 32px;
+    min-height: 400px;
+    border-radius: 8px;
+  }
+  .chart-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+    padding-left: 4px;
+    text-align: left;
+  }
+  .pie-card .chart-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 0;
+    text-align: center;
+  }
+  .pie-card__title {
+    gap: 8px;
+    height: 26px;
+  }
+  .pie-card__title-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.12);
+    font-size: 14px;
+  }
+  .pie-card__title-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d2129;
+    line-height: 26px;
+  }
+  .pie-chart-panel {
+    width: 100%;
+    border-radius: 8px;
+    background: #f7f8fa;
+    border: 1px solid #e5e6eb;
+    padding: 6px 4px 2px;
+    box-sizing: border-box;
+  }
+  .line-card .chart-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 0;
+    text-align: center;
+  }
+  .line-card .pie-chart-panel {
+    min-height: 340px;
+  }
+  .line-card__title-icon {
+    color: #14c9c9;
+    background: rgba(20, 201, 201, 0.12);
   }
 }
 .btn {
@@ -249,15 +295,15 @@ onMounted(fetchData);
 }
 
 .btnClick {
-  color: #409eff;
-  border-color: #c6e2ff;
-  background-color: #ecf5ff;
+  color: #3b82f6;
+  border-color: #bfdbfe;
+  background-color: #eff6ff;
 }
 
 .btn:hover {
-  color: #409eff;
-  border-color: #c6e2ff;
-  background-color: #ecf5ff;
+  color: #3b82f6;
+  border-color: #bfdbfe;
+  background-color: #eff6ff;
 }
 
 .statistics-item {

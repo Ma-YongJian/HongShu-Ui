@@ -1,91 +1,63 @@
 <template>
 	<view class="container">
-		<ul>
-			<li v-for="(commentOne, index ) in dataList" :key="index" :id="'two-' + commentOne.id"
-				:style="bgcolorId == commentOne.id ? 'background-color:#f2f2f2' : 'background-color:#fff'">
-				<view class="item">
-					<view class="comment-one">
-						<view class="comment-item">
-							<view class="item-top">
-								<view class="left">
-									<image :src="commentOne.avatar" mode="aspectFill"
-										@click="getUserInfo(commentOne.uid)" />
-									<view class="username">{{ commentOne.username }}</view>
-									<tui-tag type="gray" shape="circle" margin="5rpx" padding="10rpx" size="18rpx"
-										v-if="commentOne.uid == currentUid">作者</tui-tag>
-								</view>
-
-								<view class="right">
-									<tui-icon v-if="commentOne.isLike" name="like-fill" size="15"
-										@click="cancelAgree(commentOne,index,null)"></tui-icon>
-									<tui-icon v-else @click="addAgree(commentOne, index ,null)" name="like"
-										size="15"></tui-icon>
-									<view class="ziti">{{ commentOne.likeCount }}</view>
-								</view>
-							</view>
-
-							<view class="item-main" @click="commentOperate(commentOne,index,null)"
-								v-if="commentOne.uid == uid">
-								{{ commentOne.content }}<span class="time">{{ commentOne.time }}</span>
-							</view>
-
-							<view class="item-main" @click="clickItem(commentOne, index)" v-else>
-								{{ commentOne.content }}<span class="time">{{ commentOne.time }}</span>
-							</view>
-						</view>
-					</view>
-
-					<view v-if="commentOne.twoCommentCount>0">
-						<view class="comment-two" v-for="(commentTwo, index2) in  commentOne.children" :key="index2"
-							:id="'two-' + commentTwo.id"
-							:style="bgcolorId == commentTwo.id ? 'background-color:#f2f2f2' : 'background-color:#fff'">
-							<view class="comment-item">
-								<view class="item-top">
-									<view class="left">
-										<image :src="commentTwo.avatar" mode="aspectFill"
-											@click="getUserInfo(commentTwo.uid)" />
-										<view class="username">{{ commentTwo.username }}</view>
-										<tui-tag type="gray" shape="circle" margin="5rpx" padding="10rpx" size="18rpx"
-											v-if="commentTwo.uid == currentUid">作者</tui-tag>
-									</view>
-
-									<view class="right">
-										<tui-icon v-if="commentTwo.isLike" name="like-fill" size="15"
-											@click="cancelAgree(commentTwo,index,index2)"></tui-icon>
-										<tui-icon v-else @click="addAgree(commentTwo, index , index2)" name="like"
-											size="15"></tui-icon>
-										<view class="ziti">{{ commentTwo.likeCount }}</view>
-									</view>
-								</view>
-
-								<view class="item-main" @click="commentOperate(commentTwo,index,index2)"
-									v-if="commentTwo.uid == uid">
-									回复<span class="reply">{{ commentTwo.replyUsername }}</span>:{{ commentTwo.content }}
-									<span class="time">{{ commentTwo.time }}</span>
-								</view>
-
-								<view class="item-main" @click="clickItem(commentTwo, index)" v-else>
-									回复<span class="reply">{{ commentTwo.replyUsername }}</span>:{{ commentTwo.content }}
-									<span class="time">{{ commentTwo.time }}</span>
-								</view>
-							</view>
-						</view>
-
-						<view class="other">
-							<view @click="loadMore(commentOne.id,index)"
-								v-if="commentOne.twoCommentCount>1&&commentOne.children.length<commentOne.twoCommentCount">
-								点击加载更多</view>
-						</view>
-					</view>
-
+		<view v-for="(commentOne, index) in dataList" :key="index"
+			class="comment-row" :id="'two-' + commentOne.id"
+			:class="{ 'is-hl': bgcolorId == commentOne.id }">
+			<view class="item-top">
+				<view class="left">
+					<image :src="commentOne.avatar" mode="aspectFill" @click="onTapUser(index)" />
+					<view class="username">{{ commentOne.username }}</view>
+					<view class="author-badge" v-if="commentOne.uid == currentUid">作者</view>
 				</view>
-			</li>
-		</ul>
+				<view class="right">
+					<tui-icon v-if="commentOne.isLike" name="like-fill" :size="15" color="#ff2442"
+						@click="onUnlike(index, -1)"></tui-icon>
+					<tui-icon v-else name="like" :size="15" @click="onLike(index, -1)"></tui-icon>
+					<view class="ziti">{{ commentOne.likeCount || 0 }}</view>
+				</view>
+			</view>
+			<view class="item-main" @click="onTapMain(index)">
+				<text>{{ commentOne.content }}</text>
+				<text class="time">{{ commentOne.time }}</text>
+			</view>
+
+			<view v-if="commentOne.children && commentOne.children.length" class="reply-wrap">
+				<view v-for="(commentTwo, index2) in commentOne.children" :key="index2"
+					class="comment-two" :id="'two-' + commentTwo.id"
+					:class="{ 'is-hl': bgcolorId == commentTwo.id }">
+					<view class="item-top">
+						<view class="left">
+							<image :src="commentTwo.avatar" mode="aspectFill" @click="onTapReplyUser(index, index2)" />
+							<view class="username">{{ commentTwo.username }}</view>
+							<view class="author-badge" v-if="commentTwo.uid == currentUid">作者</view>
+						</view>
+						<view class="right">
+							<tui-icon v-if="commentTwo.isLike" name="like-fill" :size="15" color="#ff2442"
+								@click="onUnlike(index, index2)"></tui-icon>
+							<tui-icon v-else name="like" :size="15" @click="onLike(index, index2)"></tui-icon>
+							<view class="ziti">{{ commentTwo.likeCount || 0 }}</view>
+						</view>
+					</view>
+					<view class="item-main" @click="onTapReply(index, index2)">
+						<text v-if="commentTwo.replyUsername">回复</text>
+						<text v-if="commentTwo.replyUsername" class="reply">{{ commentTwo.replyUsername }}</text>
+						<text v-if="commentTwo.replyUsername">：</text>
+						<text>{{ commentTwo.content }}</text>
+						<text class="time">{{ commentTwo.time }}</text>
+					</view>
+				</view>
+				<view class="other"
+					v-if="commentOne.twoCommentCount > commentOne.children.length"
+					@click="onLoadMore(index)">
+					点击加载更多
+				</view>
+			</view>
+		</view>
 
 		<tui-actionsheet :show="showActionSheet" :item-list="itemList" @click="itemClick" @cancel="closeActionSheet">
 		</tui-actionsheet>
 
-		<view class="loadStyle" v-if="isEnd">我也是有底线的~</view>
+		<view class="loadStyle" v-if="isEnd && dataList.length">我也是有底线的~</view>
 	</view>
 </template>
 
@@ -99,15 +71,28 @@
 	import {
 		timeAgo
 	} from "../utils/webUtils";
+	import {
+		mediaUrl
+	} from '@/utils/upload.js'
+	import {
+		openUser,
+		currentUid
+	} from '@/utils/noteNav.js'
 
 	export default {
 		name: "comment",
 		props: {
-			mid: String,
+			mid: {
+				type: [String, Number],
+				default: ''
+			},
 			seed: Number,
 			val: Number,
 			commentInfo: Object,
-			currentUid: String,
+			currentUid: {
+				type: [String, Number],
+				default: ''
+			},
 			//滑动评论
 			comArr: Array,
 		},
@@ -166,6 +151,16 @@
 				this.page1 = this.page1 + 1
 				this.loadData()
 			},
+			mid: {
+				immediate: true,
+				handler(val) {
+					if (!val) return
+					this.page1 = 1
+					this.dataList = []
+					this.isEnd = false
+					this.getAllComment()
+				}
+			},
 			commentInfo(newVal, oldVal) {
 				//将comment添加到数组
 				this.addComment(newVal)
@@ -174,14 +169,10 @@
 
 		mounted() {
 			this.twoMap = new Map()
-			this.uid = uni.getStorageSync("userInfo").id
-
-			if (this.comArr[0] != null) {
+			this.uid = (uni.getStorageSync("userInfo") || {}).id
+			if (this.comArr && this.comArr[0] != null) {
 				this.scrollComment(this.comArr[0])
-			} else {
-				this.getAllComment()
 			}
-
 		},
 
 		created() {
@@ -189,112 +180,153 @@
 		},
 
 		methods: {
-
+			mediaUrl,
+			pickComment(index, index2) {
+				const row = this.dataList[index]
+				if (!row) return null
+				if (index2 == null || index2 < 0) return row
+				const kids = row.children || []
+				return kids[index2] || null
+			},
+			onTapUser(index) {
+				const row = this.pickComment(index, -1)
+				if (row) this.getUserInfo(row.uid)
+			},
+			onTapReplyUser(index, index2) {
+				const row = this.pickComment(index, index2)
+				if (row) this.getUserInfo(row.uid)
+			},
+			onTapMain(index) {
+				const row = this.pickComment(index, -1)
+				if (row) this.onTapComment(row, index, -1)
+			},
+			onTapReply(index, index2) {
+				const row = this.pickComment(index, index2)
+				if (row) this.onTapComment(row, index, index2)
+			},
+			onLike(index, index2) {
+				const row = this.pickComment(index, index2)
+				if (row) this.addAgree(row, index, index2)
+			},
+			onUnlike(index, index2) {
+				const row = this.pickComment(index, index2)
+				if (row) this.cancelAgree(row, index, index2)
+			},
+			onLoadMore(index) {
+				const row = this.pickComment(index, -1)
+				if (row) this.loadMore(row.id, index)
+			},
 			getUserInfo(uid) {
-				uni.navigateTo({
-					url: "/pages/otherUser/otherUser?uid=" + uid
-				})
+				openUser(uid)
 			},
-
-			getAllComment() {
-				console.log('得到所有评论')
-
-				noteId: this.mid
-				let params = {
-					noteId: this.mid,
-					uid: this.uid
+			isAuthor(uid) {
+				return uid && this.currentUid && String(uid) === String(this.currentUid)
+			},
+			repliesOf(item) {
+				if (!item) return []
+				return item.children || item.childrenComments || []
+			},
+			replyCount(item) {
+				if (!item) return 0
+				return Number(item.twoCommentCount || item.twoNums || this.repliesOf(item).length || 0)
+			},
+			formatTime(value) {
+				if (value == null || value === '') return ''
+				if (typeof value === 'string' && /[秒分钟小时天周月年前刚]/.test(value)) return value
+				const ts = typeof value === 'number' ? value : new Date(value).getTime()
+				if (!ts) return ''
+				return timeAgo(ts)
+			},
+			mapComment(item) {
+				if (!item) return item
+				item.time = this.formatTime(item.time || item.createDate || item.createTime)
+				item.avatar = mediaUrl(item.avatar)
+				item.likeCount = Number(item.likeCount || item.count || 0)
+				item.isLike = !!(item.isLike || item.isAgree)
+				const kids = this.repliesOf(item)
+				item.children = kids.map(child => {
+					child.time = this.formatTime(child.time || child.createDate || child.createTime)
+					child.avatar = mediaUrl(child.avatar)
+					child.likeCount = Number(child.likeCount || child.count || 0)
+					child.isLike = !!(child.isLike || child.isAgree)
+					if (child.id) this.commentIds.push(child.id)
+					return child
+				})
+				item.twoCommentCount = this.replyCount(item)
+				return item
+			},
+			parsePage(res) {
+				const data = (res && res.data) || {}
+				const page = Array.isArray(data.records) ? data : (data.data || data)
+				const records = page.records || page.list || []
+				return {
+					records: Array.isArray(records) ? records : [],
+					total: Number(page.total || 0)
 				}
-
+			},
+			onTapComment(comment, index, index2) {
+				const me = this.uid
+				const canDelete = me && (String(comment.uid) === String(me) || String(this.currentUid) === String(me))
+				if (canDelete) {
+					this.commentOperate(comment, index, index2)
+				} else {
+					this.clickItem(comment, index)
+				}
+			},
+			getAllComment() {
+				if (!this.mid) return
+				const params = {
+					noteId: this.mid,
+					nid: this.mid,
+					mid: this.mid,
+					uid: currentUid()
+				}
 				getAllComment(this.page1, this.limit1, params).then(res => {
-					res.data.records.forEach(item => {
-						item.time = timeAgo(item.time)
-						if (item.twoCommentCount > 0 && item.children) {
-						                item.children.forEach(child => {
-						                    child.time = timeAgo(child.time);
-						                    this.commentIds.push(child.id);
-						                });
-						            }
-						this.dataList.push(item)
-					})
-					this.total1 = res.data.total
-					for (var i = 0; i < this.total1; i++) {
-						this.twoMap.set(i, 0);
-					}
+					const page = this.parsePage(res)
+					this.dataList = page.records.map(item => this.mapComment(item))
+					this.total1 = page.total
+					this.isEnd = !this.dataList.length || this.dataList.length >= this.total1
+				}).catch(() => {
+					this.dataList = []
+					this.isEnd = true
 				})
 			},
-
-
 			loadData() {
-
+				if (!this.mid) return
 				if (this.dataList.length >= this.total1) {
 					this.isEnd = true
 					return
 				}
-
-				let params = {
+				const params = {
 					noteId: this.mid,
-					uid: this.uid
+					nid: this.mid,
+					mid: this.mid,
+					uid: currentUid()
 				}
 				getAllComment(this.page1, this.limit1, params).then(res => {
-
-					res.data.records.forEach(item => {
-						item.time = timeAgo(new Date(item.createDate))
-
-						if (item.twoNums > 0) {
-							item.childrenComments[0].time = timeAgo(new Date(item.childrenComments[0]
-								.createDate))
-							this.commentIds.push(item.childrenComments[0].id)
-						}
-
-						this.dataList.push(item)
+					const page = this.parsePage(res)
+					page.records.forEach(item => {
+						this.dataList.push(this.mapComment(item))
 					})
+					this.total1 = page.total || this.total1
+					this.isEnd = this.dataList.length >= this.total1
 				})
 			},
-
 			loadMore(cid, index) {
-
-				this.page2 = this.twoMap.get(index)
-
-				this.page2 = this.page2 + 1
-
+				this.page2 = (this.twoMap.get(index) || 1) + 1
 				this.twoMap.set(index, this.page2)
-
-				let params = {
-					id: cid,
-					uid: this.uid
-				}
-
-
-				getAllTwoCommentByOneId(this.page2, this.limit2, params).then(res => {
-
-					if (this.page2 == 1) {
-						let twoData = []
-						res.data.records.splice(0, 1)
-						twoData = res.data.records
-
-						twoData.forEach(item => {
-
-							if (!this.commentIds.includes(item.id)) {
-								item.time = timeAgo(new Date(item.createDate))
-								this.dataList[index].childrenComments.push(item)
-								this.commentIds.push(item.id)
-							}
-						})
-
-					} else {
-
-						res.data.records.forEach(item => {
-
-							if (!this.commentIds.includes(item.id)) {
-
-								item.time = timeAgo(new Date(item.createDate))
-								this.dataList[index].childrenComments.push(item)
-								this.commentIds.push(item.id)
-							}
-						})
-					}
+				getAllTwoCommentByOneId(this.page2, this.limit2, {
+					oneCommentId: cid
+				}).then(res => {
+					const records = (res.data && res.data.records) || []
+					if (!this.dataList[index].children) this.$set(this.dataList[index], 'children', [])
+					records.forEach(item => {
+						if (!this.commentIds.includes(item.id)) {
+							this.dataList[index].children.push(this.mapComment(item))
+							this.commentIds.push(item.id)
+						}
+					})
 				})
-
 			},
 
 			clickItem(comment, index) {
@@ -304,18 +336,17 @@
 			},
 
 			addComment(comment) {
-
-				comment.count = 0
-				comment.time = "刚刚"
-				if (comment.pid == 0) {
-					//添加一级评论
-					comment.childrenComments = []
+				comment = this.mapComment(comment || {})
+				comment.time = comment.time || '刚刚'
+				const pid = comment.pid == null ? '0' : String(comment.pid)
+				if (pid === '0') {
+					if (!comment.children) comment.children = []
 					this.dataList.unshift(comment)
-				} else {
-					if (this.index >= 0) {
-						this.dataList[this.index].twoNums = this.dataList[this.index].twoNums * 1 + 1
-						this.dataList[this.index].childrenComments.unshift(comment)
-					}
+				} else if (this.index >= 0 && this.dataList[this.index]) {
+					const parent = this.dataList[this.index]
+					parent.twoCommentCount = Number(parent.twoCommentCount || 0) + 1
+					if (!parent.children) this.$set(parent, 'children', [])
+					parent.children.unshift(comment)
 				}
 			},
 
@@ -333,49 +364,69 @@
 				this.$emit('delComment', true);
 			},
 			itemClick(e) {
-
-				let index = e.index;
+				const index = e && e.index
 				this.closeActionSheet();
 				if (index == 0) {
-					//点击回复
 					this.clickItem(this.clickComment, this.index)
-				} else {
-					//点击删除
-					if (this.clickComment.pid == 0) {
-						this.dataList.splice(this.index, 1)
-					} else {
-						this.dataList[this.index].twoNums = this.dataList[this.index].twoNums * 1 - 1
-						this.dataList[this.index].childrenComments.splice(this.index2, 1)
-					}
-					let params = {
-						id: this.clickComment.id
-					}
-					delComment(params).then()
+					return
 				}
+				if (index == 1) {
+					this.deleteComment()
+				}
+			},
+			deleteComment() {
+				const comment = this.clickComment
+				if (!comment || !comment.id) return
+				uni.showModal({
+					title: '提示',
+					content: '确定删除这条评论？',
+					success: (m) => {
+						if (!m.confirm) return
+						delComment({
+							commentId: comment.id
+						}).then(res => {
+							if (!res || res.code !== 200) {
+								uni.showToast({
+									title: (res && (res.message || res.msg)) || '删除失败',
+									icon: 'none'
+								})
+								return
+							}
+							if (String(comment.pid || '0') === '0') {
+								this.dataList.splice(this.index, 1)
+							} else if (this.dataList[this.index]) {
+								const parent = this.dataList[this.index]
+								parent.twoCommentCount = Math.max(0, Number(parent.twoCommentCount || 1) - 1)
+								if (parent.children) parent.children.splice(this.index2, 1)
+							}
+							uni.showToast({
+								title: '删除成功',
+								icon: 'none'
+							})
+						})
+					}
+				})
 			},
 
 			addAgree(comment, index, index2) {
-
-				if (comment.pid == '0') {
-					this.dataList[index].count = this.dataList[index].count * 1 + 1
-					this.dataList[index].isAgree = true
-				} else {
-					this.dataList[index].childrenComments[index2].count = this.dataList[index].childrenComments[index2]
-						.count * 1 + 1
-					this.dataList[index].childrenComments[index2].isAgree = true
+				if (index2 == null || index2 < 0 || String(comment.pid || '0') === '0') {
+					this.dataList[index].likeCount = Number(this.dataList[index].likeCount || 0) + 1
+					this.dataList[index].isLike = true
+				} else if (this.dataList[index] && this.dataList[index].children && this.dataList[index].children[index2]) {
+					const child = this.dataList[index].children[index2]
+					child.likeCount = Number(child.likeCount || 0) + 1
+					child.isLike = true
 				}
 				this.$emit('addAgree', comment);
 			},
-
-
 			cancelAgree(comment, index, index2) {
-				if (comment.pid == '0') {
-					this.dataList[index].count = this.dataList[index].count * 1 - 1
-					this.dataList[index].isAgree = false
-				} else {
-					this.dataList[index].childrenComments[index2].count = this.dataList[index].childrenComments[index2]
-						.count * 1 - 1
-					this.dataList[index].childrenComments[index2].isAgree = false
+				if (index2 == null || index2 < 0 || String(comment.pid || '0') === '0') {
+					this.dataList[index].likeCount = Math.max(0, Number(this.dataList[index].likeCount || 1) - 1)
+					this.dataList[index].isLike = false
+				} else if (this.dataList[index] && this.dataList[index].children && this.dataList[index].children[index2]) {
+					const child = this.dataList[index].children[index2]
+					child.likeCount = Math.max(0, Number(child.likeCount || 1) - 1)
+					child.isLike = false
 				}
 				this.$emit('cancelAgreeComment', comment);
 			},
@@ -483,7 +534,21 @@
 
 <style scoped>
 	.container {
-		padding: 0rpx 40rpx 60rpx 40rpx;
+		padding: 0 0 40rpx 0;
+	}
+
+	.comment-row {
+		padding: 8rpx 0 16rpx;
+	}
+
+	.comment-row.is-hl,
+	.comment-two.is-hl {
+		background-color: #f7f7f7;
+		border-radius: 12rpx;
+	}
+
+	.reply-wrap {
+		margin-top: 8rpx;
 	}
 
 	ul {
@@ -492,15 +557,30 @@
 
 	li {
 		list-style: none;
-		margin-top: 20px;
+		margin-top: 24rpx;
 	}
 
 	.username {
-		width: 60rpx;
-		height: 40rpx;
-		margin-left: 5px;
-		font-size: 28rpx;
-		color: #939393;
+		max-width: 280rpx;
+		height: auto;
+		margin-left: 12rpx;
+		font-size: 26rpx;
+		color: #afafb0;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.author-badge {
+		margin-left: 10rpx;
+		padding: 4rpx 12rpx;
+		border-radius: 999rpx;
+		background-color: #ffe8ed;
+		color: #ff2442;
+		font-size: 20rpx;
+		font-weight: 600;
+		line-height: 1.2;
+		flex-shrink: 0;
 	}
 
 	.item-top {
@@ -512,34 +592,39 @@
 	.left {
 		display: flex;
 		align-items: center;
+		min-width: 0;
 	}
 
 	.left image {
-		width: 60rpx;
-		height: 60rpx;
+		width: 70rpx;
+		height: 70rpx;
 		border-radius: 50%;
+		flex-shrink: 0;
+		background: #f3f4f6;
 	}
 
 	.right {
 		display: flex;
 		align-items: center;
+		flex-shrink: 0;
 	}
 
 	.ziti {
+		margin-left: 4rpx;
 		color: #7d7d7d;
-		font-size: 28rpx;
+		font-size: 24rpx;
 	}
 
-
 	.comment-two {
-		margin-top: 10rpx;
+		margin-top: 16rpx;
 		margin-left: 80rpx;
 	}
 
 	.other {
 		margin-left: 160rpx;
+		margin-top: 8rpx;
 		color: #636363;
-		font-size: 28rpx;
+		font-size: 24rpx;
 	}
 
 	.reply {
@@ -548,52 +633,24 @@
 
 	.time {
 		margin-left: 10rpx;
-		color: #939393;
-		font-size: 18rpx;
+		color: #afafb0;
+		font-size: 20rpx;
 	}
 
 	.item-main {
-		margin-left: 80rpx;
-		margin-right: 80rpx;
+		margin: 8rpx 0 0 82rpx;
 		font-size: 28rpx;
-		clear: both;
-		/* 清除左右浮动 */
+		color: #383c3c;
+		line-height: 1.5;
 		word-break: break-word;
-		/* 文本行的任意字内断开，就算是一个单词也会分开 */
-
-		word-wrap: break-word;
-		/* IE */
-
-		white-space: -moz-pre-wrap;
-		/* Mozilla */
-
-		white-space: -hp-pre-wrap;
-		/* HP printers */
-
-		white-space: -o-pre-wrap;
-		/* Opera 7 */
-
-		white-space: -pre-wrap;
-		/* Opera 4-6 */
-
-		white-space: pre;
-		/* CSS2 */
-
-		white-space: pre-wrap;
-		/* CSS 2.1 */
-
-		white-space: pre-line;
-		/* CSS 3 (and 2.1 as well, actually) */
-		word-break: break-all
 	}
 
 	.loadStyle {
-		margin-top: 80rpx;
+		margin-top: 40rpx;
 		width: 100%;
 		height: 60rpx;
 		text-align: center;
 		color: #bfbfbf;
-		padding-bottom: 200rpx;
-
+		padding-bottom: 40rpx;
 	}
 </style>

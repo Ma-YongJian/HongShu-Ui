@@ -19,21 +19,33 @@ export function getAllAlbum(page, limit, params) {
 }
 
 export function getAlbum(params) {
-	return request.get(appConfig.WEB_API + '/web/album/getAlbum', params)
+	return request.get(appConfig.WEB_API + '/web/album/getAlbumById', {
+		albumId: (params && (params.albumId || params.id)) || params
+	})
 }
 
 
 export function addAlbumImgRelation(data) {
-	return request.post(appConfig.WEB_API + '/web/albumImgRelation/addAlbumImgRelation', data)
+	return request.post(appConfig.WEB_API + '/web/albumNoteRelation/addAlbumNoteRelation', {
+		aid: data && (data.aid || data.albumId),
+		nid: data && (data.nid || data.mid || data.noteId)
+	})
 }
 
 
 export function isCollectImgToAlbum(params) {
-	return request.get(appConfig.WEB_API + '/web/albumImgRelation/isCollectImgToAlbum', params)
+	const noteId = params && (params.nid || params.mid || params.likeOrCollectionId || params.noteId)
+	return request.post(appConfig.WEB_API + '/web/likeOrCollection/isLikeOrCollection', {
+		likeOrCollectionId: noteId,
+		type: 3
+	})
 }
 
 export function deleteAlbumImgRelation(data) {
-	return request.post(appConfig.WEB_API + '/web/albumImgRelation/deleteAlbumImgRelation', data)
+	return request.post(appConfig.WEB_API + '/web/albumNoteRelation/deleteAlbumNoteRelation', {
+		aid: data && (data.aid || data.albumId),
+		nid: data && (data.nid || data.mid || data.noteId)
+	})
 }
 
 

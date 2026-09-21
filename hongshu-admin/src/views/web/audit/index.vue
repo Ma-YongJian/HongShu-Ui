@@ -36,7 +36,7 @@
       <el-form-item label="作者" prop="uid">
         <el-input
           v-model="queryParams.uid"
-          placeholder="请输入作者"
+          placeholder="请输入作者ID"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
@@ -83,11 +83,24 @@
         <el-button
           type="success"
           plain
-          icon="Edit"
-          :disabled="single"
-          @click="handleUpdate"
+          icon="Check"
+          :disabled="multiple"
+          @click="handleBatchAudit('pass')"
           v-hasPermi="['web:note:edit']"
-          >修改
+        >
+          批量通过
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="danger"
+          plain
+          icon="Close"
+          :disabled="multiple"
+          @click="handleBatchAudit('reject')"
+          v-hasPermi="['web:note:edit']"
+        >
+          批量驳回
         </el-button>
       </el-col>
       <el-col :span="1.5">
@@ -98,7 +111,8 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['web:note:remove']"
-          >删除
+        >
+          删除
         </el-button>
       </el-col>
       <right-toolbar
@@ -113,31 +127,47 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" align="center" prop="id" />
+      <el-table-column label="序号" align="center" prop="id" width="80" />
       <el-table-column
         label="分类"
         align="center"
         prop="cpid"
+        width="110"
         :formatter="categoryFormatter"
+        show-overflow-tooltip
       />
-      <el-table-column label="标题" align="center" prop="title" />
-      <el-table-column label="作者" align="center" prop="author" />
-      <el-table-column label="笔记封面" align="center" prop="noteCover">
+      <el-table-column
+        label="标题"
+        align="left"
+        prop="title"
+        min-width="160"
+        show-overflow-tooltip
+      />
+      <el-table-column label="作者" align="center" prop="author" width="110" show-overflow-tooltip />
+      <el-table-column label="封面" align="center" prop="noteCover" width="80">
         <template #default="scope">
-          <el-avatar
-            :size="60"
+          <el-image
+            v-if="scope.row.noteCover"
+            class="cover-thumb"
             :src="scope.row.noteCover"
-            shape="square"
-            @mouseover="showPreview(scope.row.noteCover, $event)"
-            @mouseleave="hidePreview"
+            :preview-src-list="[scope.row.noteCover]"
+            fit="cover"
+            preview-teleported
           />
+          <span v-else>—</span>
         </template>
       </el-table-column>
-      <el-table-column label="内容" align="center" prop="content" />
-      <el-table-column label="图片数量" align="center" prop="count" />
+      <el-table-column
+        label="内容"
+        align="left"
+        prop="content"
+        min-width="180"
+        show-overflow-tooltip
+      />
+      <el-table-column label="图片" align="center" prop="count" width="70" />
       <el-table-column label="类型" align="center" prop="noteType">
         <template #default="scope">
-          <dict-tag :options="note_type" :value="scope.row.noteType" />
+          <dict-tag :options="note_type" :value="displayNoteType(scope.row.noteType)" />
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" prop="auditStatus">
@@ -173,15 +203,18 @@
         min-width="200"
       >
         <template #default="scope">
+          <el-button link type="primary" size="small" @click="openDetail(scope.row)">
+            查看
+          </el-button>
           <el-button
-            @click="handleAudit(scope.row.id, 'pass')"
+            @click="handleAudit(scope.row, 'pass')"
             type="success"
             size="small"
           >
             通过
           </el-button>
           <el-button
-            @click="handleAudit(scope.row.id, 'reject')"
+            @click="handleAudit(scope.row, 'reject')"
             type="danger"
             size="small"
           >
@@ -199,10 +232,26 @@
       @pagination="getList"
     />
 
-    <!-- 放大预览图片的容器 -->
-    <div v-if="previewVisible" class="image-preview" :style="previewStyle">
-      <img :src="previewSrc" alt="Preview" />
-    </div>
+    <el-drawer v-model="detailOpen" title="审核笔记" size="440px" append-to-body>
+      <div class="audit-detail" v-if="detail">
+        <el-image
+          v-if="detail.noteCover"
+          :src="detail.noteCover"
+          :preview-src-list="[detail.noteCover]"
+          fit="cover"
+          preview-teleported
+          class="audit-cover"
+        />
+        <h3>{{ detail.title || "未填写标题" }}</h3>
+        <p class="meta">作者：{{ detail.author || "—" }}</p>
+        <p class="meta">分类：{{ getCategoryTitle(detail.cpid, detail.cid) }}</p>
+        <p class="body">{{ detail.content || "暂无正文" }}</p>
+        <div class="actions">
+          <el-button type="success" @click="handleAudit(detail, 'pass')">通过</el-button>
+          <el-button type="danger" @click="handleAudit(detail, 'reject')">驳回</el-button>
+        </div>
+      </div>
+    </el-drawer>
 
     <!-- 添加或修改笔记对话框 -->
     <el-dialog :title="title" v-model="open" width="500px" append-to-body>
@@ -255,8 +304,9 @@
         </el-form-item>
         <el-form-item label="笔记内容" prop="content">
           <el-input
-            v-model="form.remark"
+            v-model="form.content"
             type="textarea"
+            :autosize="{ minRows: 3, maxRows: 8 }"
             placeholder="请输入内容"
           />
         </el-form-item>
@@ -325,9 +375,8 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
-const previewVisible = ref(false);
-const previewSrc = ref("");
-const previewStyle = reactive({ top: "0px", left: "0px" });
+const detailOpen = ref(false);
+const detail = ref(null);
 const navbarOptions = ref([]);
 const categoriesMap = ref({});
 
@@ -349,18 +398,9 @@ const data = reactive({
 
 const { queryParams, form, rules } = toRefs(data);
 
-/** 显示放大预览图片 */
-function showPreview(src, event) {
-  previewSrc.value = src;
-  previewVisible.value = true;
-  previewStyle.top = event.clientY + 10 + "px";
-  previewStyle.left = event.clientX + 10 + "px";
-}
-
-/** 隐藏放大预览图片 */
-function hidePreview() {
-  previewVisible.value = false;
-  previewSrc.value = "";
+function openDetail(row) {
+  detail.value = row;
+  detailOpen.value = true;
 }
 
 /** 查询笔记列表 */
@@ -387,19 +427,32 @@ function getTreeSelect() {
 /** 生成分类映射 */
 function createCategoriesMap(data) {
   categoriesMap.value = {};
-  data.forEach((item) => {
+  (data || []).forEach((item) => {
+    if (!item || item.id === undefined || item.id === null) return;
     categoriesMap.value[item.id] = item.title;
+    categoriesMap.value[String(item.id)] = item.title;
   });
 }
 
 /** 获取分类名称 */
-function getCategoryTitle(pid) {
-  return categoriesMap.value[pid] || "未知分类";
+function getCategoryTitle(pid, cid) {
+  const lookup = (val) => {
+    if (val === undefined || val === null || val === "") return "";
+    const key = String(val);
+    if (key === "0" || key === "-1") return "";
+    return categoriesMap.value[val] || categoriesMap.value[key] || "";
+  };
+  return lookup(pid) || lookup(cid) || "未知分类";
 }
 
 /** 分类名称格式化器 */
 function categoryFormatter(row, column, cellValue) {
-  return getCategoryTitle(cellValue);
+  return getCategoryTitle(cellValue, row && row.cid);
+}
+
+function displayNoteType(val) {
+  if (val === 0 || val === "0") return "1";
+  return val;
 }
 /** 取消按钮 */
 function cancel() {
@@ -481,7 +534,11 @@ function submitForm() {
 function handleDelete(row) {
   const noteIds = row.id || ids.value;
   proxy.$modal
-    .confirm('是否确认删除笔记编号为"' + noteIds + '"的数据项？')
+    .confirm(
+      row?.title
+        ? `是否确认删除笔记「${row.title}」？`
+        : `是否确认删除选中的 ${Array.isArray(noteIds) ? noteIds.length : 1} 条笔记？`
+    )
     .then(function () {
       return delNote(noteIds);
     })
@@ -493,20 +550,31 @@ function handleDelete(row) {
 }
 
 /** 审核按钮操作 */
-function handleAudit(noteId, auditType) {
-  const data = {
-    noteId: noteId,
-    auditType: auditType,
-  };
-  // 调用审核 API
+function handleAudit(row, auditType) {
+  const noteId = typeof row === "object" ? row.id : row;
+  const name = typeof row === "object" && row.title ? `「${row.title}」` : "该笔记";
+  const action = auditType === "pass" ? "通过" : "驳回";
   proxy.$modal
-    .confirm(`是否确认${auditType === "pass" ? "通过" : "拒绝"}该笔记？`)
+    .confirm(`是否确认${action}${name}？`)
+    .then(() => auditNote({ noteId, auditType }))
     .then(() => {
-      return auditNote(data);
+      proxy.$modal.msgSuccess(`${action}成功`);
+      detailOpen.value = false;
+      getList();
     })
+    .catch(() => {});
+}
+
+function handleBatchAudit(auditType) {
+  const action = auditType === "pass" ? "通过" : "驳回";
+  proxy.$modal
+    .confirm(`是否确认${action}选中的 ${ids.value.length} 条笔记？`)
+    .then(() =>
+      Promise.all(ids.value.map((noteId) => auditNote({ noteId, auditType })))
+    )
     .then(() => {
-      proxy.$modal.msgSuccess(`${auditType === "pass" ? "通过" : "拒绝"}成功`);
-      getList(); // 审核成功后，刷新笔记列表
+      proxy.$modal.msgSuccess(`${action}成功`);
+      getList();
     })
     .catch(() => {});
 }
@@ -516,19 +584,33 @@ onMounted(getTreeSelect);
 </script>
 
 <style scoped>
-.image-preview {
-  position: fixed;
-  z-index: 1000;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  padding: 5px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-.image-preview img {
-  max-width: 200px;
-  max-height: 200px;
+.audit-detail {
+  .audit-cover {
+    width: 100%;
+    height: 220px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #111827;
+  }
+  .meta {
+    margin: 0 0 6px;
+    color: #6b7280;
+    font-size: 13px;
+  }
+  .body {
+    margin: 16px 0;
+    line-height: 1.7;
+    color: #374151;
+    white-space: pre-wrap;
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
 }
 
 .image-uploader .el-upload {
@@ -540,7 +622,7 @@ onMounted(getTreeSelect);
 }
 
 .image-uploader .el-upload:hover {
-  border-color: #409eff;
+  border-color: #3b82f6;
 }
 
 .image-uploader-icon {

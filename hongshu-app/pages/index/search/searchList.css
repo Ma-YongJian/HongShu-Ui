@@ -11,12 +11,83 @@ li {
 	list-style: none;
 }
 
-/*  */
-.navbar {
-  height: 80rpx;
-  width: 100%;
-  border-bottom: 1rpx solid #cccccc ;
-  margin-bottom: 10rpx;
+.search-action {
+	font-size: 28rpx;
+	color: #16160e;
+	padding: 0 8rpx;
+}
+
+.search-tabs {
+	display: flex;
+	align-items: center;
+	padding: 0 24rpx;
+	height: 80rpx;
+	background: #fff;
+	border-bottom: 1rpx solid #f3f4f6;
+}
+
+.search-tab {
+	margin-right: 40rpx;
+	font-size: 28rpx;
+	color: #909399;
+}
+
+.search-tab.active {
+	color: #16160e;
+	font-weight: 600;
+}
+
+.search-sort {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	font-size: 24rpx;
+	color: #606266;
+}
+
+.sort-menu {
+	display: flex;
+	background: #fff;
+	padding: 8rpx 24rpx 16rpx;
+}
+
+.sort-menu view {
+	margin-right: 32rpx;
+	font-size: 24rpx;
+	color: #909399;
+}
+
+.sort-menu .active {
+	color: #3d8af5;
+	font-weight: 600;
+}
+
+.tui-item-box {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	padding: 16rpx 24rpx;
+	background: #fff;
+	box-sizing: border-box;
+}
+
+.tui-msg-box {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	min-width: 0;
+}
+
+.tui-msg-pic {
+	width: 88rpx;
+	height: 88rpx;
+	border-radius: 50%;
+	margin-right: 20rpx;
+	background: #f3f4f6;
+}
+
+.tui-msg-right {
+	margin-left: 12rpx;
 }
 
 .nav-list {
@@ -43,7 +114,7 @@ li {
 }
 
 .activated{
-	border-bottom: 2px solid #ff0000;
+	border-bottom: 2px solid #3b82f6;
 }
 
 .dropdown-menu {
@@ -115,7 +186,7 @@ li {
 .tui-search-box {
 	width: 100%;
 	height: 32px;
-	margin: 0 28rpx;
+	margin: 0;
 	border-radius: 18px;
 	font-size: 14px;
 	background-color: #f1f1f1;

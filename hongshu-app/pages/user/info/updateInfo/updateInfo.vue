@@ -1,114 +1,136 @@
 <template>
 	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<view class="n-left">
-					<tui-icon name="arrowleft" size="25" @click="back"></tui-icon>
-					<h3 v-if="type == 1">修改昵称</h3>
-					<h3 v-else>修改简介</h3>
-				</view>
-
-				<view><tui-icon name="more-fill" size="22"></tui-icon></view>
-			</view>
-		</tui-navigation-bar>
+		<hs-nav-bar :title="pageTitle"></hs-nav-bar>
 
 		<view class="update-info">
-			<view class="title2 w">请输入内容</view>
+			<view class="title2 w">{{ hintText }}</view>
 			<view class="update">
-				<textarea class="textarea" placeholder="请输入内容~" v-model="value">
-				</textarea>
+				<textarea class="textarea" :placeholder="placeholderText" v-model="value"
+					:maxlength="maxLen"></textarea>
 			</view>
 		</view>
 
 		<view class="fotter">
 			<view class="add">
-				<tui-button type="danger" shape="circle" @click="publish" limit='1'>点击修改</tui-button>
+				<tui-button type="primary" shape="circle" @click="publish">保存</tui-button>
 			</view>
 		</view>
-
-		<tui-toast ref="toast"></tui-toast>
 	</view>
 </template>
 
 <script>
-	import {
-		appConfig
-	} from '@/config/config'
-	import {
-		getUserInfo,
-		updateUser
-	} from "@/api/user.js"
+	import { getUserInfo, updateUser } from "@/api/user.js"
+
 	export default {
 		data() {
 			return {
-				type: 0,
+				type: 1,
 				value: '',
 				uid: '',
+				userInfo: {},
+				saving: false
+			}
+		},
+		computed: {
+			pageTitle() {
+				if (this.type == 1) return '修改昵称'
+				if (this.type == 6) return '修改标签'
+				return '修改简介'
+			},
+			hintText() {
+				if (this.type == 1) return '请设置 2-12 个字符'
+				if (this.type == 6) return '多个标签用逗号分隔，最多 50 个字符'
+				return '介绍一下自己吧'
+			},
+			placeholderText() {
+				if (this.type == 1) return '请输入昵称'
+				if (this.type == 6) return '请输入标签'
+				return '请输入简介'
+			},
+			maxLen() {
+				if (this.type == 1) return 12
+				if (this.type == 6) return 50
+				return 100
 			}
 		},
 		onLoad(options) {
-			this.type = options.type
-			this.userId = uni.getStorageSync("userInfo").id
-			this.getUserInfo(this.uid, this.type)
+			const cached = uni.getStorageSync("userInfo") || {}
+			this.type = Number(options.type || 1)
+			this.uid = cached.id
+			this.loadUser()
 		},
-
 		methods: {
 			back() {
 				uni.navigateBack({
 					delta: 1
 				})
 			},
-			getUserInfo(uid, type) {
-				let params = {
-					userId: uid
-				}
-				getUserInfo(params).then(res => {
-
-					this.userInfo = res.data
-					console.log(res.data)
-					if (type == 1) {
-						this.value = res.data.username
+			loadUser() {
+				getUserInfo({
+					userId: this.uid
+				}).then(res => {
+					if (res.code !== 200) return
+					this.userInfo = res.data || {}
+					if (this.type == 1) {
+						this.value = res.data.username || ''
+					} else if (this.type == 6) {
+						this.value = res.data.tags || ''
 					} else {
-						this.value = res.data.description
+						this.value = res.data.description || ''
 					}
-
 				})
 			},
-
 			publish() {
-
+				const text = (this.value || '').trim()
+				const payload = {}
 				if (this.type == 1) {
-					//更换昵称
-					this.userInfo.username = this.value
-				} else {
-					//更换简介
-					this.userInfo.description = this.value
-				}
-				
-				delete this.userInfo.noreplyCount
-				
-
-				updateUser(this.userInfo).then(res => {
-
-					let params = {
-						title: "修改成功",
-						imgUrl: "/static/images/toast/check-circle.png",
-						icon: true
-					}
-					this.$refs.toast.show(params);
-					uni.setStorageSync("userInfo", res.data)
-					setTimeout(() => {
-
-						uni.switchTab({
-							url: "/pages/user/user"
+					if (text.length < 2) {
+						uni.showToast({
+							title: '昵称至少 2 个字符',
+							icon: 'none'
 						})
-					}, 1000)
+						return
+					}
+					payload.username = text
+				} else if (this.type == 6) {
+					payload.tags = text
+				} else {
+					payload.description = text
+				}
+				if (this.saving) return
+				this.saving = true
+				updateUser(payload).then(res => {
+					if (res.code !== 200) {
+						uni.showToast({
+							title: res.message || '保存失败',
+							icon: 'none'
+						})
+						this.saving = false
+						return
+					}
+					uni.setStorageSync("userInfo", Object.assign({}, uni.getStorageSync("userInfo") || {}, res.data || payload))
+					uni.showToast({
+						title: '修改成功',
+						icon: 'none'
+					})
+					setTimeout(() => {
+						uni.navigateBack({
+							delta: 1
+						})
+					}, 600)
+				}).catch(() => {
+					uni.showToast({
+						title: '保存失败',
+						icon: 'none'
+					})
+				}).then(() => {
+					this.saving = false
 				})
-			},
+			}
 		}
 	}
 </script>
 
 <style scoped>
-	@import url(./updateInfo);
+	@import url(./updateInfo.css);
 </style>

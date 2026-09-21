@@ -22,7 +22,7 @@
 							</view>
 							<view class="main">
 
-								<view class="img-list" @click="toMain(item.mid,item.status)">
+								<view class="img-list" @click="onOpenTrend(index)">
 									<view v-for="(img, index) in item.imgsUrl" :key="index">
 										<image :src="img" mode="aspectFill" :lazy-load='true' class="fadeImg" />
 									</view>
@@ -58,21 +58,17 @@
 		getUserInfo
 	} from "@/api/user.js"
 	import {
-		addBrowseRecord
-	} from "@/api/browseRecord.js"
-	import {
 		timeAgo
 	} from "@/utils/webUtils.js"
 	import {
-		publish,
-		updateImgDetail,
-		updateStatus,
-		deleteImgs
-	} from '@/api/imgDetail.js'
+		mapNoteMedia
+	} from '@/utils/upload.js'
 	import {
-		appConfig
-	} from '@/config/config'
+		openNote,
+		noteDeletedMixin
+	} from '@/utils/noteNav.js'
 	export default {
+		mixins: [noteDeletedMixin],
 		props: {
 			uid: String,
 			seed:Number,
@@ -113,9 +109,7 @@
 					
 					res.data.records.forEach(e => {
 						e.time = timeAgo(e.time)
-						e.imgsUrl = JSON.parse(e.imgsUrl)
-
-						this.dataList.push(e)
+						this.dataList.push(mapNoteMedia(e))
 					})
 					this.total = res.data.total
 				})
@@ -152,8 +146,7 @@
 
 						res.data.records.forEach(e => {
 							e.time = timeAgo(e.time)
-							e.imgsUrl = JSON.parse(e.imgsUrl)
-							this.dataList.push(e)
+							this.dataList.push(mapNoteMedia(e))
 						})
 					})
 				}, 200)
@@ -164,7 +157,6 @@
 			},
 
 			toMain(mid, status) {
-				
 				if (status == 0) {
 					uni.showToast({
 						title: "图片正在上传中...",
@@ -172,16 +164,11 @@
 					});
 					return
 				}
-
-				let data = {}
-				data.uid = this.userInfo.id
-				data.mid = mid
-
-				addBrowseRecord(data).then(res => {
-					uni.navigateTo({
-						url: "/pages/main/main?mid=" + mid
-					})
-				})
+				openNote(mid)
+			},
+			onOpenTrend(index) {
+				const row = this.dataList[index] || {}
+				this.toMain(row.nid || row.mid, row.status)
 			},
 
 			toAlbum(aid) {

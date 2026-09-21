@@ -1,15 +1,26 @@
 import loading from "@/assets/loading.png";
 import error from "@/assets/error.png";
 import { reactive } from "vue";
-// websocket地址
-// export const wsKey = "ws://www.ccimgvideo.top/ws/";
-// // 项目url地址
-// export const baseURL = "http://www.ccimgvideo.top/api";
 
-// 本地项目websocket地址
-export const wsKey = "ws://localhost:8080/web/ws/";
-// 本地项目url地址
-export const baseURL = "http://localhost:8080/";
+function trimSlash(value: string) {
+  return value.replace(/\/$/, "");
+}
+
+const apiBase = trimSlash(import.meta.env.VITE_APP_BASE_API || "/dev-api");
+
+export const baseURL = apiBase + "/";
+
+export function buildWsUrl(uid: string, token?: string) {
+  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const hostBase = apiBase.startsWith("http")
+    ? apiBase.replace(/^http/, "ws")
+    : `${proto}//${window.location.host}${apiBase}`;
+  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  return `${hostBase}/web/ws/${uid}${query}`;
+}
+
+// 兼容旧引用：开发环境走当前站点 + /dev-api 代理
+export const wsKey = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}${apiBase}/web/ws/`;
 
 // 图片必须保持在336和186之间
 

@@ -58,7 +58,7 @@ export const getRecordByKeyWord = (keyword: string) => {
  */
 export const getHotRecord = () => {
   return request<any>({
-    url: `web/es/record/getHotRecord`, // mock接口
+    url: `/web/es/record/getHotRecord`,
     method: "get",
   });
 };
@@ -70,10 +70,10 @@ export const getHotRecord = () => {
  */
 export const addRecord = (keyword: string) => {
   return request<any>({
-    url: `/web/es/record/addRecord`, // mock接口
-    method: "get",
-    params: {
-      keyword
-    }
+    url: `/web/es/record/addRecord`,
+    method: "post",
+    data: {
+      keyword,
+    },
   });
 };

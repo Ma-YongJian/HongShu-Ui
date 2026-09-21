@@ -1,9 +1,23 @@
 <template>
 	<view class="container">
-			<WaterFall :list="list" @getImgInfo="getImgInfo"></WaterFall>
-			<view class="loadStyle" v-if="!isEnd && loading">正在加载中</view>
-			<view class="loadStyle" v-if="isEnd">我也是有底线的~</view>
-		<tui-toast ref="toast"></tui-toast>
+		<uv-waterfall ref="waterfall" v-model="list" column-count="2" :add-time="0" @changeList="changeList"
+			column-gap="8">
+			<template v-slot:list1>
+				<view>
+					<hs-note-card v-for="(item, index) in list1" :key="index" :item="item"
+						@click="getImgInfo" @user="goCardUser"></hs-note-card>
+				</view>
+			</template>
+			<template v-slot:list2>
+				<view>
+					<hs-note-card v-for="(item, index) in list2" :key="index" :item="item"
+						@click="getImgInfo" @user="goCardUser"></hs-note-card>
+				</view>
+			</template>
+		</uv-waterfall>
+		<hs-empty v-if="!loading && !list.length" title="暂无收藏笔记"></hs-empty>
+		<view class="loadStyle" v-if="!isEnd && loading">正在加载中</view>
+		<view class="loadStyle" v-if="isEnd && list.length">我也是有底线的~</view>
 	</view>
 </template>
 
@@ -12,112 +26,71 @@
 		getAllCollection
 	} from "@/api/agreeCollect.js"
 	import {
-		addBrowseRecord
-	} from "@/api/browseRecord.js"
-	import WaterFall from '@/components/waterfall.vue'
+		mapNoteMedia
+	} from '@/utils/upload.js'
+	import {
+		openNote,
+		openUser,
+		toNoteCard,
+		noteDeletedMixin
+	} from '@/utils/noteNav.js'
 	export default {
-		components: {
-			WaterFall
-		},
+		mixins: [noteDeletedMixin],
 		props: {
 			uid: String,
-			seed:Number,
+			seed: Number,
 		},
 		data() {
 			return {
 				list: [],
+				list1: [],
+				list2: [],
 				page: 1,
 				limit: 8,
 				total: 0,
-				isEnd: false, //是否到底底部了
-				loading: false, //是否正在加载
-
+				isEnd: false,
+				loading: false
 			}
 		},
-		watch:{
-		    seed(newVal,oldVal){
+		watch: {
+			seed() {
 				this.loadData()
-			}	
+			}
 		},
-
 		created() {
 			this.getAllCollection()
 		},
 		methods: {
-
-			getMoreData(dataList) {
-				dataList.forEach(item => {
-					this.list.push(this.getItem(item))
-				})
+			changeList(e) {
+				this[e.name].push(e.value)
 			},
-
-			getItem(item) {
-				return {
-					id: item.mid,
-					image: item.cover,
-					content: item.content,
-					count: item.count,
-					avatar: item.avatar,
-					username: item.username,
-					agreeCount: item.agreeCount,
-				}
-			},
-
-
 			getAllCollection() {
-
-				let params = {
-					uid: this.uid,
-					type: 2
-				}
-				getAllCollection(this.page, this.limit, params).then(res => {
-					console.log(res)
-					this.total = res.data.total
-					this.getMoreData(res.data.records)
-				})
-
-			},
-
-			loadData() {
-				
 				this.loading = true
-				
-				if (this.list.length >= this.total) {
-					this.isEnd = true
-					return
-				}
-				this.page = this.page + 1;
-
-				let params = {
+				getAllCollection(this.page, this.limit, {
 					uid: this.uid,
 					type: 2
-				}
-
-				getAllCollection(this.page, this.limit, params).then(res => {
-					this.getMoreData(res.data.records)
+				}).then(res => {
+					const page = res.data || {}
+					this.total = page.total || 0
+					const records = (page.records || []).map(item => toNoteCard(mapNoteMedia(item)))
+					this.list = this.page === 1 ? records : this.list.concat(records)
+					this.loading = false
+					if (!this.list.length || this.list.length >= this.total) this.isEnd = true
+				}).catch(() => {
+					this.loading = false
 				})
-
 			},
-			getImgInfo(mid) {
-              
-				if (uni.getStorageSync("userInfo").id != null || uni.getStorageSync("userInfo").id != '') {
-					let data = {}
-					data.uid = uni.getStorageSync("userInfo").id
-					data.mid = mid
-
-					addBrowseRecord(data).then(res => {
-						uni.navigateTo({
-							url: "/pages/main/main?mid=" + mid
-						})
-					})
-
-				} else {
-					uni.navigateTo({
-						url: "/pages/main/main?mid=" + mid
-					})
-				}
+			loadData() {
+				if (this.isEnd || this.loading) return
+				this.page += 1
+				this.getAllCollection()
 			},
-
+			getImgInfo(item) {
+				openNote(item)
+			},
+			goCardUser(item) {
+				openUser(item && item.uid)
+			}
 		}
 	}
 </script>

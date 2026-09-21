@@ -1,11 +1,6 @@
 <template>
 	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<tui-icon name="arrowleft" size="24" @click="back"></tui-icon>
-				<view>新增关注</view>
-			</view>
-		</tui-navigation-bar>
+		<hs-nav-bar title="新增关注"></hs-nav-bar>
 
 		<scroll-view scroll-y class="page" @scrolltolower="loadData">
 			<tui-list-view>
@@ -23,10 +18,10 @@
 						</view>
 						<view class="tui-msg-right">
 
-							<tui-button v-if="item.isfollow" @click="clearFollow(item.uid,index)" type="gray" height="50rpx"
-								size="22" width="100rpx" shape="circle" plain>已关注</tui-button>
+							<tui-button v-if="item.isfollow || item.isFollow" @click="clearFollow(item.uid,index)" type="gray" height="50rpx"
+								:size="22" width="100rpx" shape="circle" plain>已关注</tui-button>
 
-							<tui-button v-else @click="follow(item.uid,index)" type="danger" height="50rpx" size="22"
+							<tui-button v-else @click="follow(item.uid,index)" type="primary" height="50rpx" :size="22"
 								width="100rpx" shape="circle" plain>关注</tui-button>
 						</view>
 					</view>

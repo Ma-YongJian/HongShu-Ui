@@ -1,6 +1,7 @@
 <template>
   <div>
-    <ul class="agree-container" v-infinite-scroll="loadMore">
+    <el-empty v-if="dataList.length === 0" description="暂无新增关注" />
+    <ul v-else class="agree-container" v-infinite-scroll="loadMore">
       <li class="agree-item" v-for="(item, index) in dataList" :key="index">
         <a class="user-avatar">
           <!-- https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png -->
@@ -25,7 +26,7 @@
               @click="follow(item.uid, index, 1)"
               >互相关注</el-button
             >
-            <el-button class="button" type="danger" round size="large" v-else @click="follow(item.uid, index, -1)"
+            <el-button class="button" type="primary" round size="large" v-else @click="follow(item.uid, index, -1)"
               >回关</el-button
             >
           </div>
@@ -38,7 +39,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { getNoticeFollower } from "@/api/follower";
-import { formateTime } from "@/utils/util";
+import { formatSessionListTime } from "@/utils/util";
 import { followById } from "@/api/follower";
 import { useRouter } from "vue-router";
 
@@ -53,7 +54,7 @@ const getPageData = () => {
     const { records, total } = res.data;
     dataTotal.value = total;
     records.forEach((item: any) => {
-      item.time = formateTime(item.time);
+      item.time = formatSessionListTime(item.time);
       dataList.value.push(item);
     });
   });
@@ -86,8 +87,7 @@ textarea {
 }
 
 .agree-container {
-  width: 40rem;
-  height: 90vh;
+  width: 100%;
 
   .agree-item {
     display: flex;
@@ -157,7 +157,7 @@ textarea {
             line-height: 20px;
             font-size: 13px;
             color: #fff;
-            background-color: red;
+            background-color: var(--el-color-primary);
             text-align: center;
             border-radius: 100%;
           }
@@ -207,7 +207,7 @@ textarea {
         }
 
         .reds-button-new.primary {
-          background-color: #ff2e4d;
+          background-color: var(--el-color-primary);
           color: #fff;
         }
 

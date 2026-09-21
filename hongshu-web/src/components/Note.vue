@@ -69,7 +69,7 @@
                   <span class="like-wrapper like-active">
                     <i
                       class="iconfont icon-follow-fill"
-                      :style="{ width: '1em', height: '1em', color: item.isLike ? 'red' : 'black' }"
+                      :style="{ width: '1em', height: '1em', color: item.isLike ? '#f87171' : undefined }"
                       v-if="item.isLike"
                     >
                     </i>
@@ -138,7 +138,13 @@ const handleLoad = (item: any) => {
   item.isLoading = true;
 };
 
-const close = () => {
+const close = (id?: string, extra?: any) => {
+  if (extra && extra.deleted) {
+    const target = String(id || nid.value || "");
+    if (target) {
+      noteList.value = noteList.value.filter((item) => String(item.id) !== target);
+    }
+  }
   mainShow.value = false;
 };
 
@@ -222,7 +228,7 @@ onMounted(() => {
       z-index: 4;
 
       .top-wrapper {
-        background: #ff2442;
+        background: var(--el-color-primary);
         border-radius: 999px;
         font-weight: 500;
         color: #fff;

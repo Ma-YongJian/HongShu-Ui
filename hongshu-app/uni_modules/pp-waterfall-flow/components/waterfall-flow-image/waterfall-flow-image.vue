@@ -9,12 +9,13 @@
 			<view class="loading-container" v-if="(!isShow||loading)&&!isError">
 				<image class="loading" :src="loadingImg" mode="aspectFit"></image>
 			</view>
-			<image :style="{borderRadius: borderRadius, height: imgHeight}" v-if="!isError&&image" class="zero-lazy-item" :src="isShow ? image : load" :mode="imgMode" @load="imgLoaded" @error="loadError" @tap.stop="clickImg"></image>
+			<image :style="{borderRadius: borderRadius, height: imgHeight}" v-if="!isError&&image" class="zero-lazy-item" :src="isShow ? displayImage : load" :mode="imgMode" @load="imgLoaded" @error="loadError" @tap.stop="clickImg"></image>
 			<image :style="{borderRadius: borderRadius, height: imgHeight,'background-image':'url('+errorImg+')','background-size':avator?'cover':''}" class="zero-lazy-item error" v-else :src="load" :mode="imgMode" @load="errorImgLoaded" @tap.stop="clickImg"></image>
 		</view>
 	</view>
 </template>
 <script>
+	import { mediaUrl } from '@/utils/upload.js'
 	/**
 	 * lazyLoad 懒加载 (本组件基于uview lazyLoad开发, https://v1.uviewui.com/components/lazyLoad.html)
 	 * @description 懒加载使用的场景为：页面有很多图片时，APP会同时加载所有的图片，导致页面卡顿，各个位置的图片出现前后不一致等.
@@ -151,6 +152,9 @@
 			// 计算图片的高度，可能为auto，带%，或者直接数值
 			imgHeight() {
 				return this.addUnit(this.height);
+			},
+			displayImage() {
+				return mediaUrl(this.image)
 			}
 		},
 		created() {

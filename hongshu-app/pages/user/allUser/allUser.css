@@ -19,10 +19,15 @@ a {
 
 .search {
 	display: flex;
+	align-items: center;
+	flex: 1;
+	width: 100%;
+	min-width: 0;
 }
 
 .search-input {
-	width: 550rpx;
+	flex: 1;
+	min-width: 0;
 	height: 60rpx;
 	background-color: #f1f1f1;
 	padding-left: 10px;

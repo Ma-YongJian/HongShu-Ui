@@ -25,8 +25,7 @@ export const routes = [
       },
       {
         path: "/followTrend",
-        component: () => import("@/views/follow-trend/follow-trend.vue"),
-        name: "followTrend",
+        redirect: "/dashboard",
       },
       {
         path: "/notice",

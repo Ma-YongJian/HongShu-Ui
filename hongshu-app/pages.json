@@ -2,7 +2,10 @@
 	"easycom": {
 		"autoscan": true,
 		"custom": {
-			"tui-(.*)": "thorui-uni/lib/thorui/tui-$1/tui-$1.vue"
+			"tui-(.*)": "thorui-uni/lib/thorui/tui-$1/tui-$1.vue",
+			"hs-nav-bar": "@/components/hs-nav-bar/hs-nav-bar.vue",
+			"hs-note-card": "@/components/hs-note-card/hs-note-card.vue",
+			"hs-empty": "@/components/hs-empty/hs-empty.vue"
 		}
 	},
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
@@ -10,14 +13,16 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "红薯",
+				"navigationBarTitleText": "来因",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": false
 			}
 
 		}, {
 			"path": "pages/login/login",
 			"style": {
-				"navigationBarTitleText": "小红书",
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": false
 			}
 		}, {
@@ -30,8 +35,14 @@
 		}, {
 			"path": "pages/main/main",
 			"style": {
-				"navigationBarTitleText": "",
-				"enablePullDownRefresh": false
+				"navigationBarTitleText": "笔记详情",
+				"navigationBarBackgroundColor": "#ffffff",
+				"backgroundColor": "#ffffff",
+				"enablePullDownRefresh": false,
+				"mp-weixin": {
+					"enableShareAppMessage": true,
+					"enableShareTimeline": true
+				}
 			}
 
 		}, {
@@ -92,14 +103,6 @@
 				"enablePullDownRefresh": false
 			}
 
-		},
-		{
-			"path": "pages/login/login",
-			"style": {
-				"navigationBarTitleText": "",
-				"enablePullDownRefresh": false
-			}
-
 		}, {
 			"path": "pages/user/info/info",
 			"style": {
@@ -132,7 +135,16 @@
 		{
 			"path": "pages/push/push",
 			"style": {
+				"navigationBarTitleText": "发布笔记",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+
+		}, {
+			"path": "pages/push/tab",
+			"style": {
 				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": false
 			}
 
@@ -154,7 +166,8 @@
 			"path": "pages/index/interest/interest",
 			"style": {
 				"navigationBarTitleText": "",
-				"enablePullDownRefresh": false
+				"enablePullDownRefresh": false,
+				"onReachBottomDistance": 80
 			}
 
 		}, {
@@ -191,13 +204,6 @@
 		},
 		{
 			"path": "pages/otherUser/otherUser",
-			"style": {
-				"navigationBarTitleText": "",
-				"enablePullDownRefresh": false
-			}
-		},
-		{
-			"path": "pages/chat/chat",
 			"style": {
 				"navigationBarTitleText": "",
 				"enablePullDownRefresh": false
@@ -284,7 +290,9 @@
 		}, {
 			"path": "pages/index/search/search",
 			"style": {
-				"navigationBarTitleText": "",
+				"navigationBarTitleText": "搜索",
+				"navigationBarBackgroundColor": "#ffffff",
+				"backgroundColor": "#f5f5f5",
 				"enablePullDownRefresh": false
 			}
 
@@ -304,63 +312,61 @@
 				"enablePullDownRefresh": false
 			}
 
-		}, {
-			"path": "pages/message/message2",
-			"style": {
-				"navigationBarTitleText": "",
-				"enablePullDownRefresh": false
-			}
-
-		}, {
-			"path": "pages/message/privateChat/privateChat",
-			"style": {
-				"navigationBarTitleText": "",
-				"enablePullDownRefresh": false
-			}
-
 		}
 	],
 	"globalStyle": {
+		"navigationBarTitleText": "来因",
 		"navigationBarTextStyle": "black",
-		// "navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#F8FAFC",
+		"navigationStyle": "custom",
 		"app-plus": {
 			"titleNView": false
 		}
 	},
 	"tabBar": {
-		"color": "#666666",
-		"selectedColor": "#ff0f0f",
+		"color": "#9ca3af",
+		"selectedColor": "#3d8af5",
 		"backgroundColor": "#FFFFFF",
-		"fontSize": "14px",
-		"borderStyle": "#fff",
+		"borderStyle": "black",
+		// #ifdef APP-PLUS
 		"midButton": {
-			//   	"height": "70px",
-			// "width": "80px",
 			"iconPath": "static/images/tabbar/add-one.png",
-			"iconWidth": "50px"
-
+			"iconWidth": "40px",
+			"height": "50px",
+			"width": "50px"
 		},
+		// #endif
 		"list": [{
 				"pagePath": "pages/index/index",
-				"text": "首页"
-				// "iconPath": "/static/images/tabbar/home.png",
-				// "selectedIconPath": "/static/images/tabbar/home_activate.png"
-
+				"text": "首页",
+				"iconPath": "static/images/tabbar/home.png",
+				"selectedIconPath": "static/images/tabbar/home_activate.png"
 			},
 			{
 				"pagePath": "pages/index/interest/interest",
-				"text": "动态"
+				"text": "动态",
+				"iconPath": "static/images/tabbar/copy.png",
+				"selectedIconPath": "static/images/tabbar/copy_activate.png"
 			},
+			// #ifndef APP-PLUS
+			{
+				"pagePath": "pages/push/tab",
+				"text": "发布",
+				"iconPath": "static/images/tabbar/add-one.png",
+				"selectedIconPath": "static/images/tabbar/add-one.png"
+			},
+			// #endif
 			{
 				"pagePath": "pages/message/message",
-				"text": "消息"
-
+				"text": "消息",
+				"iconPath": "static/images/tabbar/message.png",
+				"selectedIconPath": "static/images/tabbar/message_activate.png"
 			}, {
 				"pagePath": "pages/user/user",
 				"text": "我",
-				"onReachBottonDistance": 200
+				"iconPath": "static/images/tabbar/people.png",
+				"selectedIconPath": "static/images/tabbar/people_activate.png"
 			}
 		]
 	},

@@ -2,8 +2,8 @@
   <div class="container" id="container">
     <div class="top">
       <header class="mask-paper">
-        <a style="display: flex">
-          <img src="@/assets/logo.png" style="width: 80px" />
+        <a class="logo-wrap">
+          <img class="logo" src="@/assets/logo.png" alt="来因" />
         </a>
         <div class="tool-box"></div>
         <div class="input-box" id="sujContainer">
@@ -11,7 +11,7 @@
             type="text"
             v-model="keyword"
             class="search-input"
-            placeholder="搜索小红书"
+            placeholder="搜索来因"
             @input="changeInput"
             @focus="focusInput"
             @keyup.enter="searchPage"
@@ -31,84 +31,41 @@
           <SujContainer v-show="showHistory" :closeHistoryRecord="showHistory"></SujContainer>
         </div>
         <div class="right">
-          <el-tooltip
-            content="移动端"
-            effect="dark"
-            placement="bottom"
-          >
-            <Iphone class="right-icon" @click="handleClick('http://115.190.73.103/app')" />
-          </el-tooltip>
-
-          <el-tooltip
-            content="后台管理"
-            effect="dark"
-            placement="bottom"
-          >
-            <Monitor class="right-icon" @click="handleClick('http://115.190.73.103/admin')" />
-          </el-tooltip>
-
-          <el-tooltip
-            content="Arco后台"
-            effect="dark"
-            placement="bottom"
-          >
-            <DataLine class="right-icon" @click="handleClick('http://115.190.73.103/arco-admin')" />
-          </el-tooltip>
-
-          <el-tooltip
-            content="码云仓库"
-            effect="dark"
-            placement="bottom"
-          >
-            <span class="right-icon" @click="handleClick('https://gitee.com/Maverick_Ma')">
-              <svg t="1746051409026" class="icon" viewBox="0 0 1242 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8939" width="25" height="25">
-                <path d="M531.252288 0C248.42147 0 19.252288 229.169181 19.252288 512S248.42147 1024 531.252288 1024s512-229.169181 512-512S814.083107 0 531.252288 0zM389.527887 678.340777h234.31905c40.786964 0 73.952122-33.062161 73.952123-73.952123v-12.256689c0-13.595655-11.02072-24.719372-24.719373-24.719372H500.45607c-13.698652 0-24.719372-11.02072-24.719372-24.719372v-61.592436c0-13.698652 11.02072-24.719372 24.719372-24.719373H784.007871c13.595655 0 24.719372 11.02072 24.719372 24.719373v141.724401c0 91.976665-74.570107 166.443774-166.443774 166.443774H278.496706c-13.595655 0-24.719372-11.02072-24.719372-24.719372v-345.04124c0-102.070408 82.809897-184.880306 184.880305-184.880305H784.007871c13.698652 0 24.719372 11.02072 24.719372 24.719372l-0.102997 61.592436c0 13.698652-11.02072 24.719372-24.719373 24.719372H438.760637c-40.786964 0-73.952122 33.062161-73.952123 73.952123v234.216053c0 13.492657 11.02072 24.513378 24.719373 24.513378z" fill="#C2191F" p-id="8940"></path>
-              </svg>
-            </span>
-          </el-tooltip>
-
-          <el-tooltip
-            content="GitHub仓库"
-            effect="dark"
-            placement="bottom"
-          >
-            <span class="right-icon" @click="handleClick('https://github.com/Ma-YongJian')">
-              <svg t="1746051827779" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="9914" width="25" height="25">
-                <path d="M960 512c0 97.76-28.704 185.216-85.664 263.264-56.96 78.016-130.496 131.84-220.64 161.856-10.304 1.824-18.368 0.448-22.848-4.032a22.4 22.4 0 0 1-7.2-17.504v-122.88c0-37.632-10.304-65.44-30.464-82.912a409.856 409.856 0 0 0 59.616-10.368 222.752 222.752 0 0 0 54.72-22.816c18.848-10.784 34.528-23.36 47.104-38.592 12.544-15.232 22.848-35.904 30.912-61.44 8.096-25.568 12.128-54.688 12.128-87.904 0-47.072-15.232-86.976-46.208-120.16 14.368-35.456 13.024-74.912-4.48-118.848-10.752-3.616-26.432-1.344-47.072 6.272s-38.56 16.16-53.824 25.568l-21.984 13.888c-36.32-10.304-73.536-15.232-112.096-15.232s-75.776 4.928-112.096 15.232a444.48 444.48 0 0 0-24.672-15.68c-10.336-6.272-26.464-13.888-48.896-22.432-21.952-8.96-39.008-11.232-50.24-8.064-17.024 43.936-18.368 83.424-4.032 118.848-30.496 33.632-46.176 73.536-46.176 120.608 0 33.216 4.032 62.336 12.128 87.456 8.032 25.12 18.368 45.76 30.496 61.44 12.544 15.68 28.224 28.704 47.072 39.04 18.848 10.304 37.216 17.92 54.72 22.816a409.6 409.6 0 0 0 59.648 10.368c-15.712 13.856-25.12 34.048-28.704 60.064a99.744 99.744 0 0 1-26.464 8.512 178.208 178.208 0 0 1-33.184 2.688c-13.024 0-25.568-4.032-38.144-12.544-12.544-8.512-23.296-20.64-32.256-36.32a97.472 97.472 0 0 0-28.256-30.496c-11.232-8.064-21.088-12.576-28.704-13.92l-11.648-1.792c-8.096 0-13.92 0.928-17.056 2.688-3.136 1.792-4.032 4.032-2.688 6.72s3.136 5.408 5.376 8.096 4.928 4.928 7.616 7.168l4.032 2.688c8.544 4.032 17.056 11.232 25.568 21.984 8.544 10.752 14.368 20.64 18.4 29.6l5.824 13.44c4.928 14.816 13.44 26.912 25.568 35.872 12.096 8.992 25.088 14.816 39.008 17.504 13.888 2.688 27.36 4.032 40.352 4.032s23.776-0.448 32.288-2.24l13.472-2.24c0 14.784 0 32.288 0.416 52.032 0 19.744 0.48 30.496 0.48 31.392a22.624 22.624 0 0 1-7.648 17.472c-4.928 4.48-12.992 5.824-23.296 4.032-90.144-30.048-163.68-83.84-220.64-161.888C92.256 697.216 64 609.312 64 512c0-81.152 20.192-156.064 60.096-224.672s94.176-122.88 163.232-163.232C355.936 84.192 430.816 64 512 64s156.064 20.192 224.672 60.096 122.88 94.176 163.232 163.232C939.808 355.488 960 430.848 960 512" fill="#000000" p-id="9915"></path>
-              </svg>
-            </span>
-          </el-tooltip>
+          <RepoLinks />
         </div>
       </header>
     </div>
     <div class="main">
       <div class="side-bar">
         <ul class="channel-list">
-          <li :class="activeLink == 0 ? 'active-channel' : ''" @click="toLink(0)">
+          <li :class="{ 'active-channel': activeLink == 0 }" @click="toLink(0)">
             <a class="link-wrapper">
-              <House style="width: 1.3em; height: 1.3em; margin-right: 8px" /><span class="channel">发现</span>
+              <House class="sidebar-nav-icon" />
+              <span class="channel">发现</span>
             </a>
           </li>
-          <li :class="activeLink == 1 ? 'active-channel' : ''" @click="toLink(1)">
-            <Star style="width: 1.3em; height: 1.3em; margin-right: 8px" /><span class="channel"> 动态</span>
+          <li :class="{ 'active-channel': activeLink == 1 }" @click="toLink(1)">
+            <a class="link-wrapper">
+              <Bell class="sidebar-nav-icon" />
+              <el-badge is-dot class="nav-badge" :hidden="!(messageCount > 0 && userInfo != null)">
+                <span class="channel">通知</span>
+              </el-badge>
+            </a>
           </li>
-          <li :class="activeLink == 2 ? 'active-channel' : ''" @click="toLink(2)">
-            <Bell style="width: 1.3em; height: 1.3em; margin-right: 8px" />
-
-            <el-badge is-dot class="item" v-if="messageCount > 0 && userInfo != null">
-              <span class="channel"> 通知</span></el-badge
-            >
-            <span class="channel" v-else>通知</span>
+          <li :class="{ 'active-channel': activeLink == 2 }" @click="toLink(2)">
+            <a class="link-wrapper">
+              <CirclePlus class="sidebar-nav-icon" />
+              <span class="channel">发布</span>
+            </a>
           </li>
-          <li :class="activeLink == 3 ? 'active-channel' : ''" @click="toLink(3)">
-            <CirclePlus style="width: 1.3em; height: 1.3em; margin-right: 8px" /><span class="channel"> 发布</span>
+          <li v-if="userInfo == null" class="login-item">
+            <el-button type="primary" round class="custom-button" @click.stop="login">登录</el-button>
           </li>
-          <div v-if="userInfo == null">
-            <el-button type="danger" round @click="login" class="custom-button">登录</el-button>
-          </div>
-          <li v-else :class="activeLink == 4 ? 'active-channel' : ''" @click="toLink(4)">
-            <el-avatar :src="userInfo.avatar" :size="22" />
-            <span class="channel">我</span>
+          <li v-else :class="{ 'active-channel': activeLink == 3 }" @click="toLink(3)">
+            <a class="link-wrapper">
+              <el-avatar class="nav-avatar" :src="userInfo.avatar" :size="22" />
+              <span class="channel">我</span>
+            </a>
           </li>
         </ul>
 
@@ -172,28 +129,26 @@
           <div class="information-pad" v-show="padShow">
             <div class="container">
               <div class="group-wrapper">
-                <a
-                  class="menu-item hover-effect links"
-                  target="_blank"
-                  href="https://agree.xiaohongshu.com/h5/terms/ZXXY20220331001/-1"
-                >
-                  <span>关于小红书</span>
+                <div class="menu-item hover-effect links" @click="openAgreement('about')">
+                  <span>关于来因</span>
                   <div class="icon">
                     <ArrowRight style="width: 1em; height: 1em; margin-right: 8px" />
                   </div>
-                </a>
-                <a
-                  class="menu-item hover-effect links"
-                  target="_blank"
-                  href="https://agree.xiaohongshu.com/h5/terms/ZXXY20220509001/-1"
-                >
-                  <span>隐私，协议</span>
+                </div>
+                <div class="menu-item hover-effect links" @click="openAgreement('privacy')">
+                  <span>隐私政策</span>
                   <div class="icon">
                     <ArrowRight style="width: 1em; height: 1em; margin-right: 8px" />
                   </div>
-                </a>
+                </div>
+                <div class="menu-item hover-effect links" @click="openAgreement('manual')">
+                  <span>用户协议</span>
+                  <div class="icon">
+                    <ArrowRight style="width: 1em; height: 1em; margin-right: 8px" />
+                  </div>
+                </div>
                 <div class="menu-item hover-effect">
-                  <a href="#" @click="toUpshow = true">
+                  <a href="#" @click.prevent="toUpshow = true">
                     <span> 帮助与客服 </span>
                   </a>
                 </div>
@@ -204,12 +159,20 @@
                   <div class="menu-item hover-effect">
                     <span>深色模式</span>
                     <div class="multistage-toggle component">
-                      <button class="toggle-item active">
+                      <button
+                        class="toggle-item"
+                        :class="{ active: themeStore.theme === 'light' }"
+                        @click.stop="themeStore.setTheme('light')"
+                      >
                         <div class="icon-wrapper">
                           <Sunny style="width: 1em; height: 1em" />
                         </div>
                       </button>
-                      <button class="toggle-item">
+                      <button
+                        class="toggle-item"
+                        :class="{ active: themeStore.theme === 'dark' }"
+                        @click.stop="themeStore.setTheme('dark')"
+                      >
                         <div class="icon-wrapper">
                           <Moon style="width: 1em; height: 1em" />
                         </div>
@@ -227,8 +190,7 @@
           </div>
 
           <div class="information-wrapper" @click="loadPad">
-            <!-- <More style="width: 1em; height: 1em; margin-right: 8px" /> -->
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+            <svg class="sidebar-nav-icon more-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 fill-rule="evenodd"
@@ -246,6 +208,7 @@
     </div>
     <Login v-show="loginShow" @click-child="close"></Login>
     <ToUP v-show="toUpshow" @click-to-up="toUpshow = false"></ToUP>
+    <AgreementDialog v-model="agreementShow" :type="agreementType" />
   </div>
 </template>
 
@@ -256,35 +219,38 @@ import {
   Moon,
   Close,
   House,
-  Star,
   Bell,
   ArrowRight,
   CirclePlus,
-  Iphone,
-  Monitor,
-  DataLine,
 } from "@element-plus/icons-vue";
 import { useRouter, useRoute } from "vue-router";
 import Login from "@/views/login.vue";
-import { ref, watch, onMounted, computed, watchEffect } from "vue";
+import { ref, watch, onMounted, computed, watchEffect, provide } from "vue";
 import { useUserStore } from "@/store/userStore";
 import { useSearchStore } from "@/store/searchStore";
 import SujContainer from "@/components/SujContainer.vue";
 import SearchContainer from "@/components/SearchContainer.vue";
+import RepoLinks from "@/components/RepoLinks.vue";
 import { addRecord, getRecordByKeyWord } from "@/api/search";
 import { getRandomString } from "@/utils/util";
 import { getChatUserList, getCountMessage } from "@/api/im";
 import { useImStore } from "@/store/imStore";
 import { loginOut } from "@/api/user";
-import { wsKey } from "@/constant/constant";
+import { buildWsUrl } from "@/constant/constant";
 import ToUP from "@/views/to-up/index.vue";
+import AgreementDialog from "@/components/AgreementDialog.vue";
+import { useThemeStore } from "@/store/themeStore";
+import type { AgreementType } from "@/constants/agreements";
 
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
 const searchStore = useSearchStore();
 const imStore = useImStore();
-const loginShow = ref(true);
+const themeStore = useThemeStore();
+const loginShow = ref(false);
+const agreementShow = ref(false);
+const agreementType = ref<AgreementType>("about");
 const userInfo = ref<any>({});
 const showHistory = ref(false);
 const showSearch = ref(false);
@@ -292,13 +258,13 @@ const keyword = ref("");
 const showClose = ref(false);
 const SearchInput = ref();
 const recordList = ref<Array<string>>([]);
-const activeLink = ref(1);
+const activeLink = ref(0);
 const padShow = ref(false);
 const ws = ref();
 const toUpshow = ref(false);
 const isShowDot = ref(false);
 
-const routerList = ["/dashboard", "/followTrend", "/notice", "/push", "/user", "/search"];
+const routerList = ["/dashboard", "/notice", "/push", "/user", "/search"];
 
 // 监听外部点击
 onMounted(() => {
@@ -393,8 +359,10 @@ watchEffect(() => {
   }
 });
 
-const handleClick = (url: string | URL | undefined) => {
-  window.open(url, "_blank"); // 打开外链到新标签页
+const openAgreement = (type: AgreementType) => {
+  agreementType.value = type;
+  agreementShow.value = true;
+  padShow.value = false;
 };
 
 const changeInput = (e: any) => {
@@ -424,9 +392,19 @@ const clearInput = () => {
   SearchInput.value.focus();
 };
 
+const login = () => {
+  loginShow.value = true;
+};
+
+provide("openLogin", login);
+
 const toLink = (num: number) => {
-  activeLink.value = num;
   const url = routerList[num];
+  if ((url === "/notice" || url === "/push" || url === "/user") && !userStore.isLogin()) {
+    login();
+    return;
+  }
+  activeLink.value = num;
   if (url === "/user") {
     router.push({ name: "user", query: { uid: userInfo.value.id } });
     return;
@@ -447,7 +425,8 @@ const maxRetries = 5; // 最大重试次数
 let retryCount = 0; // 当前重试次数
 
 const connectWs = (uid: string) => {
-  ws.value = new WebSocket(wsKey + uid);
+  const token = userStore.getToken() || "";
+  ws.value = new WebSocket(buildWsUrl(uid, token));
   ws.value.onopen = () => {
     console.log("连接成功");
     retryCount = 0; // 重置重试计数
@@ -512,10 +491,6 @@ const getCountMessageMethod = () => {
   });
 };
 
-const login = () => {
-  loginShow.value = true;
-};
-
 const logout = () => {
   loginOut(userInfo.value.id).then(() => {
     userStore.loginOut();
@@ -574,35 +549,11 @@ a {
   color: rgba(51, 51, 51, 0.8);
 }
 
-.right-icon {
-  width: 1.5em;
-  height: 1.5em;
-  margin-top: 5px;
-  cursor: pointer;
-}
-
-.right-icon:not(:last-child) {
-  margin-right: 30px;
-}
-.right-icon:last-child {
-  margin-right: 50px;
-}
-
-.right-icon:hover {
-  transform: scale(1.2); /* 鼠标移入时放大 1.2 倍 */
-}
-
 /* 添加选中标签的效果 */
-.channel-list li:hover {
-  border-radius: 20px;
-  background-color: #f0f0f0;
+.channel-list li:hover,
+.information-wrapper:hover {
+  background-color: rgba(0, 0, 0, 0.04);
   cursor: pointer;
-  width: 90%;
-}
-
-/* 激活的选中标签样式 */
-.active-channel {
-  background-color: #f0f0f0;
 }
 
 /* 浮动框容器 */
@@ -635,7 +586,7 @@ a {
 
 /* 图标样式 */
 .reds-icon {
-  fill: #ff2442; /* 图标颜色 */
+  fill: var(--el-color-primary); /* 图标颜色 */
   margin-right: 10px;
 }
 
@@ -646,19 +597,14 @@ a {
 }
 
 .custom-button {
-  margin-top: 2px;
-  margin-bottom: 15px;
-  margin-left: -2px;
   height: 48px;
-  background: #ff2442;
+  background: var(--el-color-primary);
   color: #fff;
-  opacity: 1;
   border-radius: 999px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  width: 90%;
+  width: 100%;
 }
 
 .container {
@@ -689,6 +635,27 @@ a {
       height: 72px;
       padding: 0 16px 0 24px;
       z-index: 10;
+
+      .logo-wrap {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+
+        .logo {
+          width: 80px;
+          height: auto;
+          display: block;
+        }
+      }
+
+      .right {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        margin-left: auto;
+        justify-content: flex-end;
+        padding-right: 72px;
+      }
 
       .tool-box {
         width: 24px;
@@ -731,7 +698,7 @@ a {
           font-size: 16px;
           line-height: 120%;
           color: #333;
-          caret-color: #ff2442;
+          caret-color: var(--el-color-primary);
           background: rgba(0, 0, 0, 0.03);
           border-radius: 999px;
         }
@@ -813,19 +780,24 @@ a {
         user-select: none;
 
         .active-channel {
-          background-color: rgba(0, 0, 0, 0.03);
-          border-radius: 999px;
-          color: #333;
-          width: 90%;
+          background-color: var(--el-color-primary-light-9);
+          color: var(--el-color-primary);
+        }
+
+        .active-channel .channel {
+          color: var(--el-color-primary);
         }
 
         li {
-          padding-left: 16px;
+          padding: 0 16px;
           min-height: 48px;
           display: flex;
           align-items: center;
           cursor: pointer;
           margin-bottom: 8px;
+          width: 90%;
+          box-sizing: border-box;
+          border-radius: 999px;
           color: rgba(51, 51, 51, 0.6);
 
           .link-wrapper {
@@ -835,24 +807,39 @@ a {
             align-items: center;
           }
 
-          .message-count {
-            margin-left: 7rem;
-            background-color: red;
-            width: 20px;
-            height: 20px;
-            font-size: 14px;
-            line-height: 20px;
-            text-align: center;
-            border-radius: 50%;
-            color: #fff;
+          &.login-item {
+            padding: 0;
+            background: transparent;
           }
+
+          &.login-item:hover {
+            background: transparent;
+          }
+        }
+
+        .sidebar-nav-icon,
+        .nav-avatar {
+          width: 22px;
+          height: 22px;
+          margin-right: 12px;
+          flex-shrink: 0;
+        }
+
+        .nav-avatar {
+          display: block;
         }
 
         .channel {
           font-size: 16px;
           font-weight: 600;
-          margin-left: 12px;
+          margin-left: 0;
           color: #333;
+          line-height: 1;
+        }
+
+        .nav-badge {
+          display: flex;
+          align-items: center;
         }
       }
 
@@ -863,7 +850,7 @@ a {
         font-size: 16px;
         position: absolute;
         bottom: 0;
-        margin-left: -6px;
+        left: 0;
 
         .information-pad {
           z-index: 16;
@@ -908,6 +895,7 @@ a {
                 align-items: center;
                 padding: 0 12px;
                 font-weight: 400;
+                cursor: pointer;
 
                 .icon {
                   color: rgba(51, 51, 51, 0.3);
@@ -966,21 +954,34 @@ a {
           user-select: none;
           cursor: pointer;
           position: relative;
-          margin-bottom: 20px;
+          margin-bottom: 16px;
+          padding: 0 16px;
           height: 48px;
-          width: 100%;
+          width: 90%;
+          box-sizing: border-box;
           display: flex;
           font-weight: 600;
           align-items: center;
           border-radius: 999px;
+
+          .sidebar-nav-icon,
+          .more-icon {
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+            flex-shrink: 0;
+          }
+
+          .channel {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            line-height: 1;
+          }
         }
 
-        /* 添加选中标签的效果 */
         .information-wrapper:hover {
-          border-radius: 20px;
-          background-color: #f0f0f0;
-          cursor: pointer;
-          width: 90%;
+          background-color: rgba(0, 0, 0, 0.04);
         }
       }
     }

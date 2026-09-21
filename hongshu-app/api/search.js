@@ -16,6 +16,10 @@ export function addSearchRecordData(params) {
 }
 
 
-export function esSearchRecord(params) {
-	return request.get(appConfig.WEB_API + `/web/es/record/getHotRecord`, params)
+export function esSearchRecord() {
+	return request.get(appConfig.WEB_API + `/web/es/record/getHotRecord`)
+}
+
+export function esAllSearchRecord(params) {
+	return request.get(appConfig.WEB_API + `/web/es/record/getRecordByKeyWord`, params)
 }

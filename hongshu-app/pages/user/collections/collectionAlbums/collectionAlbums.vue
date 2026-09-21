@@ -6,7 +6,7 @@
 					<tui-grid-item :cell="2" backgroundColor="#f4f4f4" :border="false" :bottomLine="false">
 						<view class="card">
 							<view @click="searchAlbum(item.aid)">
-								<image :src="item.cover" mode="aspectFill" :lazy-load='true' />
+								<image :src="mediaUrl(item.cover)" mode="aspectFill" :lazy-load='true' />
 							</view>
 							<view class="cont">
 								<h5>{{ item.name }}</h5>
@@ -16,6 +16,7 @@
 					</tui-grid-item>
 				</block>
 			</tui-grid>
+			<hs-empty v-if="!dataList.length" title="暂无收藏专辑"></hs-empty>
 			<view class="loadStyle" v-if="isEnd">我也是有底线的~</view>
 		</scroll-view>
 	</view>
@@ -25,6 +26,9 @@
 	import {
 		getAllCollection
 	} from "@/api/agreeCollect.js"
+	import {
+		mediaUrl
+	} from '@/utils/upload.js'
 	export default {
 
 		data() {
@@ -47,17 +51,17 @@
 			this.getAllCollection()
 		},
 		methods: {
-
+			mediaUrl,
 			getAllCollection() {
-				let params = {
+				getAllCollection(this.page, this.limit, {
 					uid: this.uid,
 					type: 3
-				}
-				getAllCollection(this.page, this.limit, params).then(res => {
-					this.dataList = res.data.records
-					this.total = res.data.length
+				}).then(res => {
+					const page = res.data || {}
+					this.dataList = page.records || []
+					this.total = page.total || this.dataList.length
+					if (!this.dataList.length || this.dataList.length >= this.total) this.isEnd = true
 				})
-
 			},
 
 			searchAlbum(albumId) {
@@ -78,8 +82,12 @@
 					uid: this.uid,
 					type: 1
 				}
-				getAllCollection(this.page, this.limit, params).then(res => {
-					this.dataList.push(...res.data)
+				getAllCollection(this.page, this.limit, {
+					uid: this.uid,
+					type: 3
+				}).then(res => {
+					const page = res.data || {}
+					this.dataList.push(...(page.records || []))
 				})
 			}
 

@@ -28,7 +28,7 @@
               <el-button type="danger" size="large" round v-else @click="follow(noteInfo.uid, 0)">关注</el-button>
             </div>
             <div class="follow-btn" v-else>
-              <el-dropdown>
+              <el-dropdown @command="onOwnerCommand">
                 <el-button type="danger" size="large" round>
                   编辑
                   <el-icon class="el-icon--right">
@@ -37,12 +37,10 @@
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item v-if="noteInfo.pinned === '0'" @click="pinned(noteInfo.id, '1')">
-                      置顶
-                    </el-dropdown-item>
-                    <el-dropdown-item v-else @click="pinned(noteInfo.id, '0')">取消置顶</el-dropdown-item>
-                    <el-dropdown-item @click="deleteNote(noteInfo.id)">删除</el-dropdown-item>
-                    <el-dropdown-item @click="toEdit(noteInfo.id)">编辑</el-dropdown-item>
+                    <el-dropdown-item v-if="noteInfo.pinned === '0'" command="pin">置顶</el-dropdown-item>
+                    <el-dropdown-item v-else command="unpin">取消置顶</el-dropdown-item>
+                    <el-dropdown-item command="delete">删除</el-dropdown-item>
+                    <el-dropdown-item command="edit">编辑</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -66,6 +64,7 @@
             <div class="comments-el">
               <Comment
                 :nid="props.nid"
+                :note-uid="noteInfo.uid"
                 :currentPage="currentPage"
                 :replyComment="replyComment"
                 :seed="seed"
@@ -84,7 +83,7 @@
                     <StarFilled style="width: 0.9em; height: 0.9em; color: #ffcc00" />
                   </span>
                   <span class="like-lottie" v-else @click="likeOrCollection(3, 1)">
-                    <Star style="width: 0.8em; height: 0.8em; color: #333" />
+                    <Star class="action-icon" style="width: 0.8em; height: 0.8em" />
                   </span>
                   <span class="count">{{ noteInfo.collectionCount }}</span>
                 </span>
@@ -92,20 +91,20 @@
                   <span class="like-lottie" v-if="noteInfo.isLike" @click="likeOrCollection(1, -1)">
                     <i
                       class="iconfont icon-follow-fill"
-                      :style="{ width: '1em', height: '1em', color: noteInfo.isLike ? 'red' : 'black' }"
+                      :style="{ width: '1em', height: '1em', color: noteInfo.isLike ? '#f87171' : undefined }"
                       v-if="noteInfo.isLike"
                     >
                     </i>
                     <i class="iconfont icon-follow" style="width: 1em; height: 1em" v-else></i>
                   </span>
                   <span class="like-lottie" v-else @click="likeOrCollection(1, 1)">
-                    <i class="iconfont icon-follow" style="width: 0.8em; height: 0.8em; color: #333"></i>
+                    <i class="iconfont icon-follow action-icon" style="width: 0.8em; height: 0.8em"></i>
                   </span>
                   <span class="count">{{ noteInfo.likeCount }}</span>
                 </span>
                 <span class="chat-wrapper">
                   <span class="like-lottie">
-                    <ChatRound style="width: 0.8em; height: 0.8em; color: #333" />
+                    <ChatRound class="action-icon" style="width: 0.8em; height: 0.8em" />
                   </span>
                   <span class="count">
                     {{ noteInfo.commentCount }}
@@ -147,7 +146,7 @@
 
 <script lang="ts" setup>
 import { Close, Star, ChatRound, StarFilled, ArrowDown } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { ref, watch } from "vue";
 import { getNoteById, pinnedNote, deleteNoteByIds } from "@/api/note";
 import { likeOrCollectionByDTO } from "@/api/likeOrCollection";
@@ -223,7 +222,7 @@ watch(
       getNoteById(props.nid).then((res: any) => {
         console.log("---note", res.data);
         noteInfo.value = res.data;
-        noteInfo.value.imgList = JSON.parse(res.data.urls);
+        noteInfo.value.imgList = parseNoteUrls(res.data && res.data.urls);
         noteInfo.value.time = formateTime(res.data.time);
         likeOrComment.value.isLike = noteInfo.value.isLike;
       });
@@ -301,13 +300,42 @@ const pinned = (noteId: string, type: string) => {
     });
 };
 
-const deleteNote = (noteId: string) => {
-  const data = [] as Array<string>;
-  data.push(noteId);
-  deleteNoteByIds(data).then(() => {
+const parseNoteUrls = (raw: any): string[] => {
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  if (typeof raw !== "string" || !raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+};
+
+const onOwnerCommand = (cmd: string) => {
+  const id = noteInfo.value.id;
+  if (cmd === "pin") pinned(id, "1");
+  else if (cmd === "unpin") pinned(id, "0");
+  else if (cmd === "delete") deleteNote(id);
+  else if (cmd === "edit") toEdit(id);
+};
+
+const deleteNote = async (noteId: string) => {
+  try {
+    await ElMessageBox.confirm("确定删除这篇笔记？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+  } catch {
+    return;
+  }
+  try {
+    await deleteNoteByIds([noteId]);
     ElMessage.success("删除成功");
-    emit("clickMain");
-  });
+    emit("clickMain", noteId, { deleted: true });
+  } catch (e: any) {
+    ElMessage.error((e && (e.message || e.msg)) || "删除失败");
+  }
 };
 
 const toEdit = (noteId: string) => {

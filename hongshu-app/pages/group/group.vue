@@ -1,15 +1,13 @@
 <template>
 	<view class="content">
 		
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<view class="n-left">
-					<a href="#" @click="back"><tui-icon name="arrowleft" size="25"></tui-icon></a>
-					<h3>关注分组</h3>
+		<hs-nav-bar title="关注分组">
+			<template #right>
+				<view class="hs-nav-action">
+					<tui-icon name="plus" size="22"></tui-icon>
 				</view>
-				<a href="#"><tui-icon name="plus" size="22"></tui-icon></a>
-			</view>
-		</tui-navigation-bar>
+			</template>
+		</hs-nav-bar>
 		
 		<view class="main">
 			<view class="left"  >

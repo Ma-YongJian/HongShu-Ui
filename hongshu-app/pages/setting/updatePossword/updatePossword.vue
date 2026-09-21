@@ -1,184 +1,104 @@
 <template>
-	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<tui-icon name="arrowleft" size="25" @click="back"></tui-icon>
-				<h3>修改密码</h3>
-			</view>
-		</tui-navigation-bar>
+	<view class="pwd-page">
+		<hs-nav-bar title="修改密码"></hs-nav-bar>
 
-		<view class="main" v-if="!check">
-			<view class="center">
-				<input placeholder="输入手机号/邮箱注册" class="info-input" v-model="value" />
-				<view class="code">
-					<input placeholder="验证码输入" class="info-input" v-model="code" />
-					<tui-button type="white" width="200rpx" :link="true" height="60rpx" @click="getCode()"
-						v-if="T">验证码</tui-button>
-					<tui-tag type="white" v-else>{{ count }}</tui-tag>
+		<view class="hint">请设置 8-20 位字母和数字组合的新密码</view>
+
+		<view class="form-card">
+			<view class="field">
+				<input class="field-input" :password="!showPwd" v-model="password" maxlength="20" placeholder="输入新密码" />
+				<view class="eye" @click="togglePwd">
+					<tui-icon :name="showPwd ? 'eye' : 'unseen'" size="20" color="#9ca3af"></tui-icon>
 				</view>
 			</view>
-
-			<view class="regist">
-				<tui-button @click="next()" type="danger" shape="circle">下一步</tui-button>
+			<view class="field field-last">
+				<input class="field-input" :password="!showCheck" v-model="checkPassword" maxlength="20"
+					placeholder="再次输入新密码" />
+				<view class="eye" @click="toggleCheck">
+					<tui-icon :name="showCheck ? 'eye' : 'unseen'" size="20" color="#9ca3af"></tui-icon>
+				</view>
 			</view>
 		</view>
 
-		<view class="main" v-else>
-			<input placeholder="输入密码" class="info-input" type="password" v-model="password" />
-			<input placeholder="重新输入密码" class="info-input" type="password" v-model="checkPassword" />
-
-			<view class="regist">
-				<tui-button @click="updatePassword" type="danger" shape="circle">修改密码</tui-button>
-			</view>
+		<view class="save-wrap">
+			<tui-button type="primary" shape="circle" :disabled="saving" @click="submit">保存</tui-button>
 		</view>
 	</view>
 </template>
 
 <script>
-	import {
-		sendDm,
-		sendMsm,
-		register,
-		check,
-		updatePassword
-	} from "@/api/regist.js"
-	import {
-		isMobile,
-		isEmail,
-		validatorPassword
-	} from '@/utils/validate.js'
+	import { updatePassword } from "@/api/login.js"
+	import { validatorPassword } from '@/utils/validate.js'
 
 	export default {
 		data() {
 			return {
-				T: true,
-				check: false,
-				count: 0,
-				userInfo: {},
-				value: '',
-				code: '',
 				password: '',
 				checkPassword: '',
+				showPwd: false,
+				showCheck: false,
+				saving: false
 			}
 		},
-
-		created() {
-			this.userInfo = uni.getStorageSync("userInfo")
-		},
-
 		methods: {
+			togglePwd() {
+				this.showPwd = !this.showPwd
+			},
+			toggleCheck() {
+				this.showCheck = !this.showCheck
+			},
 			back() {
 				uni.navigateBack({
 					delta: 1
 				})
 			},
-
-			getCode() {
-				let isM = isMobile(this.value)
-				let isE = isEmail(this.value)
-
-
-				if (isM) {
-					let data = {}
-					data.phone = this.value
-					sendMsm(data).then(res => {
-						uni.showToast({
-							title: "发送成功"
-						})
-					})
-				} else if (isE) {
-					let data = {}
-					data.email = this.value
-					sendDm(data).then(res => {
-						uni.showToast({
-							title: "发送成功"
-						})
-					})
-				} else {
+			submit() {
+				if (!validatorPassword(this.password)) {
 					uni.showToast({
-						title: "请输入正确手机号或邮箱"
+						title: '请输入8-20位由字母和数字组成的密码',
+						icon: 'none'
 					})
 					return
 				}
-
-				this.T = false
-				this.count = 60
-				var times = setInterval(() => {
-					this.count--; //递减
-					if (this.count <= 1) {
-						this.T = true
-						clearInterval(times);
-					}
-				}, 1000)
-
-			},
-
-
-
-			next() {
-				
-				let userObj ={}
-				
-				let isM = isMobile(this.value)
-				let isE = isEmail(this.value)
-				userObj.code = this.code
-				if (isM) {
-					userObj.phone = this.value
-				} else if (isE) {
-					userObj.email = this.value
-				}
-				userObj.type = 0
-				userObj.id = this.userInfo.id
-				
-
-				check(userObj).then(res => {
-
-					if (res.data.res === 1) {
-						this.check = true
-					} else {
-						uni.showToast({
-							title: res.data.message
-						})
-					}
-				})
-			},
-
-			updatePassword() {
-				let pwd = validatorPassword(this.password)
-
-				if (!pwd) {
-					uni.showToast({
-						title: "请输入8-20位由字母和数字组成的密码"
-					})
-					return
-				}
-
 				if (this.password !== this.checkPassword) {
 					uni.showToast({
-						title: "两次输入的密码不一致"
+						title: '两次输入的密码不一致',
+						icon: 'none'
 					})
 					return
 				}
-
-                let userObj = {}
-				userObj.id = this.userInfo.id
-				userObj.password = this.password
-				userObj.checkPassword = this.checkPassword
-				updatePassword(userObj).then(res => {
-
-					if (res.data) {
+				if (this.saving) return
+				this.saving = true
+				updatePassword({
+					password: this.password,
+					checkPassword: this.checkPassword
+				}).then(res => {
+					if (res.code !== 200 || res.data === false) {
 						uni.showToast({
-							title: "修改成功"
+							title: res.message || '修改失败',
+							icon: 'none'
 						})
-						setTimeout(() => {
-							uni.reLaunch({
-								url: "/pages/user/user"
-							});
-						}, 1000)
+						this.saving = false
+						return
 					}
+					uni.showToast({
+						title: '修改成功',
+						icon: 'none'
+					})
+					setTimeout(() => {
+						uni.navigateBack({
+							delta: 1
+						})
+					}, 600)
+				}).catch(() => {
+					uni.showToast({
+						title: '修改失败',
+						icon: 'none'
+					})
+				}).then(() => {
+					this.saving = false
 				})
 			}
-
 		}
 	}
 </script>

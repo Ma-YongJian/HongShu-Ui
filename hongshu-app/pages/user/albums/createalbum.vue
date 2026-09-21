@@ -1,16 +1,6 @@
 <template>
 	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<view class="n-left">
-					<tui-icon name="arrowleft" size="24" @click="back"></tui-icon>
-					<view v-if="isupdate">修改专辑</view>
-					<view v-else>创建专辑</view>
-				</view>
-
-				<view><tui-icon name="more-fill" size="20"></tui-icon></view>
-			</view>
-		</tui-navigation-bar>
+		<hs-nav-bar :title="isupdate ? '修改专辑' : '创建专辑'"></hs-nav-bar>
 
 		<view class="add-album">
 			<view class="title1 w">请输入标题</view>
@@ -26,7 +16,7 @@
 					<tui-icon name="pic"></tui-icon>
 				</view>
 				<view v-else>
-					<image :src="value" mode="aspectFill"></image>
+					<image :src="mediaUrl(value)" mode="aspectFill"></image>
 				</view>
 			</view>
 		</view>
@@ -39,7 +29,7 @@
 		<view class="fotter">
 			<view class="add">
 
-				<tui-button type="danger" shape="circle" @click="publish" limit='1'
+				<tui-button type="primary" shape="circle" @click="publish" limit='1'
 					:disabled="disabled">点击发布</tui-button>
 
 			</view>
@@ -49,20 +39,22 @@
 		<tui-toast ref="toast"></tui-toast>
 		<!-- 弹框 -->
 		<tui-modal :show="modal" @click="handleClick" @cancel="hide" content="确定删除所有专辑中的数据吗" color="#333" :size="32"
-			shape="circle"></tui-modal>
+			shape="circle" :button="modalBtns"></tui-modal>
 	</view>
 </template>
 
 <script>
-	import {
-		appConfig
-	} from '@/config/config'
 	import {
 		saveAlbum,
 		getAlbum,
 		updateAlbum,
 		deleteAlbum
 	} from '@/api/album.js'
+	import {
+		uploadImage,
+		mediaUrl,
+		isLocalMedia
+	} from '@/utils/upload.js'
 	export default {
 		data() {
 			return {
@@ -73,6 +65,15 @@
 				albumId: '',
 				isupdate: false,
 				modal: false,
+				modalBtns: [{
+					text: '取消',
+					type: 'primary',
+					plain: true
+				}, {
+					text: '确定',
+					type: 'primary',
+					plain: false
+				}],
 				disabled: false
 
 			}
@@ -89,6 +90,7 @@
 		},
 
 		methods: {
+			mediaUrl,
 			back() {
 				uni.navigateBack({
 					delta: 1
@@ -118,16 +120,9 @@
 			},
 
 			uploadImg() {
-				return new Promise((res, error) => {
-					uni.uploadFile({
-						url: appConfig.WEB_API + '/util/fileoss/uploadOssFile/2', //仅为示例，非真实的接口地址
-						filePath: this.value,
-						name: 'file',
-						success: (uploadFileRes) => {
-							res(JSON.parse(uploadFileRes.data).data);
-						}
-					});
-				})
+				if (!this.value) return Promise.reject(new Error('请选择图片'))
+				if (!isLocalMedia(this.value)) return Promise.resolve(this.value)
+				return uploadImage(this.value)
 			},
 
 

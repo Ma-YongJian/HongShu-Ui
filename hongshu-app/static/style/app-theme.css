@@ -1,0 +1,101 @@
+page {
+	background-color: #f8fafc;
+	color: #111827;
+}
+
+.uni-scroll-view-refresh__spinner > circle {
+	color: #3d8af5 !important;
+}
+
+.uni-scroll-view-refresh-inner > svg {
+	fill: #3d8af5 !important;
+}
+
+.uni-scroll-view-refresh-inner {
+	box-shadow: none !important;
+}
+
+/* ThorUI 主色覆盖：组件 scoped + !important 会压过 App.vue 单类选择器 */
+.tui-btn.tui-btn-primary,
+page .tui-btn.tui-btn-primary {
+	background: #3d8af5 !important;
+	background-color: #3d8af5 !important;
+	color: #fff !important;
+}
+
+.tui-btn.tui-primary-hover,
+page .tui-btn.tui-primary-hover {
+	background: #2f73d8 !important;
+	background-color: #2f73d8 !important;
+}
+
+.tui-btn.tui-primary-outline,
+page .tui-btn.tui-primary-outline {
+	color: #3d8af5 !important;
+	background: transparent !important;
+}
+
+.tui-btn.tui-primary-outline::after,
+page .tui-btn.tui-primary-outline::after {
+	border: 1px solid #3d8af5 !important;
+}
+
+.tui-btn.tui-btn-gray-primary,
+page .tui-btn.tui-btn-gray-primary {
+	color: #3d8af5 !important;
+}
+
+.tui-shadow-primary,
+page .tui-shadow-primary {
+	box-shadow: 0 10rpx 14rpx 0 rgba(61, 138, 245, 0.2) !important;
+}
+
+/* 弹窗确定/默认红按钮改品牌蓝；删除类 tui-btn-danger 仍保持红色 */
+.tui-modal-btn.tui-red,
+.tui-modal-btn.tui-primary,
+page .tui-modal-btn.tui-red,
+page .tui-modal-btn.tui-primary {
+	background: #3d8af5 !important;
+	color: #fff !important;
+}
+
+.tui-modal-btn.tui-red-hover,
+.tui-modal-btn.tui-primary-hover,
+page .tui-modal-btn.tui-red-hover,
+page .tui-modal-btn.tui-primary-hover {
+	background: #2f73d8 !important;
+	color: #fff !important;
+}
+
+.tui-modal-btn.tui-red-outline,
+.tui-modal-btn.tui-primary-outline,
+page .tui-modal-btn.tui-red-outline,
+page .tui-modal-btn.tui-primary-outline {
+	background: transparent !important;
+	color: #3d8af5 !important;
+}
+
+.tui-modal-btn.tui-red-outline::after,
+.tui-modal-btn.tui-primary-outline::after,
+page .tui-modal-btn.tui-red-outline::after,
+page .tui-modal-btn.tui-primary-outline::after {
+	border: 1px solid #3d8af5 !important;
+}
+
+/* 发布方块 = 两侧「图标+文字」整块高度，在底栏内垂直居中 */
+uni-tabbar .uni-tabbar__mid {
+	top: 0 !important;
+	bottom: 0 !important;
+	height: 50px !important;
+	width: 50px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+uni-tabbar .uni-tabbar__mid .uni-tabbar__icon,
+uni-tabbar .uni-tabbar__mid img {
+	width: 40px !important;
+	height: 40px !important;
+	margin: 0 !important;
+}

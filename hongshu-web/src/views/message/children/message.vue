@@ -1,6 +1,7 @@
 <template>
   <div>
-    <ul class="message-container">
+    <el-empty v-if="dataList.length === 0" description="暂无消息" />
+    <ul v-else class="message-container">
       <li class="message-item" v-for="(item, index) in dataList" :key="index">
         <a class="user-avatar">
           <!-- https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png -->
@@ -35,7 +36,7 @@
 <script lang="ts" setup>
 import { useImStore } from "@/store/imStore";
 import { ref, watchEffect } from "vue";
-import { formateTime } from "@/utils/util";
+import { formatSessionListTime } from "@/utils/util";
 import Chat from "@/components/Chat.vue";
 import { clearMessageCount } from "@/api/im";
 import { useRouter } from "vue-router";
@@ -55,7 +56,7 @@ watchEffect(() => {
   const _countMessage = imStore.countMessage;
   _countMessage.chatCount = 0;
   imStore.userList.forEach((item) => {
-    item.time = formateTime(item.timestamp);
+    item.time = formatSessionListTime(item.timestamp);
     _countMessage.chatCount += item.count;
     dataList.value.push(item);
   });
@@ -89,7 +90,7 @@ const close = (uid: string) => {
 
 <style lang="less" scoped>
 .message-container {
-  width: 40rem;
+  width: 100%;
 
   .message-item {
     display: flex;
@@ -159,7 +160,7 @@ const close = (uid: string) => {
             line-height: 20px;
             font-size: 13px;
             color: #fff;
-            background-color: red;
+            background-color: var(--el-color-primary);
             text-align: center;
             border-radius: 100%;
           }

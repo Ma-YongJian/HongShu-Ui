@@ -1,207 +1,91 @@
 <template>
-	<view class="content">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="true" :isOpacity="false">
-			<view class="nav">
-				<view @click="back"><tui-icon name="arrowleft" size="24"></tui-icon></view>
-				<view class="center">
-					<view @click="getUserInfo(imgInfo.uid)">
-						<image class="avatar" :src="imgInfo.avatar" mode="aspectFill" />
-					</view>
-
-					<view class="username">{{ imgInfo.username }}</view>
-
-					<view v-if="!isCurrentUser" class="followStatus">
-						<view v-if="T">
-							<tui-button @click="clearFollow(imgInfo.uid)" type="gray" height="50rpx" :size="22"
-								width="100rpx" shape="circle" plain>已关注</tui-button>
-						</view>
-						<view v-else>
-							<tui-button @click="follow(imgInfo.uid)" type="danger" height="50rpx" :size="22"
-								width="100rpx" shape="circle" plain>关注</tui-button>
-						</view>
-					</view>
+	<view class="detail-page">
+		<hs-nav-bar :isFixed="true" :border="false">
+			<template #center>
+				<view class="nav-author" @click="goAuthor">
+					<image class="nav-avatar" :src="imgInfo.avatar" mode="aspectFill" />
+					<view class="nav-name">{{ imgInfo.username }}</view>
 				</view>
-				<tui-icon name="more-fill" size="20" @click="popup"></tui-icon>
+			</template>
+			<template #right>
+				<view v-if="!isCurrentUser" class="nav-follow" :class="{ 'is-on': T }" @click.stop="toggleFollow">
+					{{ T ? '已关注' : '关注' }}
+				</view>
+				<view class="hs-nav-action" @click="openMoreMenu">
+					<tui-icon name="more-fill" :size="20"></tui-icon>
+				</view>
+			</template>
+		</hs-nav-bar>
+		<view v-if="loadError" class="media-empty" @click="reloadNote">加载失败，点击重试</view>
+		<view v-else-if="isVideo && videoSrc" class="media media-video">
+				<video :src="videoSrc" :poster="coverSrc" controls object-fit="contain"
+					style="width: 100%; height: 1000rpx;"></video>
 			</view>
-		</tui-navigation-bar>
-		<scroll-view scroll-y class="page" @scrolltolower="loadData" @scroll="scroll" :scroll-top="scrollTop">
-			<view class="img-list">
-			    <swiper :autoplay="false" :indicator-dots="true" :circular="true" style="height: 800rpx;">
-			      <swiper-item v-for="(item, index) in imgList" :key="index">
-			        <image :src="item" mode="aspectFill" @click="previewImgae(index)" style="width: 100%; height: 800rpx;" />
-			      </swiper-item>
-			    </swiper>
+			<view v-else-if="imgList.length" class="media" :style="mediaStyle">
+				<swiper :autoplay="false" :indicator-dots="false" :circular="true" :current="swiperCurrent"
+					:style="mediaStyle" @change="onSwiperChange">
+					<swiper-item v-for="(item, index) in imgList" :key="index">
+						<image :src="item" mode="aspectFill" @click="previewImgae(index)" :style="mediaImgStyle" />
+					</swiper-item>
+				</swiper>
+				<view v-if="imgList.length > 1" class="hs-swiper-dots">
+					<view v-for="(item, idx) in imgList" :key="idx" class="hs-swiper-dot"
+						:class="{ 'is-active': idx === swiperCurrent }"></view>
+				</view>
+				<view v-if="imgList.length > 1" class="media-index">{{ swiperCurrent + 1 }}/{{ imgList.length }}</view>
 			</view>
-			<view class="cont">
-				<view class="img-content">{{ imgInfo.title }}</view>
-				<view class="time">{{ imgInfo.time }} | {{ imgInfo.viewCount }}浏览</view>
-			</view>
-			<!-- <view class="relation">
-				<view class="r-all">
-					<h4>所属专辑</h4>
-				</view>
-				<view class="r-list">
-					<ul>
-						<li class="r-item" @click='toAlbum(album.id)'>
-							<image :src="album.cover" mode="aspectFill" />
-							<view class="item-content">
-								<h4>{{ album.name }}</h4>
-								<p>{{ album.imgCount }}张图片|{{ album.collectionCount }}人收藏</p>
-							</view>
-						</li>
-					</ul>
-				</view>
-				<view class="r-tag">
-					<view v-for="(tag, index) in imgInfo.tagList" :key="index">
-						<tui-tag type="gray" shape="circle" margin="10rpx" size="24rpx"
-							@click="toTagList(tag.id)">{{ tag.name }}</tui-tag>
-					</view>
-				</view>
-			</view> -->
+			<view v-else class="media-empty">{{ loading ? '加载中...' : '暂无图片' }}</view>
 
-			<view class="comment" v-if='imgInfo.commentCount>0'>
-				<view style="font-weight: bold;margin-left: 40rpx;">所有评论</view>
-				<!--  scrollTop，comArr实现评论跳转，-->
-				<comment :mid='imgInfo.id' @getComment="getComment" @addAgree="addAgree" @scrollTop="getScrollTop"
-					@cancelAgreeComment="cancelAgreeComment" :val="val" :parentId="parentId" :comArr='comArr'
-					:commentInfo='commentInfo' :currentUid='imgInfo.uid' @delComment='delComment'>
+			<view class="note-body">
+				<view class="note-title">{{ imgInfo.title }}</view>
+				<view class="note-content" v-if="imgInfo.content && imgInfo.content !== imgInfo.title">{{ imgInfo.content }}</view>
+				<view class="note-tags" v-if="imgInfo.tagList && imgInfo.tagList.length">
+					<view class="note-tag" v-for="(tag, index) in imgInfo.tagList" :key="index"
+						@click="onTapTag(index)">#{{ tagText(tag) }}</view>
+				</view>
+				<view class="note-meta">{{ imgInfo.time }} · {{ imgInfo.viewCount || 0 }}浏览</view>
+			</view>
+
+			<view class="comment-section">
+				<view class="comment-head">
+					{{ commentCount > 0 ? ('共' + commentCount + '条评论') : '还没有评论' }}
+				</view>
+				<view class="comment-composer" @click="active">
+					<image class="comment-composer-avatar" :src="myAvatar" mode="aspectFill"></image>
+					<view class="comment-composer-input">说点什么...</view>
+				</view>
+				<comment v-if="noteId" :mid="noteId" @getComment="getComment" @addAgree="addAgree"
+					@scrollTop="getScrollTop" @cancelAgreeComment="cancelAgreeComment" :val="val" :parentId="parentId"
+					:comArr="comArr" :commentInfo="commentInfo" :seed="commentReload" :currentUid="imgInfo.uid" @delComment="delComment">
 				</comment>
-				<!-- 评论功能 -->
 			</view>
-			<view v-else style="height: 200rpx"></view>
+			<view class="scroll-pad"></view>
 
-		</scroll-view>
-
-		<!-- 底部输入框 -->
-		<view :class="fn?'fotter fotter-none':'fotter'">
-
-			<view v-if="!useful_flag" class="fotter-info">
-				<view class="fotter-content" @click="active">{{ placeholder }}</view>
-				<tui-icon name="star-fill" size="20" v-if="imgInfo.isCollection" @click="cancelCollect()" style="color: orange"></tui-icon>
-				<tui-icon name="star" size="20" v-else @click="saveImgToAlbum()"></tui-icon>
-				<view class="fotter-c-a">{{ imgInfo.collectionCount }}</view>
-
-				<tui-icon name="like-fill" size="20" v-if="imgInfo.isLike" @click="cancelAgreeImg()" style="color: red;">></tui-icon>
-				<tui-icon name="like" size="20" v-else @click="agreeImg"></tui-icon>
-				<view class="fotter-c-a">{{ imgInfo.likeCount }}</view>
+		<view class="detail-footer" :class="{ 'is-hidden': fn, 'is-emoji': useful_flag }">
+			<view v-if="!useful_flag" class="footer-bar">
+				<view class="footer-input" @click="active">说点什么...</view>
+				<view class="footer-acts">
+					<view class="footer-act" @click="onTapLike">
+						<tui-icon :name="imgInfo.isLike ? 'like-fill' : 'like'" :size="22"
+							:color="imgInfo.isLike ? '#ff2442' : '#111827'"></tui-icon>
+						<text>{{ imgInfo.likeCount > 0 ? imgInfo.likeCount : '点赞' }}</text>
+					</view>
+					<view class="footer-act" @click="onTapCollect">
+						<tui-icon :name="imgInfo.isCollection ? 'star-fill' : 'star'" :size="22"
+							:color="imgInfo.isCollection ? '#f7ba1e' : '#111827'"></tui-icon>
+						<text>{{ imgInfo.collectionCount > 0 ? imgInfo.collectionCount : '收藏' }}</text>
+					</view>
+					<view class="footer-act" @click="active">
+						<tui-icon name="message" :size="22" color="#111827"></tui-icon>
+						<text>{{ commentCount > 0 ? commentCount : '评论' }}</text>
+					</view>
+				</view>
 			</view>
-
-			<!-- 新增表情发送 -->
 			<input-emoji v-else :useful_flag="useful_flag" :cursor="cursor" @addCommentWithEmoji="addCommentWithEmoji"
 				:placeholder="placeholder">
 			</input-emoji>
 		</view>
-		<!-- 底部输入框完成 -->
 
-		<!--底部分享弹窗-->
-		<tui-bottom-popup backgroundColor="#f6f6f6" :zIndex="1002" :maskZIndex="1001" :show="popupShow" @close="popup">
-			<view class="tui-share">
-				<view class="tui-share-title">操作</view>
-
-				<view class="tui-share-top" v-if="isCurrentUser">
-
-					<view class="tui-share-item"
-						:class="[shareList[1].operate.length - 1 === index ? 'tui-item-last' : '']"
-						v-for="(item, index) in shareList[1].operate" :key="index" @tap="popup">
-						<view class="tui-share-icon" hover-class="tui-hover" :hover-stay-time="150">
-							<view @click="operate(index)">
-								<tui-icon :name="item.icon" color="#404040" :size="item.size"></tui-icon>
-							</view>
-						</view>
-						<view class="tui-share-text">{{ item.name }}</view>
-					</view>
-
-				</view>
-
-				<view class="tui-share-top" v-else>
-
-					<view class="tui-share-item"
-						:class="[shareList[2].operate2.length - 1 === index ? 'tui-item-last' : '']"
-						v-for="(item, index) in shareList[2].operate2" :key="index" @tap="popup">
-						<view class="tui-share-icon" hover-class="tui-hover" :hover-stay-time="150">
-							<view @click="operate2(index)">
-								<tui-icon :name="item.icon" color="#404040" :size="item.size"></tui-icon>
-							</view>
-						</view>
-						<view class="tui-share-text">{{ item.name }}</view>
-					</view>
-				</view>
-
-				<view class="tui-share-bottom tui-mt">
-					<view class="tui-share-item"
-						:class="[shareList[0].share.length - 1 === index ? 'tui-item-last' : '']"
-						v-for="(item, index) in shareList[0].share" :key="index" @tap="popup">
-						<view class="tui-share-icon" hover-class="tui-hover" :hover-stay-time="150"
-							@click="share(index)">
-							<tui-icon :name="item.icon" :color="item.color"
-								:size="item.size ? item.size : 36"></tui-icon>
-						</view>
-						<view class="tui-share-text">{{ item.name }}</view>
-					</view>
-					<view class="tui-empty">!</view>
-				</view>
-				<view class="tui-btn-cancle" @tap="popup">取消</view>
-			</view>
-		</tui-bottom-popup>
-		<!--底部分享弹窗-->
-
-
-		<!-- 批量保存 -->
-		<tui-bottom-popup backgroundColor="#ffffff" :zIndex="1002" :maskZIndex="1001" :show="batchSaveShow"
-			@close="batchShow">
-			<view class="tui-share">
-				<view class="tui-share-title popup-top">
-
-					<view @click="batchShow">取消</view>
-					<view style="font-size: 28rpx; color: black; font-style: inherit;">选择需要保存的图片</view>
-					<view class="selectAll">
-						<view class="all-icon">
-							<tui-icon name="circle-fill" color="#ff626c"
-								v-if="imgInfo.imgsUrl!=null&&imgInfo.imgsUrl.length == selectImgs.length" size="18"
-								@click="cancalAll()"></tui-icon>
-							<tui-icon name="circle" size="18" v-else @click="selectAll()"></tui-icon>
-						</view>
-						<view class="all-title">
-							<view v-if="imgInfo.imgsUrl!=null&&imgInfo.imgsUrl.length == selectImgs.length" size="18"
-								@click="cancalAll()" style="color:#ff626c ;">全部</view>
-							<view v-else @click="selectAll()">全部</view>
-						</view>
-					</view>
-				</view>
-
-
-				<view class="pictures">
-
-					<tui-grid :unlined="true">
-						<block v-for="(item, index) in imgInfo.imgsUrl" :key="index">
-							<tui-grid-item :cell="3" :border="false" :bottomLine="false">
-								<view class="card">
-
-									<view class="card-circle" v-if="!selectImgs.includes(index)"
-										@click="delAffirm(index)">
-										<tui-icon name="circle" size="22" @click="delCancel(index)">
-										</tui-icon>
-									</view>
-									<view class="card-circle" v-if="selectImgs.includes(index)"><tui-icon
-											name="circle-fill" color="#ff626c" size="22"
-											@click="delCancel(index)"></tui-icon>
-									</view>
-
-									<image :src="item" @click="previewImgae(index)" mode="aspectFill" />
-								</view>
-							</tui-grid-item>
-						</block>
-					</tui-grid>
-				</view>
-
-
-				<view class="tui-btn-cancle" style="background-color: #fff;">
-					<tui-button type="danger" @click="batchSave()" shape="circle" width='560rpx' height="80rpx"
-						:size='28'>批量下载</tui-button>
-				</view>
-			</view>
-		</tui-bottom-popup>
-		<!-- 批量保存 -->
 		<!-- 蒙板 -->
 		<view class="shade" v-show="show" @click="close"></view>
 
@@ -213,7 +97,8 @@
 	import InputEmoji from "@/components/inputEmoji.vue"
 	import {
 		getOne,
-		deleteImgs
+		deleteImgs,
+		pinnedNote
 	} from '@/api/imgDetail.js'
 	import {
 		addComment
@@ -233,11 +118,18 @@
 		clearFollow
 	} from "@/api/follow.js"
 	import {
-		appConfig
-	} from '@/config/config.js'
-	import {
 		timeAgo
 	} from "@/utils/webUtils.js"
+	import {
+		openUser,
+		ensureLogin,
+		currentUid,
+		emitNoteDeleted
+	} from '@/utils/noteNav.js'
+	import {
+		mapNoteMedia,
+		mediaUrl
+	} from '@/utils/upload.js'
 	export default {
 		components: {
 			Comment,
@@ -248,12 +140,14 @@
 				noteId: '',
 				imgList: [],
 				imgInfo: {},
+				loading: true,
+				loadError: false,
 				count: 0,
 				album: {},
 				content: '',
 				comment: {},
 
-				placeholder: '请输入内容~',
+				placeholder: '说点什么...',
 				val: 0,
 				parentId: '',
 				comArr: [],
@@ -261,6 +155,8 @@
 				userIsLike: false,
 				T: false,
 				isCurrentUser: false,
+				swiperCurrent: 0,
+				swiperHeight: 1000,
 
 				//
 				useful_flag: false,
@@ -271,100 +167,53 @@
 
 				//
 				commentInfo: {},
+				commentReload: 0,
 
 				//滚动
 				scrollTop: 0,
 				old: {
 					scrollTop: 0
-				},
-
-				//批量保存
-				isshow: false,
-				affirmId: '',
-				selectImgs: [],
-
-				//实现编辑操作
-				popupShow: false,
-				batchSaveShow: false,
-				shareList: [{
-					share: [{
-						name: "QQ",
-						icon: "qq",
-						color: "#07BDFD",
-						size: 34
-					}, {
-						name: "微信",
-						icon: "wechat",
-						color: "#80D640"
-					}, {
-						name: "朋友圈",
-						icon: "moments",
-						color: "#80D640",
-						size: 32
-					}, {
-						name: "复制链接",
-						icon: "applets",
-						color: "#2BA348"
-					}]
-				}, {
-					operate: [{
-							name: "编辑",
-							icon: "edit",
-							size: 30
-						},
-						{
-							name: "删除图片",
-							icon: "offline",
-							size: 30
-						},
-						{
-							name: "社区公约",
-							icon: "nodata",
-							size: 30
-						},
-						{
-							name: "批量保存",
-							icon: "picture",
-							size: 28
-						}
-					]
-				}, {
-					operate2: [{
-							name: "批量保存",
-							icon: "picture",
-							size: 30
-						},
-						{
-							name: "不感兴趣",
-							icon: "dissatisfied",
-							size: 30
-						},
-						{
-							name: "举报",
-							icon: "about",
-							size: 30
-						},
-						{
-							name: "社区公约",
-							icon: "immore",
-							size: 28
-						},
-					]
-				}],
+				}
+			}
+		},
+		computed: {
+			isVideo() {
+				const t = String((this.imgInfo && this.imgInfo.noteType) || '')
+				return t === '2'
+			},
+			videoSrc() {
+				const urls = this.imgList || []
+				const hit = urls.find(u => /\.(mp4|mov|webm)(\?|$)/i.test(String(u || '')))
+				return hit || this.imgInfo.videoUrl || ''
+			},
+			coverSrc() {
+				return this.imgInfo.noteCover || (this.imgList && this.imgList[0]) || ''
+			},
+			commentCount() {
+				return Number((this.imgInfo && this.imgInfo.commentCount) || 0)
+			},
+			myAvatar() {
+				const me = uni.getStorageSync('userInfo') || {}
+				return me.avatar ? mediaUrl(me.avatar) : '/static/logo.png'
+			},
+			mediaStyle() {
+				return 'height:' + this.swiperHeight + 'rpx;'
+			},
+			mediaImgStyle() {
+				return 'width:100%;height:' + this.swiperHeight + 'rpx;'
 			}
 		},
 		onLoad(option) {
-			this.noteId = option.mid
-			this.imgInfo.id = option.mid
-
-			if (option.cid != null) {
-				this.comArr[0] = option.cid
-				this.comArr[1] = option.rid
+			this.noteId = (option && (option.mid || option.nid || option.noteId)) || ''
+			this.imgInfo = Object.assign({}, this.imgInfo, { id: this.noteId })
+			if (option && option.cid != null) {
+				this.comArr = [option.cid, option.rid]
 			}
+			this.getOne()
 		},
 
-		created() {
-			this.getOne()
+		onReachBottom() {
+			this.val = Math.random()
 		},
 		onBackPress(options) {
 			/**
@@ -378,8 +227,63 @@
 			this.back();
 			return true;
 		},
+		onShareAppMessage() {
+			const id = this.noteId || (this.imgInfo && this.imgInfo.id) || ''
+			return {
+				title: (this.imgInfo && this.imgInfo.title) || '来因笔记',
+				path: '/pages/main/main?mid=' + id,
+				imageUrl: this.coverSrc || '/static/logo.png'
+			}
+		},
+		onShareTimeline() {
+			const id = this.noteId || (this.imgInfo && this.imgInfo.id) || ''
+			return {
+				title: (this.imgInfo && this.imgInfo.title) || '来因笔记',
+				query: 'mid=' + id,
+				imageUrl: this.coverSrc || '/static/logo.png'
+			}
+		},
 		methods: {
+			onSwiperChange(e) {
+				this.swiperCurrent = (e.detail && e.detail.current) || 0
+			},
+			toggleFollow() {
+				if (this.T) {
+					this.clearFollow(this.imgInfo.uid)
+				} else {
+					this.follow(this.imgInfo.uid)
+				}
+			},
+			goAuthor() {
+				this.getUserInfo(this.imgInfo.uid)
+			},
+			onTapTag(index) {
+				const tag = (this.imgInfo.tagList || [])[index]
+				if (tag) this.toTagList(tag.id)
+			},
+			onTapLike() {
+				if (this.imgInfo.isLike) {
+					this.cancelAgreeImg()
+				} else {
+					this.agreeImg()
+				}
+			},
+			onTapCollect() {
+				if (this.imgInfo.isCollection) {
+					this.cancelCollect()
+				} else {
+					this.saveImgToAlbum()
+				}
+			},
+			reloadNote() {
+				this.getOne()
+			},
+			tagText(tag) {
+				const raw = (tag && (tag.title || tag.name || tag.label)) || tag || ''
+				return String(raw).replace(/^#/, '')
+			},
 			active() {
+				if (!ensureLogin()) return
 				this.useful_flag = true
 				this.cursor = true
 				this.show = true
@@ -388,7 +292,7 @@
 			close() {
 				this.useful_flag = false
 				this.show = false
-				this.placeholder = '请输入内容~'
+				this.placeholder = '说点什么...'
 				this.comment = {}
 
 			},
@@ -448,69 +352,51 @@
 			},
 			//-------------------关注部分-------------------
 			isFollow() {
-				let uid = uni.getStorageSync("userInfo").id
-
-				let fid = this.imgInfo.userId
-				let params = {
-					uid: uid,
-					fid: fid
-				}
-				isFollow(params).then(res => {
-
-					if (res.data) {
-						this.T = true
-					} else {
-						this.T = false
-					}
+				if (!currentUid()) return
+				isFollow({
+					followerId: this.imgInfo.uid
+				}).then(res => {
+					this.T = !!res.data
 				})
 			},
-			//关注用户
 			follow(fid) {
-				let curUser = uni.getStorageSync("userInfo")
-				let followDTo = {}
-				followDTo.uid = curUser.id
-				followDTo.fid = fid
-				//添加关注
-				followUser(followDTo).then(res => {
-					this.T = true;
+				if (!ensureLogin()) return
+				followUser({
+					followerId: fid
+				}).then(() => {
+					this.T = true
 				})
 			},
-
-			//取消关注
 			clearFollow(fid) {
-				let user = uni.getStorageSync("userInfo")
-				let followDTo = {}
-				followDTo.uid = user.id
-				followDTo.fid = fid
-				clearFollow(followDTo).then(res => {
-					this.T = false;
+				if (!ensureLogin()) return
+				clearFollow({
+					followerId: fid
+				}).then(() => {
+					this.T = false
 				})
 			},
 
 			//----------------------点赞部分-----------------
 			isAgree() {
-				let data = {}
-				data.uid = uni.getStorageSync("userInfo").id
-				data.type = 1
-				data.likeOrCollectionId = this.imgInfo.id
-				data.publishUid = uni.getStorageSync("userInfo").id
-
-				isAgree(data).then(res => {
-
-					this.userIsLike = res.data
-
+				if (!currentUid()) return
+				isAgree({
+					uid: currentUid(),
+					type: 1,
+					likeOrCollectionId: this.imgInfo.id,
+					publishUid: this.imgInfo.uid
+				}).then(res => {
+					this.$set(this.imgInfo, 'isLike', !!res.data)
 				})
 			},
-
 			agreeImg() {
-				let data = {}
-				data.uid = uni.getStorageSync("userInfo").id
-				data.type = 1
-				data.likeOrCollectionId = this.imgInfo.id
-				data.publishUid = this.imgInfo.uid
-
-				agree(data).then(res => {
-					this.userIsLike = true
+				if (!ensureLogin()) return
+				agree({
+					uid: currentUid(),
+					type: 1,
+					likeOrCollectionId: this.imgInfo.id,
+					publishUid: this.imgInfo.uid
+				}).then(() => {
+					this.$set(this.imgInfo, 'isLike', true)
 					this.imgInfo.likeCount = this.imgInfo.likeCount * 1 + 1
 				})
 			},
@@ -526,17 +412,16 @@
 			},
 
 			cancelAgreeImg() {
-
-				let data = {}
-				data.uid = uni.getStorageSync("userInfo").id
-				data.likeOrCollectionId = this.imgInfo.id
-				data.publishUid = this.imgInfo.userId
-				data.type = 1
-				cancelAgree(data).then(res => {
-					this.userIsLike = false
-					this.imgInfo.likeCount = this.imgInfo.likeCount * 1 - 1
+				if (!ensureLogin()) return
+				cancelAgree({
+					uid: currentUid(),
+					likeOrCollectionId: this.imgInfo.id,
+					publishUid: this.imgInfo.uid,
+					type: 1
+				}).then(() => {
+					this.$set(this.imgInfo, 'isLike', false)
+					this.imgInfo.likeCount = Math.max(0, this.imgInfo.likeCount * 1 - 1)
 				})
-
 			},
 
 			cancelAgreeComment(comment) {
@@ -549,87 +434,75 @@
 			},
 
 			cancelCollect() {
-
-				if (this.imgInfo.userId == uni.getStorageSync("userInfo").id) {
-					return
-				}
-				let data = {}
-				data.uid = uni.getStorageSync("userInfo").id
-				data.likeOrCollectionId = this.imgInfo.id
-				data.publishUid = this.imgInfo.userId
-				data.type = 2
-				cancelCollection(data).then(res => {
+				if (this.imgInfo.uid == currentUid()) return
+				if (!ensureLogin()) return
+				cancelCollection({
+					uid: currentUid(),
+					likeOrCollectionId: this.imgInfo.id,
+					publishUid: this.imgInfo.uid
+				}).then(() => {
 					this.isCollection = false
-					this.imgInfo.collectionCount = this.imgInfo.collectionCount * 1 - 1
+					this.$set(this.imgInfo, 'isCollection', false)
+					this.imgInfo.collectionCount = Math.max(0, this.imgInfo.collectionCount * 1 - 1)
 				})
 			},
 
 
 			isCollectImgToAlbum() {
-
-				let params = {
-					uid: uni.getStorageSync("userInfo").id,
-					mid: this.imgInfo.id
-				}
-				isCollectImgToAlbum(params).then(res => {
-
-					this.isCollection = res.data
-				})
+				if (!currentUid() || !this.imgInfo.id) return
+				isCollectImgToAlbum({
+					nid: this.imgInfo.id
+				}).then(res => {
+					const collected = !!res.data
+					this.isCollection = collected
+					this.$set(this.imgInfo, 'isCollection', collected)
+				}).catch(() => {})
 			},
 
 			//-----------------------------------预览图片----------------
 			previewImgae(index) {
-				let that = this
+				const urls = this.imgList.length ? this.imgList : (this.imgInfo.imgsUrl || [])
 				uni.previewImage({
-					current: index, // 当前显示图片的索引值
-					urls: that.imgInfo.imgsUrl, // 需要预览的图片列表，photoList要求必须是数组
-					longPressActions: {
-						itemList: ['保存', '收藏'],
-						success: function(data) {
-
-							//进行保存
-							if (data.tapIndex == 0) {
-								let p = that.downLoadImg(that.imgInfo.imgsUrl[data.index])
-								p.then((data) => {
-									uni.showToast({
-										title: data,
-										icon: "none"
-									});
-								})
-							}
-							//进行收藏
-							if (data.tapIndex == 1) {
-								that.saveImgToAlbum()
-							}
-
-
-						},
-						fail: function(err) {
-							return
-						}
-					}
+					current: index,
+					urls
 				})
 			},
 			getOne() {
-
-				let params = {
-					noteId: this.noteId
+				if (!this.noteId) {
+					this.loading = false
+					this.loadError = true
+					return
 				}
-				getOne(params).then(res => {
-
-					this.imgInfo = res.data
-					this.imgInfo.time = timeAgo(new Date(res.data.time))
-					this.imgList = JSON.parse(res.data.urls)
+				this.loading = true
+				this.loadError = false
+				getOne({
+					noteId: this.noteId
+				}).then(res => {
+					this.loading = false
+					if (!res || res.code !== 200 || !res.data) {
+						this.loadError = true
+						return
+					}
+					this.imgInfo = mapNoteMedia(res.data)
+					this.noteId = String(this.imgInfo.id || this.noteId || '')
+					const t = res.data.time
+					let ts = typeof t === 'number' ? t : new Date(t).getTime()
+					if (!ts || isNaN(ts)) ts = Date.now()
+					this.imgInfo.time = timeAgo(ts)
+					this.imgList = this.imgInfo.imgsUrl || []
 					this.count = res.data.count
 					this.album = res.data.album
+					this.isCollection = !!this.imgInfo.isCollection
 
 					this.isFollow()
 					this.isAgree()
 					this.isCollectImgToAlbum()
-					if (this.imgInfo.uid == uni.getStorageSync("userInfo").id) {
+					if (this.imgInfo.uid == currentUid()) {
 						this.isCurrentUser = true
 					}
-
+				}).catch(() => {
+					this.loading = false
+					this.loadError = true
 				})
 			},
 			loadData() {
@@ -645,211 +518,160 @@
 			},
 
 			addComment() {
-				let userInfo = uni.getStorageSync("userInfo")
-
-				if (userInfo == null || typeof userInfo == 'undefined') {
+				const userInfo = uni.getStorageSync("userInfo") || {}
+				if (!userInfo.id) {
+					ensureLogin()
 					return
-				} else {
-
-					let commentInfo = {}
-					commentInfo.content = this.content
-					commentInfo.uid = userInfo.id
-					commentInfo.mid = this.imgInfo.id
-					//添加一级评论
-					if (this.comment.id == null) {
-						commentInfo.pid = 0
-						commentInfo.replyId = 0
-						commentInfo.replyUid = 0
-						commentInfo.level = 1
-
-					} else {
-						commentInfo.level = 2
-						commentInfo.replyId = this.comment.id
-						commentInfo.replyUid = this.comment.uid
-						//添加二级评论
-						if (this.comment.pid == 0) {
-							commentInfo.pid = this.comment.id
-						} else {
-							commentInfo.pid = this.comment.pid
-						}
-					}
-
-					addComment(commentInfo).then(res => {
-						this.content = ''
-						this.comment = {}
-						this.parentId = commentInfo.pid
-						this.commentInfo = res.data
-						this.placeholder = "请输入内容~"
-
-						if (this.imgInfo.commentCount == 0) {
-							this.imgInfo.commentCount = this.imgInfo.commentCount * 1 + 1
-						}
-
-					})
 				}
+				const commentInfo = {
+					content: this.content,
+					nid: this.imgInfo.id || this.noteId,
+					noteUid: this.imgInfo.uid
+				}
+				if (this.comment && this.comment.id) {
+					commentInfo.level = 2
+					commentInfo.replyId = this.comment.id
+					commentInfo.replyUid = this.comment.uid
+					commentInfo.pid = (this.comment.pid && String(this.comment.pid) !== '0') ? this.comment.pid : this.comment.id
+				} else {
+					commentInfo.pid = '0'
+					commentInfo.replyId = '0'
+					commentInfo.replyUid = '0'
+					commentInfo.level = 1
+				}
+				addComment(commentInfo).then(res => {
+					if (!res || res.code !== 200) {
+						uni.showToast({
+							title: (res && (res.message || res.msg)) || '评论失败',
+							icon: 'none'
+						})
+						return
+					}
+					this.content = ''
+					this.comment = {}
+					this.parentId = commentInfo.pid
+					this.placeholder = "说点什么..."
+					this.imgInfo.commentCount = Number(this.imgInfo.commentCount || 0) + 1
+					this.commentReload = Date.now()
+				})
 			},
 			getUserInfo(uid) {
-				uni.navigateTo({
-					url: "/pages/otherUser/otherUser?uid=" + uid
-				})
+				openUser(uid)
 			},
 
 			saveImgToAlbum() {
-
-				if (this.imgInfo.userId == uni.getStorageSync("userInfo").id) {
+				if (!ensureLogin()) return
+				if (this.imgInfo.uid == currentUid()) {
 					uni.showToast({
 						title: "自己不能收藏",
 						icon: "none"
 					});
 					return
 				}
-
 				uni.navigateTo({
 					url: '/pages/addalbum/addalbum?mid=' + this.imgInfo.id
 				})
 			},
-			// 保存图片至本地
-			downLoadImg(path) {
-				//下载图片资源至本地，返回文件的本地临时路径
-				let p = new Promise((resolve, reject) => {
-					uni.downloadFile({
-						url: path,
-						success: (res) => {
-							if (res.statusCode === 200) {
-								//保存图片至相册
-								uni.saveImageToPhotosAlbum({
-									filePath: res.tempFilePath,
-									success: function() {
-										resolve("保存成功")
-									},
-									fail: function() {
-										reject("保存失败")
-									}
-								});
-							}
+
+			openMoreMenu() {
+				const items = this.isCurrentUser
+					? [this.pinText(), '编辑', '删除', '复制链接']
+					: ['复制链接']
+				uni.showActionSheet({
+					itemList: items,
+					success: (res) => {
+						const text = items[res.tapIndex]
+						if (text === '置顶' || text === '取消置顶') {
+							this.togglePinned()
+						} else if (text === '编辑') {
+							this.editNote()
+						} else if (text === '删除') {
+							this.deleteNote()
+						} else if (text === '复制链接') {
+							this.copyNoteLink()
 						}
-					})
-				})
-				return p;
-
-			},
-
-			toAlbum(aid) {
-				uni.navigateTo({
-					url: "/pages/user/albums/albumInfo?albumId=" + aid
+					}
 				})
 			},
-
-			//-----------------编辑功能部分------------------
-			popup() {
-				this.popupShow = !this.popupShow
+			pinText() {
+				const p = this.imgInfo && this.imgInfo.pinned
+				return (p === 1 || p === '1') ? '取消置顶' : '置顶'
 			},
-			operate(index) {
-
-				//编辑操作
-				if (index == 0) {
-
-					uni.navigateTo({
-						url: "/pages/push/push?mid=" + this.imgInfo.id + '&type=update' + '&version=' + 0
-					})
-				} else if (index == 1) {
-
-					let arr = []
-					arr.push(this.imgInfo.id)
-					deleteImgs(arr, this.imgInfo.userId).then(res => {
+			togglePinned() {
+				if (!ensureLogin()) return
+				const id = this.imgInfo.id || this.noteId
+				pinnedNote(id).then(res => {
+					if (res && res.code === 200) {
+						const cur = this.imgInfo.pinned
+						this.$set(this.imgInfo, 'pinned', (cur === 1 || cur === '1') ? '0' : '1')
 						uni.showToast({
-							title: "删除成功"
+							title: this.imgInfo.pinned === '1' ? '已置顶' : '已取消置顶',
+							icon: 'none'
 						})
-
-						setTimeout(() => {
-							uni.reLaunch({
-								url: '/pages/index/index?currentTab=1'
-							})
-						}, 1000)
-
-					})
-				} else if (index == 3) {
-
-					this.batchSaveShow = true
-					// this.isshow = true
-					for (var i = 0; i < this.imgInfo.imgsUrl.length; i++) {
-						this.selectImgs.push(i)
+					} else {
+						uni.showToast({
+							title: (res && (res.message || res.msg)) || '最多只能置顶3个笔记',
+							icon: 'none'
+						})
 					}
-
-				}
-			},
-
-			operate2(index) {
-
-				if (index == 0) {
-					//批量保存
-					this.batchSaveShow = true
-					// this.isshow = true
-					for (var i = 0; i < this.imgInfo.imgsUrl.length; i++) {
-						this.selectImgs.push(i)
-					}
-				}
-			},
-
-			batchShow() {
-				this.batchSaveShow = false
-			},
-
-			delAffirm(index) {
-				this.selectImgs.push(index)
-			},
-
-			selectAll() {
-				for (let i = 0; i < this.imgInfo.imgsUrl.length; i++) {
-					this.selectImgs.push(i)
-				}
-			},
-			cancalAll() {
-
-				this.selectImgs = []
-			},
-			delCancel(index) {
-				for (var i = 0; i < this.selectImgs.length; i++) {
-					if (this.selectImgs[i] == index) {
-						this.selectImgs.splice(i, 1)
-						break
-					}
-				}
-			},
-
-			batchSave() {
-				uni.showToast({
-					title: "保存中",
-					icon: "none"
-				});
-
-				this.selectImgs.forEach(item => {
-					this.downLoadImg(this.imgInfo.imgsUrl[item])
-				})
-
-				setTimeout(() => {
+				}).catch(() => {
 					uni.showToast({
-						title: "保存成功",
-						icon: "none"
-					});
-
-					this.batchSaveShow = false
-				}, 300)
+						title: '最多只能置顶3个笔记',
+						icon: 'none'
+					})
+				})
+			},
+			editNote() {
+				uni.navigateTo({
+					url: '/pages/push/push?mid=' + (this.imgInfo.id || this.noteId) + '&type=update'
+				})
+			},
+			deleteNote() {
+				uni.showModal({
+					title: '提示',
+					content: '确定删除这篇笔记？',
+					success: (m) => {
+						if (!m.confirm) return
+						const id = this.imgInfo.id || this.noteId
+						deleteImgs([id]).then(res => {
+							if (!res || res.code !== 200) {
+								uni.showToast({
+									title: (res && (res.message || res.msg)) || '删除失败',
+									icon: 'none'
+								})
+								return
+							}
+							uni.showToast({
+								title: '删除成功',
+								icon: 'none'
+							})
+							emitNoteDeleted(id)
+							setTimeout(() => {
+								uni.navigateBack({
+									delta: 1
+								})
+							}, 400)
+						})
+					}
+				})
+			},
+			copyNoteLink() {
+				const id = this.imgInfo.id || this.noteId
+				uni.setClipboardData({
+					data: '/pages/main/main?mid=' + id,
+					success: () => {
+						uni.showToast({
+							title: '链接已复制',
+							icon: 'none'
+						})
+					}
+				})
 			},
 
 			toTagList(tid) {
-				console.log(tid)
 				uni.navigateTo({
 					url: '/pages/tagImgList/tagImgList?tid=' + tid
 				})
-			},
-
-			share(index) {
-
-				if (index == 4) {
-					//分享部分（暂未开发）	
-
-				}
 			}
 
 

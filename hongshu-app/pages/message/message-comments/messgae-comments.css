@@ -1,140 +1,114 @@
 .container {
-	padding-bottom: env(safe-area-inset-bottom);
-}
-
-.nav {
+	height: 100vh;
+	background: #fff;
 	display: flex;
-	align-items: center;
+	flex-direction: column;
+	overflow: hidden;
+	box-sizing: border-box;
 }
 
 .page {
-	height: 85vh;
+	flex: 1;
+	height: 0;
+	min-height: 0;
+	padding: 0 30rpx;
+	box-sizing: border-box;
 }
 
-.tui-item-box {
-	width: 100%;
+.list-item {
 	display: flex;
+	align-items: flex-start;
+	padding: 25rpx 0;
+	border-bottom: 1rpx solid #f3f3f2;
 }
 
-.tui-msg-box {
-	display: flex;
-}
-
-.tui-msg-pic {
-	width: 100rpx;
-	height: 100rpx;
+.avatar {
+	width: 80rpx;
+	height: 80rpx;
 	border-radius: 50%;
-	display: block;
-	margin-right: 24rpx;
 	flex-shrink: 0;
+	background: #f3f4f6;
 }
 
-.tui-msg-img {
-	width: 120rpx;
-	height: 100rpx;
-	border-radius: 5px;
-	display: block;
-	margin-right: 24rpx;
-	flex-shrink: 0;
+.content {
+	flex: 1;
+	min-width: 0;
+	margin-left: 20rpx;
 }
 
-.tui-msg-item {
-	width: 400rpx;
-	min-height: 100rpx;
+.username {
+	font-size: 30rpx;
+	color: #2b2b2b;
 	overflow: hidden;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
-.tui-msg-type {
+.action-info {
 	display: flex;
 	align-items: center;
-	justify-content: flex-start;
-	font-size: 25rpx;
+	font-size: 26rpx;
+	color: #999;
+	margin-top: 8rpx;
+	flex-wrap: wrap;
 }
 
-.tui-msg-type-item {
-	width: 160rpx;
-	margin-top: 10rpx;
-	color: #9397a4;
+.action-text {
+	color: #999;
 }
 
-
-.tui-msg-time {
-	width: 140rpx;
-	margin-top: 10rpx;
-	margin-left: 3px;
-	font-size: 24rpx;
-	line-height: 24rpx;
-	color: #9397a4;
+.type-tag {
+	display: inline-block;
+	padding: 2rpx 12rpx;
+	border-radius: 30rpx;
+	font-size: 22rpx;
+	margin: 0 8rpx;
+	color: #3d8af5;
+	background-color: rgba(61, 138, 245, 0.1);
 }
 
-button {
-	background: #f1f1f1;
-	color: #5c5c5c;
-	border: 0rpx solid #f1f1f1;
-	font-size: 18rpx;
-	width: 150rpx;
-	height: 35rpx;
-	margin-left: 0rpx;
-	line-height: 34rpx;
+.time {
+	margin-left: 8rpx;
 }
 
-
-.tui-msg-name {
-	margin-top: 20rpx;
+.snippet {
+	margin-top: 16rpx;
+	font-size: 28rpx;
+	color: #333;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	font-size: 30rpx;
-	line-height: 1;
-	color: #262b3a;
-}
-
-.tui-msg-content {
-	max-width: 380rpx;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	font-size: 25rpx;
-	line-height: 2;
-	color: #5c5c5c;
 }
 
 .reply {
-	margin-left: 10px;
+	margin-top: 8rpx;
+	padding-left: 12rpx;
+	border-left: 4rpx solid #ff2442;
+	font-size: 24rpx;
 	color: #bfbfbf;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
-.reply::before {
-	content: "|";
-	color: #ff0000;
-	font-weight: bold;
+.cover {
+	width: 120rpx;
+	height: 120rpx;
+	border-radius: 8rpx;
+	margin-left: 20rpx;
+	flex-shrink: 0;
+	background: #f3f4f6;
+	overflow: hidden;
 }
 
-.tui-msg-right {
-	max-width: 120rpx;
-	margin-left: auto;
-	text-align: right;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	align-items: flex-end;
-}
-
-
-
-.tui-right-dot {
-	height: 76rpx !important;
-	padding-bottom: 10rpx !important;
-
+.list-footer {
+	height: calc(40rpx + env(safe-area-inset-bottom));
 }
 
 .loadStyle {
-	margin-top: 20rpx;
+	padding: 20rpx 0 8rpx;
 	width: 100%;
-	height: 60rpx;
 	text-align: center;
 	color: #bfbfbf;
+	font-size: 24rpx;
 }

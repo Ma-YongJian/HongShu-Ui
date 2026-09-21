@@ -1,50 +1,31 @@
 <template>
-  <div class="container">
+  <div class="notice-page">
     <div v-if="isLogin">
-      <div class style="height: 72px">
-        <div class="reds-sticky">
-          <div class="reds-tabs-list">
-            <el-badge :value="_countMessage.chatCount" :max="99" :hidden="_countMessage.chatCount == 0">
-              <div :class="type === 3 ? 'reds-tab-item active tab-item' : 'reds-tab-item tab-item'">
-                <div class="badge-container" @click="toPage(3)">
-                  <span>我的消息</span>
-                </div>
-              </div>
-            </el-badge>
-            <el-badge :value="_countMessage.commentCount" :max="99" :hidden="_countMessage.commentCount == 0">
-              <div :class="type === 1 ? 'reds-tab-item active tab-item' : 'reds-tab-item tab-item'">
-                <div class="badge-container" @click="toPage(1)">
-                  <span>评论和@</span>
-                </div>
-              </div>
-            </el-badge>
-            <el-badge
-              :value="_countMessage.likeOrCollectionCount"
-              :max="99"
-              :hidden="_countMessage.likeOrCollectionCount == 0"
-            >
-              <div :class="type === 0 ? 'reds-tab-item active tab-item' : 'reds-tab-item tab-item'">
-                <div class="badge-container" @click="toPage(0)">
-                  <span>赞和收藏</span>
-                </div>
-              </div>
-            </el-badge>
-            <el-badge :value="_countMessage.followCount" :max="99" :hidden="_countMessage.followCount == 0">
-              <div :class="type === 2 ? 'reds-tab-item active tab-item' : 'reds-tab-item tab-item'">
-                <div class="badge-container" @click="toPage(2)">
-                  <span>新增关注</span>
-                </div>
-              </div>
-            </el-badge>
-          </div>
-          <div class="divider" style="margin: 16px 32px 0px"></div>
-        </div>
+      <div class="notice-tabs">
+        <el-badge :value="_countMessage.chatCount" :max="99" :hidden="_countMessage.chatCount == 0">
+          <div :class="['tab-item', { active: type === 3 }]" @click="toPage(3)">消息</div>
+        </el-badge>
+        <el-badge :value="_countMessage.commentCount" :max="99" :hidden="_countMessage.commentCount == 0">
+          <div :class="['tab-item', { active: type === 1 }]" @click="toPage(1)">评论和@</div>
+        </el-badge>
+        <el-badge
+          :value="_countMessage.likeOrCollectionCount"
+          :max="99"
+          :hidden="_countMessage.likeOrCollectionCount == 0"
+        >
+          <div :class="['tab-item', { active: type === 0 }]" @click="toPage(0)">赞和收藏</div>
+        </el-badge>
+        <el-badge :value="_countMessage.followCount" :max="99" :hidden="_countMessage.followCount == 0">
+          <div :class="['tab-item', { active: type === 2 }]" @click="toPage(2)">新增关注</div>
+        </el-badge>
       </div>
-      <Message v-if="type == 3"></Message>
-      <Comment v-if="type == 1" @click-main="toMain"></Comment>
-      <LikeCollection v-if="type == 0" @click-main="toMain"></LikeCollection>
-      <Follower v-if="type == 2"></Follower>
-      <!-- <router-view /> -->
+
+      <div class="notice-body">
+        <Message v-if="type == 3"></Message>
+        <Comment v-if="type == 1" @click-main="toMain"></Comment>
+        <LikeCollection v-if="type == 0" @click-main="toMain"></LikeCollection>
+        <Follower v-if="type == 2"></Follower>
+      </div>
 
       <Main
         v-show="mainShow"
@@ -53,21 +34,16 @@
         class="animate__animated animate__zoomIn animate__delay-0.5s"
         @click-main="close"
       ></Main>
-
-      <el-backtop :bottom="80" :right="24">
-        <div class="back-top">
-          <Top style="width: 1.2em; height: 1.2em" color="rgba(51, 51, 51, 0.8)" />
-        </div>
-      </el-backtop>
     </div>
-    <div v-else>
-      <el-empty description="用户未登录" />
+    <div v-else class="notice-guest">
+      <el-empty description="登录后查看消息和通知">
+        <el-button type="primary" round @click="openLogin()">去登录</el-button>
+      </el-empty>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import { Top } from "@element-plus/icons-vue";
-import { ref, watchEffect } from "vue";
+import { ref, watchEffect, inject } from "vue";
 import Message from "@/views/message/children/message.vue";
 import LikeCollection from "@/views/message/children/like-collection.vue";
 import Follower from "@/views/message/children/follower.vue";
@@ -76,8 +52,10 @@ import Main from "@/views/main/main.vue";
 import { useImStore } from "@/store/imStore";
 import { clearMessageCount } from "@/api/im";
 import { useUserStore } from "@/store/userStore";
+
 const imStore = useImStore();
 const userStore = useUserStore();
+const openLogin = inject("openLogin", () => {});
 
 const type = ref(3);
 const nid = ref("");
@@ -96,21 +74,20 @@ watchEffect(() => {
 });
 
 const toPage = (val: number) => {
-  const _countMessage = imStore.countMessage;
+  type.value = val;
+  if (val === 3 || !currentUid.value) {
+    return;
+  }
+  const counts = imStore.countMessage;
   clearMessageCount(currentUid.value, val).then(() => {
-    switch (val) {
-      case 0:
-        _countMessage.likeOrCollectionCount = 0;
-        break;
-      case 1:
-        _countMessage.commentCount = 0;
-        break;
-      default:
-        _countMessage.followCount = 0;
-        break;
+    if (val === 0) {
+      counts.likeOrCollectionCount = 0;
+    } else if (val === 1) {
+      counts.commentCount = 0;
+    } else if (val === 2) {
+      counts.followCount = 0;
     }
-    imStore.setCountMessage(_countMessage);
-    type.value = val;
+    imStore.setCountMessage(counts);
   });
 };
 
@@ -132,81 +109,56 @@ const initData = () => {
 initData();
 </script>
 <style lang="less" scoped>
-.container {
+.notice-page {
   flex: 1;
-  padding: 0 24px;
-  padding-top: 72px;
+  padding: 72px 24px 32px;
   width: 67%;
   margin: 0 auto;
+  min-height: calc(100vh - 72px);
+  box-sizing: border-box;
 
-  .reds-sticky {
+  .notice-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0 12px;
+    position: sticky;
     top: 72px;
-    position: fixed;
-    z-index: 1;
-    width: 40rem;
-    box-sizing: border-box;
-    height: 72px;
-    padding-top: 16px;
-    justify-content: center;
-    flex-direction: column;
+    z-index: 2;
+    width: 100%;
+    max-width: 40rem;
     background: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
 
-    .reds-tabs-list {
-      justify-content: flex-start;
-      display: flex;
-      flex-wrap: nowrap;
-      position: relative;
-      font-size: 16px;
-      padding: 0 32px;
+  .tab-item {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 15px;
+    color: rgba(51, 51, 51, 0.7);
+    white-space: nowrap;
+  }
 
-      .active {
-        font-weight: 600;
-        color: #333;
-        background-color: rgba(0, 0, 0, 0.03);
-        border-radius: 20px;
-      }
+  .tab-item.active {
+    font-weight: 600;
+    color: var(--el-color-primary);
+    background: var(--el-color-primary-light-9);
+  }
 
-      .reds-tab-item {
-        padding: 0px 16px;
-        margin-right: 0px;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        box-sizing: border-box;
-        height: 40px;
-        cursor: pointer;
-        color: rgba(51, 51, 51, 0.8);
-        white-space: nowrap;
-        transition: transform 0.3s cubic-bezier(0.2, 0, 0.25, 1);
-        z-index: 1;
+  .notice-body {
+    padding-top: 8px;
+    width: 100%;
+    max-width: 40rem;
+  }
 
-        .badge-container {
-          position: relative;
-        }
-      }
-    }
-
-    .divider {
-      margin: 4px 8px;
-      list-style: none;
-      height: 0;
-      border: solid rgba(0, 0, 0, 0.08);
-      border-width: 1px 0 0;
-    }
-
-    .back-top {
-      width: 40px;
-      height: 40px;
-      background: #fff;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      border-radius: 100px;
-      color: rgba(51, 51, 51, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      cursor: pointer;
-    }
+  .notice-guest {
+    padding-top: 80px;
+    max-width: 40rem;
   }
 }
 </style>

@@ -6,10 +6,10 @@
       :inline="true"
       v-show="showSearch"
     >
-      <el-form-item label="导航栏名称" prop="title">
+      <el-form-item label="分类名称" prop="title">
         <el-input
           v-model="queryParams.title"
-          placeholder="请输入导航栏名称"
+          placeholder="请输入分类名称"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
@@ -18,7 +18,7 @@
       <el-form-item label="状态" prop="status">
         <el-select
           v-model="queryParams.status"
-          placeholder="导航栏状态"
+          placeholder="分类状态"
           @change="handleQuery"
           clearable
           style="width: 200px"
@@ -45,9 +45,9 @@
           type="primary"
           icon="Plus"
           @click="handleAdd"
-          v-hasPermi="['web:category:add']"
+          v-hasPermi="['web:navbar:add']"
         >
-          添加导航栏
+          添加分类
         </el-button>
       </el-col>
       <el-col :span="1.5">
@@ -77,16 +77,23 @@
       </el-table-column>
       <el-table-column
         prop="title"
-        label="导航栏名称"
+        label="分类名称"
         :show-overflow-tooltip="true"
         width="150"
         align="center"
       >
       </el-table-column>
-      <el-table-column label="导航栏封面" align="center" prop="normalCover">
+      <el-table-column label="封面" align="center" prop="normalCover" width="80">
         <template #default="scope">
-          <el-avatar :size="60" :src="scope.row.normalCover" shape="square">
-          </el-avatar>
+          <el-image
+            v-if="scope.row.normalCover"
+            class="cover-thumb"
+            :src="scope.row.normalCover"
+            :preview-src-list="[scope.row.normalCover]"
+            fit="cover"
+            preview-teleported
+          />
+          <span v-else>—</span>
         </template>
       </el-table-column>
       <!-- <el-table-column label="热门封面" align="center" prop="hotCover">
@@ -97,7 +104,7 @@
       </el-table-column> -->
       <el-table-column
         prop="description"
-        label="导航栏描述"
+        label="分类描述"
         :show-overflow-tooltip="true"
         width="160"
         align="center"
@@ -143,7 +150,7 @@
               icon="Edit"
               size="small"
               @click="handleUpdate(scope.row)"
-              v-hasPermi="['web:category:edit']"
+              v-hasPermi="['web:navbar:edit']"
             />
           </el-tooltip>
           <el-tooltip content="删除" placement="top">
@@ -152,7 +159,7 @@
               icon="Delete"
               size="small"
               @click="handleDelete(scope.row)"
-              v-hasPermi="['web:category:remove']"
+              v-hasPermi="['web:navbar:remove']"
             />
           </el-tooltip>
         </template>
@@ -180,8 +187,16 @@
             </el-form-item>
           </el-col>
           <el-col :span="13">
-            <el-form-item label="导航栏名称" prop="title">
-              <el-input v-model="form.title" placeholder="请输入导航栏名称" />
+            <el-form-item label="分类名称" prop="title">
+              <el-input v-model="form.title" placeholder="请输入分类名称" />
+            </el-form-item>
+            <el-form-item label="分类描述" prop="description">
+              <el-input
+                v-model="form.description"
+                type="textarea"
+                :autosize="{ minRows: 2, maxRows: 4 }"
+                placeholder="选填，简要说明分类"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="13">
@@ -215,7 +230,7 @@
           <el-col :span="13">
             <el-form-item>
               <template #label>
-                <span> 导航栏状态 </span>
+                <span> 分类状态 </span>
               </template>
               <el-radio-group v-model="form.status">
                 <el-radio
@@ -275,8 +290,8 @@ const data = reactive({
   },
   rules: {
     pid: [{ required: true, message: "请选择分类", trigger: "blur" }],
-    title: [{ required: true, message: "导航栏名称不能为空", trigger: "blur" }],
-    sort: [{ required: true, message: "导航栏顺序不能为空", trigger: "blur" }],
+    title: [{ required: true, message: "分类名称不能为空", trigger: "blur" }],
+    sort: [{ required: true, message: "分类顺序不能为空", trigger: "blur" }],
   },
 });
 
@@ -336,7 +351,7 @@ function handleAdd(row) {
     form.value.pid = 0;
   }
   open.value = true;
-  title.value = "添加导航栏";
+  title.value = "添加分类";
 }
 /** 展开/折叠操作 */
 function toggleExpandAll() {
@@ -354,7 +369,7 @@ async function handleUpdate(row) {
     form.value = response.data;
     form.value.pid = 0;
     open.value = true;
-    title.value = "修改导航栏";
+    title.value = "修改分类";
   });
 }
 function beforeUpload(file) {
@@ -418,7 +433,7 @@ getList();
 }
 
 .image-uploader .el-upload:hover {
-  border-color: #409eff;
+  border-color: #3b82f6;
 }
 
 .image-uploader-icon {

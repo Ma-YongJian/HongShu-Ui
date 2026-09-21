@@ -18,15 +18,10 @@
 
 					<view class="cont">
 
-						<view class="content">{{item.title}}
-							<view class="card-nums">
-								<tui-icon name="eye" size="15" style="color: floralwhite;"></tui-icon>
-								{{item.viewCount}}
-							</view>
-						</view>
+						<view class="content">{{item.title}}</view>
 						<view class="userInfo">
 							<view class="avatar-usrname">
-								<image :src="item.avatar" :lazy-load="true" mode="aspectFill" class="avatar"></image>
+								<image :src="mediaUrl(item.avatar)" :lazy-load="true" mode="aspectFill" class="avatar"></image>
 								<view class="username">{{ item.username }}</view>
 							</view>
 							<view class="agreeCount">
@@ -42,6 +37,7 @@
 	</view>
 </template>
 <script>
+	import { mediaUrl } from '@/utils/upload.js'
 	const windowWidth = uni.getSystemInfoSync().windowWidth;
 	export default {
 		props: {
@@ -140,6 +136,7 @@
 			// #endif
 		},
 		methods: {
+			mediaUrl,
 			waterfallWidth() {
 				let that = this;
 				const query = uni.createSelectorQuery().in(this);

@@ -2,12 +2,12 @@
   <div class="floating-btn-sets">
     <el-backtop :bottom="80" :right="24">
       <div class="back-top">
-        <Top style="width: 1.2em; height: 1.2em" color="rgba(51, 51, 51, 0.8)" />
+        <Top style="width: 1.2em; height: 1.2em" />
       </div>
     </el-backtop>
 
     <div class="reload" @click="refresh">
-      <Refresh style="width: 1.2em; height: 1.2em" color="rgba(51, 51, 51, 0.8)" />
+      <Refresh style="width: 1.2em; height: 1.2em" />
     </div>
   </div>
 </template>

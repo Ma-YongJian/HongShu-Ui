@@ -89,10 +89,11 @@ const sideTheme = computed(() => settingsStore.sideTheme);
     width: 100%;
 
     & .sidebar-logo {
-      width: 42px;
-      height: 25px;
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
       vertical-align: middle;
-      margin-right: 4px;
+      margin-right: 8px;
     }
 
     & .sidebar-title {
@@ -101,7 +102,7 @@ const sideTheme = computed(() => settingsStore.sideTheme);
       color: #fff;
       font-weight: 600;
       line-height: 50px;
-      font-size: 14px;
+      font-size: 16px;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
       vertical-align: middle;
     }

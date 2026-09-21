@@ -1,5 +1,6 @@
 <template>
 	<view class="container">
+		<hs-nav-bar title="收藏"></hs-nav-bar>
 		<view class="nav">
 			<view class="tui-mtop">
 				<tui-tabs :tabs="tabs2" :height="88" :currentTab="currentTab" :sliderWidth="150" :sliderHeight="60"

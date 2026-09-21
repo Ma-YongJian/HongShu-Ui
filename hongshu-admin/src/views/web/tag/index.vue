@@ -81,7 +81,7 @@
     >
       <el-table-column type="selection" align="center" />
       <el-table-column label="序号" align="center" prop="id" />
-      <el-table-column label="标签" align="center" prop="title" />
+      <el-table-column label="标签" align="left" prop="title" min-width="140" show-overflow-tooltip />
       <el-table-column label="使用次数" align="center" prop="likeCount" />
       <el-table-column label="排序" align="center" prop="sort" />
       <el-table-column
@@ -248,7 +248,7 @@ function handleUpdate(row) {
   getTag(tagId).then((response) => {
     form.value = response.data;
     open.value = true;
-    title.value = "修改笔记";
+    title.value = "修改标签";
   });
 }
 /** 提交按钮 */
@@ -275,7 +275,11 @@ function submitForm() {
 function handleDelete(row) {
   const tagIds = row.id || ids.value;
   proxy.$modal
-    .confirm('是否确认删除标签编号为"' + tagIds + '"的数据项？')
+    .confirm(
+      row?.title
+        ? `是否确认删除标签「${row.title}」？`
+        : `是否确认删除选中的 ${Array.isArray(tagIds) ? tagIds.length : 1} 个标签？`
+    )
     .then(function () {
       return delTag(tagIds);
     })

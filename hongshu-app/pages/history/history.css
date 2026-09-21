@@ -11,8 +11,8 @@ a {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding-right: 24rpx;
-	height: 80rpx;
+	padding: 0 24rpx;
+	height: 88rpx;
 }
 
 .n-left {

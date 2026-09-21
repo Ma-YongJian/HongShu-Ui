@@ -82,7 +82,7 @@
                     <span class="like-wrapper like-active">
                       <i
                         class="iconfont icon-follow-fill"
-                        :style="{ width: '1em', height: '1em', color: item.isLike ? 'red' : 'black' }"
+                        :style="{ width: '1em', height: '1em', color: item.isLike ? '#f87171' : undefined }"
                         v-if="item.isLike"
                       >
                       </i>
@@ -162,7 +162,14 @@ const toMain = (noteId: string) => {
   mainShow.value = true;
 };
 
-const close = () => {
+const close = (id?: string, extra?: any) => {
+  if (extra && extra.deleted) {
+    const target = String(id || nid.value || "");
+    if (target) {
+      noteList.value = noteList.value.filter((item) => String(item.id) !== target);
+      noteTotal.value = Math.max(0, Number(noteTotal.value || 0) - 1);
+    }
+  }
   mainShow.value = false;
 };
 
@@ -202,8 +209,11 @@ const loadMoreData = () => {
 };
 
 const setData = (res: any) => {
-  const { records, total } = res.data;
-  noteTotal.value = total;
+  const records = (res?.data?.records || []).map((item: any) => ({
+    ...item,
+    isLoading: true,
+  }));
+  noteTotal.value = res?.data?.total || 0;
   if (records.length === 0) {
     isEnd.value = true;
   } else {
@@ -213,18 +223,30 @@ const setData = (res: any) => {
 
 const getNoteList = async () => {
   categoryClass.value = "0";
+  noteDTO.value.cid = "";
+  noteDTO.value.cpid = "";
+  noteDTO.value.keyword = "";
   noteList.value = [] as Array<any>;
   currentPage.value = 1;
-  getRecommendNote(currentPage.value, pageSize).then((res: any) => {
-    setData(res);
-  });
+  isEnd.value = false;
+  getRecommendNote(currentPage.value, pageSize)
+    .then((res: any) => {
+      setData(res);
+    })
+    .catch((err) => {
+      console.error(err);
+      isEnd.value = true;
+    });
 };
 
 const getNoteListByCategory = (id: string) => {
   categoryClass.value = id;
+  noteDTO.value.keyword = "";
+  noteDTO.value.cid = "";
   noteDTO.value.cpid = id;
   noteList.value = [] as Array<any>;
   currentPage.value = 1;
+  isEnd.value = false;
   getNoteByDTO(currentPage.value, pageSize, noteDTO.value).then((res) => {
     setData(res);
   });

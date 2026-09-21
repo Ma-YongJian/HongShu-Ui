@@ -32,9 +32,11 @@ export function getAllCollection(page, limit, params) {
 
 
 export function collection(data) {
-	return request.post(appConfig.WEB_API + '/web/agreeCollect/collection', data)
+	return request.post(appConfig.WEB_API + '/web/likeOrCollection/likeOrCollectionByDTO', Object.assign({}, data, {
+		type: 3
+	}))
 }
 
 export function cancelCollection(data) {
-	return request.post(appConfig.WEB_API + '/web/agreeCollect/cancelCollection', data)
+	return collection(data)
 }

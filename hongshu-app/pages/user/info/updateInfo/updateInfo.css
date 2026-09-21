@@ -32,6 +32,16 @@
 
 .update {
 	border: 2px solid #f4f4f4;
+	border-radius: 16rpx;
+	padding: 16rpx;
+	background: #fff;
+}
+
+.textarea {
+	width: 100%;
+	min-height: 180rpx;
+	font-size: 28rpx;
+	line-height: 1.6;
 }
 
 .w {

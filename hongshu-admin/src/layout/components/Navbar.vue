@@ -21,12 +21,16 @@
       <template v-if="appStore.device !== 'mobile'">
         <header-search id="header-search" class="right-menu-item" />
 
-        <el-tooltip content="源码地址" effect="dark" placement="bottom">
+        <el-tooltip content="Gitee 仓库" effect="dark" placement="bottom">
+          <ruo-yi-doc id="ruoyi-doc" class="right-menu-item hover-effect" />
+        </el-tooltip>
+
+        <el-tooltip content="GitHub 仓库" effect="dark" placement="bottom">
           <ruo-yi-git id="ruoyi-git" class="right-menu-item hover-effect" />
         </el-tooltip>
 
-        <el-tooltip content="文档地址" effect="dark" placement="bottom">
-          <ruo-yi-doc id="ruoyi-doc" class="right-menu-item hover-effect" />
+        <el-tooltip content="Pro 版源码" effect="dark" placement="bottom">
+          <ruo-yi-pro id="ruoyi-pro" class="right-menu-item hover-effect" />
         </el-tooltip>
 
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
@@ -77,6 +81,7 @@ import SizeSelect from "@/components/SizeSelect";
 import HeaderSearch from "@/components/HeaderSearch";
 import RuoYiGit from "@/components/RuoYi/Git";
 import RuoYiDoc from "@/components/RuoYi/Doc";
+import RuoYiPro from "@/components/RuoYi/Pro";
 import useAppStore from "@/store/modules/app";
 import useUserStore from "@/store/modules/user";
 import useSettingsStore from "@/store/modules/settings";
@@ -110,7 +115,7 @@ function logout() {
   })
     .then(() => {
       userStore.logOut().then(() => {
-        location.href = "/index";
+        location.href = "/login";
       });
     })
     .catch(() => {});

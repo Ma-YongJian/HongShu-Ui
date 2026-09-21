@@ -1,17 +1,14 @@
 <template>
 	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<h3>编辑标签</h3>
-				<view @click='back'>
-					<p>完成</p>
-				</view>
-			</view>
-		</tui-navigation-bar>
+		<hs-nav-bar title="编辑标签" :showBack="false">
+			<template #right>
+				<view class="nav-done" @click="back">完成</view>
+			</template>
+		</hs-nav-bar>
 		<view class="add-tag">
 			<view v-for="(item, index) in tagList" :key="index">
 				<view class="badge-item">
-					<tui-tag type="white" shape="circle" margin="0 2px">{{ item.title }}</tui-tag>
+					<tui-tag type="white" shape="circle" margin="0 2px">{{ item.title || item }}</tui-tag>
 					<view class="shut" @click="deltag(index)"><tui-icon name="shut" size="14"></tui-icon></view>
 				</view>
 			</view>
@@ -24,7 +21,7 @@
 			<view class="ermen"> 热门推荐</view>
 			<view class="tags">
 				<view v-for="(item, index) in dataList" :key="index">
-					<view @click="selectTag(item)">
+					<view @click="onSelectTag(index)">
 						<tui-tag type="warning" shape="circle" margin="5px 5px">{{ item.title }}</tui-tag>
 					</view>
 				</view>
@@ -57,13 +54,18 @@
 		},
 		created() {
 			this.getAllTag()
-
-			let tags = JSON.parse(uni.getStorageSync("tags"))
-			if (tags != null) {
-				this.tagList = JSON.parse(uni.getStorageSync("tags"))
-			}
+			const tags = this.safeParse(uni.getStorageSync("tags"), [])
+			this.tagList = Array.isArray(tags) ? tags : []
 		},
 		methods: {
+			safeParse(raw, fallback) {
+				if (!raw) return fallback
+				try {
+					return typeof raw === 'string' ? JSON.parse(raw) : raw
+				} catch (e) {
+					return fallback
+				}
+			},
 			submit() {
 				if (this.tagList.length >= 5) {
 					let params = {
@@ -119,10 +121,13 @@
 				}
 
 			},
+			onSelectTag(index) {
+				this.selectTag(this.dataList[index])
+			},
 			back() {
-				uni.setStorageSync("tags", JSON.stringify(this.tagList))
-				uni.navigateTo({
-					url: "/pages/push/push?mid=" + this.mid + '&type=' + this.type + '&version=' + 2
+				uni.setStorageSync("tags", JSON.stringify(this.tagList || []))
+				uni.navigateBack({
+					delta: 1
 				})
 			}
 		}

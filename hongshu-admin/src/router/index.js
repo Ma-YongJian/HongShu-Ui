@@ -58,17 +58,9 @@ export const constantRoutes = [
     hidden: true
   },
   {
-    path: '',
-    component: Layout,
-    redirect: '/index',
-    children: [
-      {
-        path: '/index',
-        component: () => import('@/views/index'),
-        name: 'Index',
-        meta: { title: '首页', icon: 'dashboard', affix: true }
-      }
-    ]
+    path: '/',
+    redirect: '/dashboard',
+    hidden: true
   },
   {
     path: '/user',
@@ -151,7 +143,7 @@ export const dynamicRoutes = [
     permissions: ['web:comment:list'],
     children: [
       {
-        path: 'index/:nid(\\d+)',
+        path: 'index/:nid',
         component: () => import('@/views/web/comment/data'),
         name: 'CommentData',
         meta: { title: '评论数据', activeMenu: '/web/comment' }

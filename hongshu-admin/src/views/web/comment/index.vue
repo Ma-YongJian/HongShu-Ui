@@ -9,7 +9,7 @@
       <el-form-item label="评论人" prop="uid">
         <el-input
           v-model="queryParams.uid"
-          placeholder="请输入评论人"
+          placeholder="请输入评论人ID"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
@@ -18,7 +18,7 @@
       <el-form-item label="被评论人" prop="noteUid">
         <el-input
           v-model="queryParams.noteUid"
-          placeholder="请输入被评论人"
+          placeholder="请输入被评论人ID"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
@@ -27,7 +27,7 @@
       <el-form-item label="被评论笔记" prop="nid">
         <el-input
           v-model="queryParams.nid"
-          placeholder="请输入被评论笔记"
+          placeholder="请输入笔记ID"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
@@ -59,34 +59,23 @@
         </el-button>
         <el-button icon="Refresh" @click="resetQuery">重置</el-button>
       </el-form-item>
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
-          <el-button
-            type="danger"
-            plain
-            icon="Delete"
-            :disabled="multiple"
-            @click="handleDelete"
-            v-hasPermi="['web:comment:remove']"
-          >
-            删除
-          </el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button
-            type="warning"
-            plain
-            icon="Download"
-            @click="handleExport"
-            v-hasPermi="['web:comment:export']"
-          >
-            导出
-          </el-button>
-        </el-col>
-        <right-toolbar v-model:showSearch="showSearch" @queryTable="getList">
-        </right-toolbar>
-      </el-row>
     </el-form>
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button
+          type="danger"
+          plain
+          icon="Delete"
+          :disabled="multiple"
+          @click="handleDelete"
+          v-hasPermi="['web:comment:remove']"
+        >
+          删除
+        </el-button>
+      </el-col>
+      <right-toolbar v-model:showSearch="showSearch" @queryTable="getList">
+      </right-toolbar>
+    </el-row>
 
     <el-table
       v-loading="loading"
@@ -122,19 +111,27 @@
           </router-link>
         </template>
       </el-table-column>
-      <el-table-column label="笔记封面" align="center" prop="noteCover">
+      <el-table-column label="封面" align="center" prop="noteCover" width="80">
         <template #default="scope">
-          <el-avatar
-            :size="60"
+          <el-image
+            v-if="scope.row.noteCover"
+            class="cover-thumb"
             :src="scope.row.noteCover"
-            shape="square"
-            @mouseover="showPreview(scope.row.noteCover, $event)"
-            @mouseleave="hidePreview"
+            :preview-src-list="[scope.row.noteCover]"
+            fit="cover"
+            preview-teleported
           />
+          <span v-else>—</span>
         </template>
       </el-table-column>
-      <el-table-column label="笔记作者" align="center" prop="pushUsername" />
-      <el-table-column label="评论内容" align="center" prop="content" />
+      <el-table-column label="笔记作者" align="center" prop="pushUsername" width="110" show-overflow-tooltip />
+      <el-table-column
+        label="评论内容"
+        align="left"
+        prop="content"
+        min-width="180"
+        show-overflow-tooltip
+      />
       <el-table-column label="评论等级" align="center" prop="level">
         <template #default="scope">
           <el-tag :type="getTagType(scope.row.level)">
@@ -166,7 +163,7 @@
               icon="Delete"
               size="small"
               @click="handleDelete(scope.row)"
-              v-hasPermi="['web:member:remove']"
+              v-hasPermi="['web:comment:remove']"
             />
           </el-tooltip>
         </template>
@@ -181,25 +178,15 @@
       @pagination="getList"
     />
 
-    <!-- 放大预览图片的容器 -->
-    <div v-if="previewVisible" class="image-preview" :style="previewStyle">
-      <img :src="previewSrc" alt="Preview" />
-    </div>
   </div>
 </template>
 
 <script setup name="Comment">
 import { listComment, delComment } from "@/api/web/comment";
-import { useRouter } from "vue-router";
 
 const { proxy } = getCurrentInstance();
-const router = useRouter();
 
 const commentList = ref([]);
-const open = ref(false);
-const previewVisible = ref(false);
-const previewSrc = ref("");
-const previewStyle = reactive({ top: "0px", left: "0px" });
 const loading = ref(true);
 const showSearch = ref(true);
 const ids = ref([]);
@@ -252,20 +239,6 @@ const data = reactive({
 
 const { queryParams, form } = toRefs(data);
 
-/** 显示放大预览图片 */
-function showPreview(src, event) {
-  previewSrc.value = src;
-  previewVisible.value = true;
-  previewStyle.top = event.clientY + 10 + "px";
-  previewStyle.left = event.clientX + 10 + "px";
-}
-
-/** 隐藏放大预览图片 */
-function hidePreview() {
-  previewVisible.value = false;
-  previewSrc.value = "";
-}
-
 /** 查询评论列表 */
 function getList() {
   loading.value = true;
@@ -276,10 +249,6 @@ function getList() {
       loading.value = false;
     }
   );
-}
-/** 查看详情操作 */
-function handleDetail(row) {
-  router.push({ path: "/message/data" });
 }
 /** 搜索按钮操作 */
 function handleQuery() {
@@ -302,7 +271,11 @@ function handleSelectionChange(selection) {
 function handleDelete(row) {
   const commentIds = row.id || ids.value;
   proxy.$modal
-    .confirm('是否确认删除评论编号为"' + commentIds + '"的数据项？')
+    .confirm(
+      row?.content
+        ? `是否确认删除评论「${String(row.content).slice(0, 20)}」？`
+        : `是否确认删除选中的 ${Array.isArray(commentIds) ? commentIds.length : 1} 条评论？`
+    )
     .then(function () {
       return delComment(commentIds);
     })
@@ -312,33 +285,6 @@ function handleDelete(row) {
     })
     .catch(() => {});
 }
-/** 导出按钮操作 */
-function handleExport() {
-  proxy.download(
-    "system/post/export",
-    {
-      ...queryParams.value,
-    },
-    `post_${new Date().getTime()}.xlsx`
-  );
-}
-
 getList();
 </script>
 
-<style scoped>
-.image-preview {
-  position: fixed;
-  z-index: 1000;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  padding: 5px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-.image-preview img {
-  max-width: 200px;
-  max-height: 200px;
-}
-</style>

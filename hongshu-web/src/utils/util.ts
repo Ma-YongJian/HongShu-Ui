@@ -1,19 +1,39 @@
 
 
 import axios from 'axios'
+
+const pad2 = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+
 export const formatDate = (t: number): string => {
   t = t || Date.now();
   const time = new Date(t);
-  let str = time.getFullYear() as any;
-  str += "-";
-  str = time.getMonth() < 9 ? "0" + (time.getMonth() + 1) : (time.getMonth() + 1);
-  str += "-";
-  str += time.getDate() < 10 ? "0" + time.getDate() : time.getDate();
-  str += " ";
-  str += time.getHours();
-  str += ":";
-  str += time.getMinutes() < 10 ? "0" + time.getMinutes() : time.getMinutes();
-  return str;
+  return `${time.getFullYear()}-${pad2(time.getMonth() + 1)}-${pad2(time.getDate())} ${pad2(time.getHours())}:${pad2(time.getMinutes())}`;
+};
+
+const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+
+/** 会话列表右侧时间：今天 HH:mm · 昨天 · 前天 · 一周内周几 · 当年 MM-dd · 跨年 yyyy-MM-dd */
+export const formatSessionListTime = (ms?: number | string | null): string => {
+  if (ms == null || ms === "") return "";
+  let n = Number(ms);
+  if (!n) {
+    const parsed = Date.parse(String(ms));
+    n = Number.isNaN(parsed) ? 0 : parsed;
+  }
+  if (!n) return "";
+  const t = new Date(n);
+  if (Number.isNaN(t.getTime())) return "";
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const that = new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
+  const dayDiff = Math.round((today - that) / 86400000);
+  if (dayDiff <= 0) return `${pad2(t.getHours())}:${pad2(t.getMinutes())}`;
+  if (dayDiff === 1) return "昨天";
+  if (dayDiff === 2) return "前天";
+  if (dayDiff < 7) return WEEKDAYS[t.getDay()];
+  const md = `${pad2(t.getMonth() + 1)}-${pad2(t.getDate())}`;
+  if (t.getFullYear() === now.getFullYear()) return md;
+  return `${t.getFullYear()}-${md}`;
 };
 
 /**

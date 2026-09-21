@@ -1,22 +1,26 @@
 <template>
 	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<view class="n-left">
-					<view @click="back"><tui-icon name="arrowleft" size="24"></tui-icon></view>
-					<view>分类数据</view>
-				</view>
-			</view>
-		</tui-navigation-bar>
-
+		<hs-nav-bar title="分类笔记"></hs-nav-bar>
 		<scroll-view scroll-y class="page" @scrolltolower="loadData">
-			<!-- 使用组件做瀑布流 -->
-			<WaterFall :list="list" @getImgInfo="getImgInfo"></WaterFall>
-			<!-- end -->
+			<uv-waterfall ref="waterfall" v-model="list" column-count="2" :add-time="0" @changeList="changeList"
+				column-gap="8">
+				<template v-slot:list1>
+					<view>
+						<hs-note-card v-for="(item, index) in list1" :key="index" :item="item"
+							@click="getImgInfo" @user="goCardUser"></hs-note-card>
+					</view>
+				</template>
+				<template v-slot:list2>
+					<view>
+						<hs-note-card v-for="(item, index) in list2" :key="index" :item="item"
+							@click="getImgInfo" @user="goCardUser"></hs-note-card>
+					</view>
+				</template>
+			</uv-waterfall>
+			<hs-empty v-if="!loading && !list.length" title="该分类暂无笔记"></hs-empty>
 			<view class="loadStyle" v-if="!isEnd && loading">正在加载中</view>
-			<view class="loadStyle" v-if="isEnd">我也是有底线的~</view>
+			<view class="loadStyle" v-if="isEnd && list.length">我也是有底线的~</view>
 		</scroll-view>
-		<tui-toast ref="toast"></tui-toast>
 	</view>
 </template>
 
@@ -25,23 +29,28 @@
 		getImgListByCategory
 	} from "@/api/category.js"
 	import {
-		addBrowseRecord
-	} from "@/api/browseRecord.js"
-	import WaterFall from '@/components/waterfall.vue'
+		mapNoteMedia
+	} from '@/utils/upload.js'
+	import {
+		openNote,
+		openUser,
+		toNoteCard,
+		noteDeletedMixin
+	} from '@/utils/noteNav.js'
 	export default {
-		components: {
-			WaterFall
-		},
+		mixins: [noteDeletedMixin],
 		data() {
 			return {
 				list: [],
+				list1: [],
+				list2: [],
 				page: 1,
 				limit: 8,
 				total: 0,
-				isEnd: false, //是否到底底部了
-				loading: false, //是否正在加载
+				isEnd: false,
+				loading: false,
 				cid: '',
-				type: 0,
+				type: 0
 			}
 		},
 		onLoad(options) {
@@ -49,88 +58,58 @@
 			this.type = options.type
 			this.getImgListByCategory()
 		},
-		created() {
-
-		},
 		methods: {
-			back() {
-				uni.navigateBack({
-					delta: 1
-				})
+			changeList(e) {
+				this[e.name].push(e.value)
 			},
-
 			getMoreData(dataList) {
-				dataList.forEach(item => {
-					this.list.push(this.getItem(item))
-				})
-			},
-
-			getItem(item) {
-				return {
-					id: item.id,
-					image: item.cover,
-					content: item.content,
-					count: item.count,
-					avatar: item.avatar,
-					username: item.username,
-					agreeCount: item.agreeCount,
-				}
-			},
-
-			getImgListByCategory() {
-				let params = {
-					keyword: "",
-					cid: "",
-					cpid: id,
-					type: this.type,
-				}
-
-				getImgListByCategory(this.page, this.limit, params).then(res => {
-					this.getMoreData(res.data.records)
-					this.total = res.data.total
-				})
-			},
-
-			loadData() {
-
-				this.loading = true
-
-				if (this.list.length >= this.total) {
-					this.isEnd = true
+				const records = dataList || []
+				if (!records.length) {
+					if (this.page <= 1) this.isEnd = true
 					return
 				}
-				this.page = this.page + 1;
-
-				let params = {
-					cid: "",
-					cpid: this.id,
-					type: this.type,
+				this.list = this.list.concat(records.map(item => toNoteCard(mapNoteMedia(item))))
+			},
+			buildParams() {
+				const type = Number(this.type)
+				if (type === 3) {
+					return {
+						keyword: '',
+						cid: this.cid,
+						cpid: '',
+						type: 1
+					}
 				}
-				getImgListByCategory(this.page, this.limit, params).then(res => {
-					this.getMoreData(res.data.records)
+				return {
+					keyword: '',
+					cid: '',
+					cpid: this.cid,
+					type: type || 1
+				}
+			},
+			getImgListByCategory() {
+				this.loading = true
+				getImgListByCategory(this.page, this.limit, this.buildParams()).then(res => {
+					const page = res.data || {}
+					this.total = page.total || 0
+					this.getMoreData(page.records)
+					this.loading = false
+					if (!this.list.length || this.list.length >= this.total) this.isEnd = true
+				}).catch(() => {
+					this.loading = false
 				})
-
 			},
-			getImgInfo(mid) {
-                 
-				if (uni.getStorageSync("userInfo").id != null || uni.getStorageSync("userInfo").id != '') {
-					let data = {}
-					data.uid = uni.getStorageSync("userInfo").id
-					data.mid = mid
-
-					addBrowseRecord(data).then(res => {
-						uni.navigateTo({
-							url: "/pages/main/main?mid=" + mid
-						})
-					})
-
-				} else {
-					uni.navigateTo({
-						url: "/pages/main/main?mid=" + mid
-					})
-				}
+			loadData() {
+				if (this.isEnd || this.loading) return
+				this.page += 1
+				this.getImgListByCategory()
 			},
-
+			getImgInfo(item) {
+				openNote(item)
+			},
+			goCardUser(item) {
+				openUser(item && item.uid)
+			}
 		}
 	}
 </script>

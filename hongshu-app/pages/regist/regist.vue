@@ -1,8 +1,6 @@
 <template>
 	<view class="container">
-		<view class="top">
-			<view class="title">注册</view>
-		</view>
+		<hs-nav-bar title="注册"></hs-nav-bar>
 		<view class="main">
 			<view class="center">
 				<input placeholder="请输入手机号注册" class="info-input" v-model="value" />
@@ -15,7 +13,7 @@
 			</view>
 
 			<view class="regist">
-				<tui-button @click="regist" type="danger" shape="circle">注册</tui-button>
+				<tui-button @click="regist" type="primary" shape="circle">注册</tui-button>
 			</view>
 		</view>
 		<view></view>

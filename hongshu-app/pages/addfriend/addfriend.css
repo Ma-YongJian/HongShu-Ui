@@ -19,15 +19,21 @@ a {
 .nav {
 	display: flex;
 	align-items: center;
-	height: 80rpx;
+	height: 88rpx;
+	padding: 0 16rpx;
 }
 
 .search {
 	display: flex;
+	align-items: center;
+	flex: 1;
+	width: 100%;
+	min-width: 0;
 }
 
 .search-input {
-	width: 550rpx;
+	flex: 1;
+	min-width: 0;
 	height: 60rpx;
 	background-color: #f1f1f1;
 	padding-left: 10px;
@@ -84,7 +90,7 @@ a {
 
 .tui-msg-right button {
 	background: #fff;
-	border: 1px solid #ff0000;
+	border: 1px solid #3b82f6;
 	font-size: 20rpx;
 	width: 120rpx;
 	height: 60rpx;

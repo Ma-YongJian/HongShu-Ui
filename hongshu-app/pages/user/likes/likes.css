@@ -30,12 +30,12 @@ li {
 }
 
 .container {
-	margin-top: 60rpx;
-	background-color: #f4f4f4;
+	margin-top: 24rpx;
+	background-color: #f8fafc;
 }
 
 .page {
-	height: 91vh;
+	height: calc(100vh - 88rpx);
 }
 
 .item {
@@ -194,8 +194,6 @@ li:not(:first-child) {
 width: 100px;
 height: 100px;
 background: #fff;
--webkit-animation: fadeinout 2s linear forwards;
-animation: fadeinout 2s linear forwards;
 }
 
 @-webkit-keyframes fadeinout {

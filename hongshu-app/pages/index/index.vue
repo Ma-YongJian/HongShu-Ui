@@ -1,202 +1,113 @@
 <template>
-	<view class="container">
+	<view class="container" :style="{ '--nav-h': navHeight + 'px' }">
 		<!-- 顶部tabs -->
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="true" :isOpacity="false">
-			<tui-tabs :tabs="tabs" :currentTab="currentTab" itemWidth="50%" @change="change" sliderBgColor="#ff0000"
-				selectedColor="#ff0000">
-			</tui-tabs>
-		</tui-navigation-bar>
+		<hs-nav-bar :showBack="false" :isFixed="true" :placeholder="false" :border="false" :hasRightSlot="true"
+			@init="onNavInit">
+			<template #left>
+				<view class="hs-nav-action nav-menu-btn" @click="openDrawer">
+					<view class="nav-menu-line"></view>
+					<view class="nav-menu-line"></view>
+					<view class="nav-menu-line"></view>
+				</view>
+			</template>
+			<template #center>
+				<view class="index-main-tabs">
+					<view v-for="(tab, index) in tabs" :key="index" class="index-main-tab"
+						:class="{ 'is-active': currentTab === index }" @click="onMainTab(index)">
+						<text class="index-main-tab-text">{{ tab.name }}</text>
+						<view class="index-main-tab-line"></view>
+					</view>
+				</view>
+			</template>
+			<template #right>
+				<view class="hs-nav-action" @click="toSearch">
+					<tui-icon name="search-2" :size="22" color="#16160e"></tui-icon>
+				</view>
+			</template>
+		</hs-nav-bar>
+
+		<view class="sidebar-mask" v-if="visiable" @click="closeDrawer"></view>
+		<view class="sidebar" :class="{ 'is-open': visiable }">
+			<scroll-view scroll-y class="sidebar-scroll">
+				<view class="menu-card">
+					<view class="menu-item" @click="goDrawerPage('/pages/addfriend/addfriend', true)">
+						<tui-icon name="friendadd" size="22" color="#333333"></tui-icon>
+						<text class="menu-text">发现好友</text>
+					</view>
+				</view>
+				<view class="menu-card">
+					<view class="menu-item" @click="goDrawerPage('/pages/history/history', true)">
+						<tui-icon name="clock" size="22" color="#333333"></tui-icon>
+						<text class="menu-text">浏览记录</text>
+					</view>
+					<view class="menu-item" @click="goDrawerPage('/pages/message/message-comments/message-comments', true)">
+						<tui-icon name="message" size="22" color="#333333"></tui-icon>
+						<text class="menu-text">我的评论</text>
+					</view>
+				</view>
+			</scroll-view>
+			<view class="sidebar-footer">
+				<view class="footer-btn" @click="goDrawerPage('/pages/setting/setting', false)">
+					<view class="footer-icon">
+						<tui-icon name="setup" size="22" color="#666666"></tui-icon>
+					</view>
+					<text class="footer-text">设置</text>
+				</view>
+			</view>
+		</view>
 
 		<view @touchstart="start" @touchend="end">
 			<follow v-if="currentTab == 0"></follow>
 			<hot v-if="currentTab == 2"></hot>
-			<view v-if="currentTab == 1">
+			<view v-show="currentTab == 1">
 				<scroll-view scroll-y class="page" @scrolltolower="loadData" refresher-enabled="true"
 					:refresher-triggered="triggered" @refresherrefresh="onRefresh" @scroll="scroll"
 					:scroll-top="scrollTop">
-					<!-- 左侧状态栏 -->
-					<view>
-						<tui-drawer mode="left" :visible="visiable" @close="closeDrawer">
-							<view class="d-container">
-								<view class="d-content">
-									<view class="find-user">
-										<navigator url="/pages/addfriend/addfriend">
-											<view class="item">
-												<tui-icon name="friendadd" size="20"></tui-icon>
-												发现好友
-											</view>
-										</navigator>
-									</view>
-									<view class="d-function">
-										<ul>
-											<li>
-												<navigator url="/pages/history/history">
-													<view class="item">
-														<tui-icon name="clock" size="20"></tui-icon>
-														浏览记录
-													</view>
-												</navigator>
-											</li>
-										</ul>
-									</view>
-									<view class="d-function">
-										<ul>
-											<li>
-												<navigator url="/pages/history/history">
-													<view class="item">
-														<tui-icon name="clock" size="20"></tui-icon>
-														我的评论
-													</view>
-												</navigator>
-											</li>
-										</ul>
-									</view>
+					<view class="cat-bar">
+						<scroll-view scroll-x class="cat-scroll" enhanced :show-scrollbar="false"
+							:scroll-into-view="catIntoView" scroll-with-animation>
+							<view class="cat-row">
+								<view class="cat-item" v-for="(item, index) in categoryList" :id="item.viewId"
+									:key="index" :class="{ on: index == C }" @click="onChooseCat(index)">
+									{{ item.title }}
 								</view>
 							</view>
-							<view class="item footer-item">
-								<navigator url="/pages/setting/setting">
-									<view class="icon-text-container">
-										<tui-icon name="setup" class="icon-item-setup" color="#393939"
-											size="30"></tui-icon>
-										<text class="icon-text">设置</text>
-									</view>
-								</navigator>
-							</view>
-						</tui-drawer>
-					</view>
-					<!-- 头像框和搜索栏 -->
-					<view class="tui-content-box">
-						<view class="tui-avatar-box">
-							<view @click="openDrawer" v-if="userInfo && userInfo.avatar">
-								<image :src="userInfo.avatar" class="tui-avatar" mode="aspectFill" @error="handleAvatarError" />
-							</view>
-							<view v-else @click="openDrawer">
-								<image src="/static/images/toast/img_nodata.png" class="tui-avatar" mode="aspectFill" />
-							</view>
-						</view>
-						<view class="tui-search-box" @click="toSearch">
-							<tui-icon name="search-2" :size="18" color="#bfbfbf"></tui-icon>
-							<view class="tui-search-text">请输入搜索内容</view>
+						</scroll-view>
+						<view class="cat-more" @click="show">
+							<tui-icon :name="T ? 'arrowdown' : 'arrowup'" :size="18" color="#666666"></tui-icon>
 						</view>
 					</view>
-					<!-- 分类 -->
-					<!-- <view :class="isFixed?'tui-mtop-fixed':'tui-mtop' " id='tui-mtop'> -->
-						<view :class="'tui-mtop'" >
-						<view class="nav" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
-							<ul>
-								<li v-for="(item, index) in categoryList" :key="index" :ref="'category-' + index">
-									<a @click="getImgListByCategory(item.id,index)">
-										<view :class="index==C?'c-activated':''">{{item.title}}</view>
-									</a>
-								</li>
-							</ul>
-						</view>
-						<a>
-							<tui-icon name="arrowdown" size="20" color="#666666" @click="show" v-if="T">
-							</tui-icon>
-							<tui-icon name="arrowup" size="20" color="#666666" @click="show" v-else>
-							</tui-icon>
-						</a>
-						<view class="nav-show" :class="T ? 'box-show' : ''">
-							<ul>
-								<li v-for="(item, index) in categoryList" :key="index" v-show="index>=7"
-									:ref="'category-' + index">
-									<a @click="getImgListByCategory(item.id,index)">
-										<view :class="index==C?'c-activated':''">{{item.title}}</view>
-									</a>
-								</li>
-							</ul>
+					<view class="cat-panel" v-if="!T">
+						<view class="cat-grid">
+							<view class="cat-grid-item" v-for="(item, index) in categoryList" :key="index"
+								:class="{ on: index == C }" @click="onChooseCat(index)">
+								{{ item.title }}
+							</view>
 						</view>
 					</view>
 					<!-- 数据展示使用瀑布流 -->
 					<view class="main">
-						<uv-waterfall ref="waterfall" v-model="list" column-count="2" @changeList="changeList"
-							column-gap="8">
+						<uv-waterfall ref="waterfall" v-model="list" column-count="2" :add-time="0"
+							@changeList="changeList" column-gap="8">
 							<template v-slot:list1>
-								<!-- 为了磨平部分平台的BUG，必须套一层view -->
 								<view>
-									<uni-list :data="list1" :total='list1.length' style="background-color: #f4f4f4;">
-										<view v-for="(item, index) in list1" :key="index" class="waterfall-item">
-
-											<view class="waterfall-item__image">
-												<image :src="item.noteCover" :lazy-load="true" mode="widthFix"
-													:width="item.width+'px'" @click="getImgInfo(item.id)">
-												</image>
-											</view>
-											<view class="card">
-												<view class="cont">
-													<view class="content">{{item.content}}
-													</view>
-													<view class="userInfo">
-														<view class="avatar-usrname">
-															<image :src="item.avatar" :lazy-load="true"
-																mode="aspectFill" class="avatar"></image>
-															<view class="username">{{ item.username }}</view>
-														</view>
-														<view class="agreeCount">
-															<tui-icon name="like" size="14"
-																v-if="!item.isLike"></tui-icon>
-															<tui-icon name="like-fill" size="14" v-else
-																style="color: red;"></tui-icon>
-															{{ item.agreeCount }}
-														</view>
-													</view>
-													<view class="card-nums">
-														<tui-icon name="eye" size="15"
-															style="color: floralwhite;"></tui-icon>
-														{{item.viewCount}}
-													</view>
-												</view>
-											</view>
-										</view>
-									</uni-list>
+							<hs-note-card v-for="(item, index) in list1" :key="index" :item="item"
+								@click="getImgInfo" @user="goCardUser"></hs-note-card>
 								</view>
 							</template>
-							<!-- 第二列数据 -->
 							<template v-slot:list2>
-								<!-- 为了磨平部分平台的BUG，必须套一层view -->
 								<view>
-									<uni-list :data='list2' :total='list2.length' style="background-color: #f4f4f4;">
-										<view v-for="(item, index) in list2" :key="index" class="waterfall-item">
-											<view class="waterfall-item__image">
-												<image :src="item.noteCover" :lazy-load="true" mode="widthFix"
-													:width="item.width+'px'" @click="getImgInfo(item.id)">
-												</image>
-											</view>
-											<view class="card">
-												<view class="cont">
-													<view class="content">{{item.content}}</view>
-													<view class="userInfo">
-														<view class="avatar-usrname">
-															<image :src="item.avatar" :lazy-load="true"
-																mode="aspectFill" class="avatar"></image>
-															<view class="username">{{ item.username }}</view>
-														</view>
-														<view class="agreeCount">
-															<tui-icon name="like" size="14"
-																v-if="!item.isLike"></tui-icon>
-															<tui-icon name="like-fill" size="14" v-else
-																style="color: red;"></tui-icon>
-															{{ item.agreeCount }}
-														</view>
-													</view>
-													<view class="card-nums">
-														<tui-icon name="eye" size="15"
-															style="color: floralwhite;"></tui-icon>
-														{{item.viewCount}}
-													</view>
-												</view>
-											</view>
-										</view>
-									</uni-list>
+							<hs-note-card v-for="(item, index) in list2" :key="index" :item="item"
+								@click="getImgInfo" @user="goCardUser"></hs-note-card>
 								</view>
 							</template>
 						</uv-waterfall>
+						<hs-empty v-if="!loading && !list.length" title="暂无笔记" tip="换个分类看看，或去发布第一条"></hs-empty>
 					</view>
 					<view class="loadStyle" v-if="!isEnd && loading">
 						<tui-icon name="loading" :size="18"></tui-icon>
 					</view>
-					<view class="loadStyle" v-if="isEnd">我也是有底线的~</view>
+					<view class="loadStyle" v-if="isEnd && list.length">我也是有底线的~</view>
 				</scroll-view>
 			</view>
 		</view>
@@ -228,9 +139,20 @@
 	import {
 		getUserRecord
 	} from "@/api/user.js"
+	import {
+		mapNoteMedia
+	} from '@/utils/upload.js'
+	import {
+		openNote,
+		openUser,
+		ensureLogin,
+		noteDeletedMixin
+	} from '@/utils/noteNav.js'
+	import { messageTabIndex } from '@/utils/tabbar.js'
 	import Hot from '@/pages/index/hot/hot.vue'
 	import Follow from '@/pages/index/follow/follow.vue'
 	export default {
+		mixins: [noteDeletedMixin],
 		components: {
 			Hot,
 			Follow
@@ -261,7 +183,8 @@
 				loading: false, //是否正在加载
 				keyword: '',
 				categoryList: [],
-				categoryIndex: 0, // 当前显示的分类索引
+				categoryIndex: 0,
+				catIntoView: '',
 				startData: null, // 触摸开始时的数据
 				allowSwipe: false, // 控制是否允许滑动的标志
 				isSwiping: false, // 标记是否在分类栏滑动
@@ -282,6 +205,7 @@
 				list2: [], // 瀑布流第二列数据
 				needRefresh: false,
 				stickyScrollTop: 0,
+				navHeight: 44,
 			}
 		},
 		watch: {
@@ -308,20 +232,19 @@
 			this.needRefresh = false
 		},
 
-		onTabItemTap(e) {
-			this.currentTab = 1
-			if (this.needRefresh) {
-				uni.pageScrollTo({ // 回到顶部
-					duration: 0,
-					scrollTop: 0
-				})
+		onTabItemTap() {
+			if (this.needRefresh && this.currentTab === 1) {
 				this.onRefresh()
-			} else {
-				this.needRefresh = true
 			}
+			this.needRefresh = true
 		},
 
 		methods: {
+			onNavInit(e) {
+				if (e && e.height) {
+					this.navHeight = e.height
+				}
+			},
 			loadUserInfo() {
 				this.userInfo = uni.getStorageSync("userInfo")
 				getApp().globalData.currentUser = this.userInfo;
@@ -352,6 +275,9 @@
 				this.currentTab = e.index
 				this.clear();
 				this.onRefresh();
+			},
+			onMainTab(index) {
+				this.change({ index })
 			},
 
 			handleTouchStart(e) {
@@ -435,16 +361,16 @@
 				this.scrollToCategory(this.C);
 			},
 
+			onChooseCat(index) {
+				const item = this.categoryList[index]
+				if (!item) return
+				this.getImgListByCategory(item.id, index)
+			},
 			scrollToCategory(index) {
-				const categoryRef = this.$refs[`category-${index}`];
-				if (categoryRef && categoryRef[0]) {
-					const categoryElement = categoryRef[0];
-					categoryElement.scrollIntoView({
-						behavior: "smooth",
-						block: "nearest",
-						inline: "center"
-					});
-				}
+				this.catIntoView = ''
+				this.$nextTick(() => {
+					this.catIntoView = 'cat' + index
+				})
 			},
 
 			// getChatUserList() {
@@ -480,12 +406,12 @@
 				let res = await this.getUserRecord()
 				let count = uni.getStorageSync("unreadTotal")
 				if (res.agreeCollectionCount > 0 || res.addFollowCount > 0 || res.noreplyCount > 0 || count > 0) {
-					uni.showTabBarRedDot({ //显示红点
-						index: 2 //tabbar下标
+					uni.showTabBarRedDot({
+						index: messageTabIndex()
 					})
 				} else {
 					uni.hideTabBarRedDot({
-						index: 2
+						index: messageTabIndex()
 					})
 				}
 			},
@@ -502,55 +428,72 @@
 			},
 
 			openDrawer() {
-				this.T = true
 				this.visiable = true
+				uni.hideTabBar({
+					fail: () => {}
+				})
 			},
-
 			closeDrawer() {
 				this.visiable = false
+				uni.showTabBar({
+					fail: () => {}
+				})
+			},
+			goDrawerPage(url, needLogin) {
+				if (needLogin && !ensureLogin()) {
+					this.closeDrawer()
+					return
+				}
+				this.closeDrawer()
+				uni.navigateTo({
+					url
+				})
 			},
 
 			scroll(e) {
 				this.old.scrollTop = e.detail.scrollTop
-				if (e.detail.scrollTop > 50) {
-					// this.isFixed = true
-					this.isFixed = false
-				} else {
-					// this.isFixed = false
-					this.isFixed = true
-				}
+				this.isFixed = e.detail.scrollTop > 50
 			},
 
 			getCategory() {
 				getCategory().then(res => {
-					this.categoryList = [{
-							id: 0,
-							title: '推荐'
-						},
-						...res.data
-					];
+					const list = [{
+						id: 0,
+						title: '推荐'
+					}].concat((res && res.data) || [])
+					this.categoryList = list.map((item, index) => {
+						item.viewId = 'cat' + index
+						return item
+					})
 				})
 			},
 
 			getMoreData(dataList) {
+				const records = dataList || []
+				if (!records.length) return
 				this.$nextTick(() => {
-					const newList = dataList.map(item => this.getItem(item));
-					this.list.push(...newList);
+					const newList = records.map(item => this.getItem(item));
+					this.list = this.list.concat(newList);
 				});
 			},
 
 			getItem(item) {
+				const mapped = mapNoteMedia(Object.assign({}, item))
 				return {
-					id: item.id,
-					noteCover: item.noteCover,
-					image: JSON.parse(item.urls),
-					content: item.title,
-					count: item.count,
-					avatar: item.avatar,
-					username: item.username,
-					isLike: item.isLike,
-					agreeCount: item.likeCount,
-					viewCount: item.viewCount
+					id: mapped.id || mapped.nid,
+					uid: mapped.uid,
+					noteCover: mapped.noteCover,
+					image: mapped.noteCover,
+					title: mapped.title,
+					content: mapped.title,
+					count: mapped.count,
+					avatar: mapped.avatar,
+					username: mapped.username,
+					isLike: mapped.isLike,
+					agreeCount: mapped.likeCount,
+					viewCount: mapped.viewCount,
+					noteCoverHeight: mapped.noteCoverHeight || mapped.height,
+					noteType: mapped.noteType
 				}
 			},
 
@@ -562,32 +505,27 @@
 				this.clear();
 				this.cpid = id;
 				this.loading = true
-				try {
-					// 推荐列表
-					if (index === 0) {
-						this.getRecommend();
-					} else {
-						let params = {
-							keyword: "",
-							cid: "",
-							cpid: id,
-							type: 1,
-						}
-						this.page = 1
-						getImgListByCategory(this.page, this.limit, params).then(res => {
-							this.isSearchByCategory = true
-							this.T = true
-							this.total = res.data.total
-							this.getMoreData(res.data.records)
-						})
-						// 自动滚动到当前分类
-						this.scrollToCategory(this.C);
-					}
-				} catch (error) {
-					console.error("获取分类数据失败", error);
-				} finally {
-					this.loading = false;
+				if (index === 0) {
+					this.getRecommend();
+					return
 				}
+				let params = {
+					keyword: "",
+					cid: "",
+					cpid: id,
+					type: 1,
+				}
+				this.page = 1
+				getImgListByCategory(this.page, this.limit, params).then(res => {
+					this.isSearchByCategory = true
+					this.T = true
+					this.total = res.data.total
+					this.getMoreData(res.data.records)
+					this.loading = false
+					this.scrollToCategory(this.C);
+				}).catch(() => {
+					this.loading = false
+				})
 			},
 
 			getPage() {
@@ -647,7 +585,11 @@
 			},
 
 			changeList(e) {
-				this[e.name].push(e.value);
+				const name = e.name
+				const value = e.value
+				if (!name || !value || !this[name]) return
+				if (value.id && this[name].some(item => item.id === value.id)) return
+				this[name].push(value)
 			},
 
 			loadData() {
@@ -694,17 +636,12 @@
 				}, 500)
 			},
 
-			getImgInfo(mid) {
+			getImgInfo(item) {
 				this.isFirst = false
-				//添加一条浏览记录
-				let data = {}
-				data.uid = this.userInfo.id
-				data.nid = mid
-				addBrowseRecord(data).then(res => {
-					uni.navigateTo({
-						url: "/pages/main/main?mid=" + mid
-					})
-				})
+				openNote(item)
+			},
+			goCardUser(item) {
+				openUser(item && item.uid)
 			},
 			toSearch() {
 				uni.navigateTo({

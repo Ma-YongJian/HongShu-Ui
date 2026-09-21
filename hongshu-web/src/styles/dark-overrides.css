@@ -1,0 +1,465 @@
+html.dark-mode {
+  color-scheme: dark;
+  background: #111827;
+  --bg-color: #111827;
+  --card-bg: #111827;
+  --el-bg-color: #1f2937;
+  --el-bg-color-page: #111827;
+  --el-bg-color-overlay: #1f2937;
+  --el-text-color-primary: #f9fafb;
+  --el-text-color-regular: rgba(229, 231, 235, 0.92);
+  --el-text-color-secondary: rgba(229, 231, 235, 0.72);
+  --el-text-color-placeholder: rgba(229, 231, 235, 0.45);
+  --el-text-color-disabled: rgba(229, 231, 235, 0.35);
+  --el-border-color: #374151;
+  --el-border-color-light: rgba(255, 255, 255, 0.12);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.08);
+  --el-border-color-extra-light: rgba(255, 255, 255, 0.05);
+  --el-fill-color: #374151;
+  --el-fill-color-light: #1f2937;
+  --el-fill-color-lighter: #1a2332;
+  --el-fill-color-extra-light: #161e2e;
+  --el-fill-color-blank: #1f2937;
+  --el-fill-color-dark: #4b5563;
+  --el-fill-color-darker: #6b7280;
+  --el-mask-color: rgba(0, 0, 0, 0.72);
+  --el-box-shadow-lighter: 0 0 6px rgba(0, 0, 0, 0.45);
+  --el-color-primary-light-3: #2563eb;
+  --el-color-primary-light-5: #1e40af;
+  --el-color-primary-light-7: #1e3a8a;
+  --el-color-primary-light-8: #172554;
+  --el-color-primary-light-9: #0f172a;
+  --el-disabled-bg-color: #1f2937;
+  --el-disabled-text-color: rgba(229, 231, 235, 0.45);
+  --el-empty-fill-color-0: #1f2937;
+  --el-empty-fill-color-1: #374151;
+  --el-empty-fill-color-2: #4b5563;
+  --el-empty-fill-color-3: #374151;
+  --el-empty-fill-color-4: #4b5563;
+  --el-empty-fill-color-5: #6b7280;
+  --el-empty-fill-color-6: #374151;
+  --el-empty-fill-color-7: #4b5563;
+  --el-empty-fill-color-8: #6b7280;
+  --el-empty-fill-color-9: #9ca3af;
+  --el-skeleton-color: #374151;
+  --el-skeleton-to-color: #4b5563;
+}
+
+html.dark-mode body {
+  background: #111827;
+  color: #e5e7eb;
+}
+
+html.dark-mode .container,
+html.dark-mode .top,
+html.dark-mode .mask-paper,
+html.dark-mode .side-bar,
+html.dark-mode .main-content,
+html.dark-mode .feeds-page,
+html.dark-mode .feeds-container,
+html.dark-mode .waterfall-list,
+html.dark-mode .waterfall-item {
+  background: #111827 !important;
+}
+
+html.dark-mode a {
+  color: rgba(229, 231, 235, 0.86);
+}
+
+html.dark-mode .search-input {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .channel,
+html.dark-mode .information-wrapper,
+html.dark-mode .group-header,
+html.dark-mode .menu-item,
+html.dark-mode .title,
+html.dark-mode .desc,
+html.dark-mode .name,
+html.dark-mode .feeds-end,
+html.dark-mode .channel-scroll-container,
+html.dark-mode .content-container {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .card .footer .count,
+html.dark-mode .author-wrapper .count,
+html.dark-mode .like-wrapper .count {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .channel-list li {
+  color: rgba(229, 231, 235, 0.72);
+}
+
+html.dark-mode .channel-list li:hover,
+html.dark-mode .information-wrapper:hover,
+html.dark-mode .menu-item:hover,
+html.dark-mode .channel.active,
+html.dark-mode .content-container .active {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f9fafb !important;
+}
+
+html.dark-mode .channel-list .active-channel {
+  background: rgba(59, 130, 246, 0.16) !important;
+  color: var(--el-color-primary);
+}
+
+html.dark-mode .channel-list .active-channel .channel {
+  color: var(--el-color-primary) !important;
+}
+
+html.dark-mode .floating-box,
+html.dark-mode .information-pad .container {
+  background: #1f2937 !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+html.dark-mode .toggle-item {
+  color: rgba(229, 231, 235, 0.65) !important;
+}
+
+html.dark-mode .toggle-item.active {
+  background: #374151 !important;
+  color: #f9fafb !important;
+  box-shadow: none;
+}
+
+html.dark-mode .multistage-toggle {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-mode .card {
+  background-color: #111827 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .card .footer,
+html.dark-mode .card .footer .title,
+html.dark-mode .card .footer .title span,
+html.dark-mode .footer .title,
+html.dark-mode .author-wrapper,
+html.dark-mode .author-wrapper .author,
+html.dark-mode .author-wrapper .name {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .like-wrapper .iconfont,
+html.dark-mode .like-wrapper .iconfont.icon-follow {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .like-wrapper .iconfont.icon-follow-fill {
+  color: #f87171 !important;
+}
+
+html.dark-mode .el-skeleton {
+  background-color: transparent !important;
+}
+
+html.dark-mode .el-skeleton-item,
+html.dark-mode .el-skeleton__item {
+  background-color: #374151 !important;
+}
+
+html.dark-mode .el-image__placeholder,
+html.dark-mode .el-image__error,
+html.dark-mode .el-image__inner {
+  background-color: #1f2937;
+}
+
+html.dark-mode .reload,
+html.dark-mode .back-top {
+  background: #1f2937 !important;
+  color: #e5e7eb !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark-mode .reload svg,
+html.dark-mode .back-top svg {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .login-container {
+  background: #1f2937 !important;
+}
+
+html.dark-mode .login-container .close-button,
+html.dark-mode .login-container .title,
+html.dark-mode .agree-text,
+html.dark-mode .oauth-tip,
+html.dark-mode .brand-desc {
+  color: rgba(229, 231, 235, 0.82) !important;
+}
+
+html.dark-mode .login-container .left {
+  border-right-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-mode .brand-board {
+  background: linear-gradient(180deg, #1e3a5f 0%, #1f2937 100%) !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+
+html.dark-mode .phone,
+html.dark-mode .auth-code {
+  background: #111827 !important;
+}
+
+html.dark-mode .phone input,
+html.dark-mode .auth-code input {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .sug-container-wrapper {
+  background: #1f2937 !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+html.dark-mode .sug-item,
+html.dark-mode .history-item,
+html.dark-mode .hotspot-title,
+html.dark-mode .hotspot-label,
+html.dark-mode .header,
+html.dark-mode .close-tag {
+  color: rgba(229, 231, 235, 0.82) !important;
+}
+
+html.dark-mode .history-list .close-tag {
+  background-color: #1f2937 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark-mode .sug-item:hover,
+html.dark-mode .hotspot-item:hover,
+html.dark-mode .history-item:hover {
+  background: rgba(59, 130, 246, 0.16) !important;
+}
+
+html.dark-mode .hotspot-score {
+  color: rgba(229, 231, 235, 0.35) !important;
+}
+
+html.dark-mode .agreement-body {
+  color: rgba(229, 231, 235, 0.86) !important;
+}
+
+html.dark-mode .notice-page .notice-tabs {
+  background: #111827 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+html.dark-mode .notice-page .tab-item {
+  color: rgba(229, 231, 235, 0.72);
+}
+
+html.dark-mode .notice-page .tab-item.active {
+  color: var(--el-color-primary) !important;
+  background: rgba(59, 130, 246, 0.16) !important;
+}
+
+html.dark-mode .message-item .user-info a,
+html.dark-mode .agree-item .user-info a,
+html.dark-mode .interaction-content,
+html.dark-mode .user-info a,
+html.dark-mode .interaction-hint,
+html.dark-mode .quote-info {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .interaction-hint,
+html.dark-mode .quote-info {
+  color: rgba(229, 231, 235, 0.55) !important;
+}
+
+html.dark-mode .message-item .main,
+html.dark-mode .agree-item .main,
+html.dark-mode .trend-item .main {
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-mode .user-page,
+html.dark-mode .user-tabs,
+html.dark-mode .push-container {
+  background: #111827 !important;
+}
+
+html.dark-mode .user-name,
+html.dark-mode .user-desc,
+html.dark-mode .user-tags,
+html.dark-mode .user-content,
+html.dark-mode .header-title,
+html.dark-mode .user-nickname {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .user-content,
+html.dark-mode .shows,
+html.dark-mode .no-tags,
+html.dark-mode .section-label,
+html.dark-mode .upload-tip,
+html.dark-mode .tag-title-text {
+  color: rgba(229, 231, 235, 0.55) !important;
+}
+
+html.dark-mode .user-tabs .tab-item {
+  color: rgba(229, 231, 235, 0.72);
+}
+
+html.dark-mode .user-tabs .tab-item.active {
+  color: var(--el-color-primary) !important;
+  background: rgba(59, 130, 246, 0.16) !important;
+}
+
+html.dark-mode .push-container .header {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .el-upload--picture-card {
+  background: #1e3a5f !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+  color: #93c5fd !important;
+}
+
+html.dark-mode .el-input__wrapper,
+html.dark-mode .el-textarea__inner,
+html.dark-mode .el-select__wrapper {
+  background-color: #111827 !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12) inset !important;
+}
+
+html.dark-mode .el-input__inner,
+html.dark-mode .el-textarea__inner,
+html.dark-mode .el-select__placeholder,
+html.dark-mode .el-select__selected-item {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .el-dialog,
+html.dark-mode .el-dialog__header,
+html.dark-mode .el-dialog__body,
+html.dark-mode .el-dialog__footer {
+  background: #1f2937 !important;
+}
+
+html.dark-mode .el-dialog__title,
+html.dark-mode .field-head,
+html.dark-mode .field-head label {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .el-empty__description,
+html.dark-mode .el-empty__description p {
+  color: rgba(229, 231, 235, 0.65) !important;
+}
+
+html.dark-mode .note-detail-mask,
+html.dark-mode .back-desk {
+  background-color: rgba(0, 0, 0, 0.62) !important;
+}
+
+html.dark-mode .note-container {
+  background-color: #1f2937 !important;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45) !important;
+}
+
+html.dark-mode .note-container .media-container {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+html.dark-mode .note-container .interaction-container {
+  background-color: #1f2937 !important;
+  border-left-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-mode .note-container .author-me .name,
+html.dark-mode .note-content .title,
+html.dark-mode .note-content .desc,
+html.dark-mode .comments-container .content,
+html.dark-mode .comments-container .total {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .note-content .desc .tag {
+  color: #93c5fd !important;
+}
+
+html.dark-mode .note-content .bottom-container .date,
+html.dark-mode .comments-container .author .name,
+html.dark-mode .comments-container .info {
+  color: rgba(229, 231, 235, 0.55) !important;
+}
+
+html.dark-mode .note-scroller .divider,
+html.dark-mode .interaction-divider {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-mode .interactions-footer {
+  background: #1f2937 !important;
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-mode .interactions-footer .left,
+html.dark-mode .interactions-footer .left .chat-wrapper,
+html.dark-mode .like-wrapper,
+html.dark-mode .collect-wrapper {
+  color: rgba(229, 231, 235, 0.75) !important;
+}
+
+html.dark-mode .comment-input,
+html.dark-mode .input-wrapper .comment-input {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e5e7eb !important;
+  caret-color: #e5e7eb !important;
+}
+
+html.dark-mode .comment-input::placeholder,
+html.dark-mode .input-buttons {
+  color: rgba(229, 231, 235, 0.35) !important;
+}
+
+html.dark-mode .close,
+html.dark-mode .close-cricle .close {
+  background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .chat-container,
+html.dark-mode .chat-header,
+html.dark-mode .chat-footer,
+html.dark-mode .post-content,
+html.dark-mode .message-conent {
+  background-color: #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .message-conent {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-mode .middle,
+html.dark-mode .filter,
+html.dark-mode .divider.rec-filter {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .divider.rec-filter {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-mode .action-icon,
+html.dark-mode .chat-wrapper svg {
+  color: #e5e7eb !important;
+}
+
+html.dark-mode .msg-count {
+  color: #fff !important;
+}
+
+html.dark-mode .overlay {
+  color: #fff !important;
+}

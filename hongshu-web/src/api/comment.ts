@@ -61,11 +61,22 @@ export const getTwoCommentPageByOneCommentId = (
   oneCommentId: string
 ) => {
   return request<any>({
-    url: `/web/comment/getTwoCommentPageByOneCommentId/${currentPage}/${pageSize}`,
+    url: `/web/comment/getTwoCommentByOneCommentId/${currentPage}/${pageSize}`,
     method: "get",
     params: {
       oneCommentId,
     },
+  });
+};
+
+/**
+ * 删除评论
+ */
+export const deleteCommentById = (commentId: string) => {
+  return request<any>({
+    url: `/web/comment/deleteComment`,
+    method: "delete",
+    params: { commentId },
   });
 };
 

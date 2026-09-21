@@ -1,13 +1,13 @@
 <template>
 	<view class="content">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="head">
+		<hs-nav-bar>
+			<template #center>
 				<view class="tui-search-box" @click="toSearch">
 					<tui-icon name="search-2" :size="18" color="#bfbfbf"></tui-icon>
 					<view class="tui-search-text">请输入内容</view>
 				</view>
-			</view>
-		</tui-navigation-bar>
+			</template>
+		</hs-nav-bar>
 
 		<view class="main">
 			<ul>
@@ -23,14 +23,14 @@
 				<view class="r-head">
 					<view class="r-h-item">
 						<view>
-							<image :src="category.cover" mode="aspectFill" :lazy-load='true'
+							<image :src="mediaUrl(category.cover)" mode="aspectFill" :lazy-load='true'
 								@click="getImgData(category.id, 1)" />
 						</view>
 						<p>随便看看</p>
 					</view>
 					<view class="r-h-item">
 						<view>
-							<image :src="category.hotCover" mode="aspectFill" :lazy-load='true'
+							<image :src="mediaUrl(category.hotCover)" mode="aspectFill" :lazy-load='true'
 								@click="getImgData(category.id, 2)" />
 						</view>
 						<p>热门推荐</p>
@@ -50,7 +50,7 @@
 								<tui-grid-item :cell="2" :border="false" :bottomLine="false">
 									<view class="card">
 										<view @click="getImgData(item.id, 3)">
-											<image :src="item.cover" mode="aspectFill" :lazy-load='true' />
+											<image :src="mediaUrl(item.cover)" mode="aspectFill" :lazy-load='true' />
 										</view>
 										<p>{{ item.name }}</p>
 									</view>
@@ -67,7 +67,7 @@
 							<block v-for="(item, index) in category.children" :key="index">
 								<tui-grid-item :cell="4" :border="false" :bottomLine="false">
 									<view class="card">
-										<image :src="item.cover" mode="aspectFill" :lazy-load='true' />
+										<image :src="mediaUrl(item.cover)" mode="aspectFill" :lazy-load='true' />
 										<p>{{ item.name }}</p>
 									</view>
 								</tui-grid-item>
@@ -84,6 +84,9 @@
 	import {
 		getCategory
 	} from "@/api/category.js"
+	import {
+		mediaUrl
+	} from '@/utils/upload.js'
 	export default {
 		data() {
 			return {
@@ -97,6 +100,7 @@
 			this.getCategory()
 		},
 		methods: {
+			mediaUrl,
 			getCategory() {
 				getCategory().then(res => {
 					this.categoryList = res.data

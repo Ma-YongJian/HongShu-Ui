@@ -353,7 +353,7 @@ onMounted(async () => {
             margin-right: 0.3125rem;
             padding: 0.25rem 0.625rem;
             color: #fff;
-            background-color: rgb(0, 170, 255);
+            background-color: var(--el-color-primary);
             border-radius: 0.5rem;
             font-size: 1rem;
           }

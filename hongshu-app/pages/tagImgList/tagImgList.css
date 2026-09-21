@@ -1,13 +1,13 @@
 .page {
 	margin: auto;
-	background-color: #f4f4f4;
-	width: 95%;
-	height: 95vh;
+	background-color: #f8fafc;
+	width: 96%;
+	height: calc(100vh - 88rpx);
 }
 
 .nav {
 	padding-right: 24rpx;
-	height: 80rpx;
+	height: 88rpx;
 }
 
 .n-left {
@@ -88,8 +88,9 @@ image {
 .waterfall-item {
 	background-color: #fff;
 	overflow: hidden;
-	margin-bottom: 10rpx;
-	border-radius: 6px;
+	margin-bottom: 16rpx;
+	border-radius: 16rpx;
+	box-shadow: 0 4rpx 16rpx rgba(15, 23, 42, 0.04);
 }
 
 .loadStyle {

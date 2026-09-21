@@ -1,68 +1,33 @@
 <template>
 	<view class="container">
-
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<tui-icon name="arrowleft" size="24" @click="back"></tui-icon>
-				<view>赞和收藏</view>
-			</view>
-		</tui-navigation-bar>
-
+		<hs-nav-bar title="赞和收藏"></hs-nav-bar>
 		<scroll-view scroll-y class="page" @scrolltolower="loadData">
-			<tui-list-view>
-				<tui-list-cell :lineLeft="false" v-for="(item, index) in dataList" :key="index">
-					<view class="tui-item-box">
-						<view class="tui-msg-box">
-							<image :src="item.avatar" class="tui-msg-pic" mode="aspectFill"
-								@click="getUserInfo(item.uid)"></image>
-								
-							<view class="tui-msg-item" @click="getAlbum(item.aid)" v-if="item.type == 3">
-								<view class="tui-msg-name">{{ item.username }}</view>
-								<view class="tui-msg-type">
-									<view  class="tui-msg-type-item">收藏您的专辑</view>
-									
-									<view class="tui-msg-time">{{item.time}}</view>
-								</view>
-							
-								<view class="tui-msg-content" v-if="item.type == 0">{{ item.content }}</view>
-							</view>
-								
-							<view class="tui-msg-item" @click="getImg(item.itemId)" v-else>
-								<view class="tui-msg-name">{{ item.username }}</view>
-								<view class="tui-msg-type">
-									<view v-if="item.type == 3" class="tui-msg-type-item">收藏您的专辑</view>
-									<view v-if="item.type == 2" class="tui-msg-type-item">收藏您的笔记</view>
-									<view v-if="item.type == 1" class="tui-msg-type-item">点赞您的笔记</view>
-									<view v-if="item.type == 0" class="tui-msg-type-item">点赞您的评论</view>									
-									<view class="tui-msg-time">{{item.time}}</view>
-								</view>
-
-								<view class="tui-msg-content" v-if="item.type == 0">{{ item.content }}</view>
-							</view>
-						</view>
-						<view class="tui-msg-right">
-							<image :src="item.cover" mode="aspectFit" :lazy-load='true'></image>
-						</view>
+			<view class="list-item" v-for="(item, index) in dataList" :key="index">
+				<image class="avatar" :src="item.avatar" mode="aspectFill" @click.stop="openUser(item.uid)"></image>
+				<view class="content" @click="onItemTapAt(index)">
+					<view class="username">{{ item.username }}</view>
+					<view class="action-info">
+						<text class="action-text">{{ item.actionText }}</text>
+						<text class="type-tag">{{ item.typeTag }}</text>
+						<text class="time">{{ item.time }}</text>
 					</view>
-				</tui-list-cell>
-			</tui-list-view>
-
+					<view class="snippet" v-if="item.content">{{ item.content }}</view>
+				</view>
+				<image v-if="item.cover" class="cover" :src="item.cover" mode="aspectFill" @click.stop="onItemTapAt(index)"></image>
+			</view>
+			<hs-empty v-if="!loading && !dataList.length" title="暂无赞和收藏" tip="有人点赞或收藏后会显示在这里"></hs-empty>
 			<view class="loadStyle" v-if="!isEnd && loading">正在加载中</view>
-			<view class="loadStyle" v-if="isEnd">我也是有底线的~</view>
+			<view class="loadStyle" v-if="isEnd && dataList.length">我也是有底线的~</view>
+			<view class="list-footer"></view>
 		</scroll-view>
 	</view>
 </template>
 
 <script>
-	import {
-		getAllAgreeAndCollection
-	} from "@/api/agreeCollect.js"
-	import {
-		addBrowseRecord
-	} from "@/api/browseRecord.js"
-	import {
-		timeAgo
-	} from "@/utils/webUtils.js"
+	import { getAllAgreeAndCollection } from "@/api/agreeCollect.js"
+	import { mediaUrl } from '@/utils/upload.js'
+	import { openNote, openUser, noticeThumb, currentUid } from '@/utils/noteNav.js'
+	import { timeAgo } from "@/utils/webUtils.js"
 	export default {
 		data() {
 			return {
@@ -70,81 +35,96 @@
 				page: 1,
 				limit: 10,
 				total: 0,
-				isEnd: false, //是否到底底部了
-				loading: false, //是否正在加载
+				isEnd: false,
+				loading: false,
 				uid: '',
 			}
 		},
 		created() {
-			this.uid = uni.getStorageSync("userInfo").id
+			this.uid = currentUid()
 			this.getAllAgreeAndCollection()
 		},
 		methods: {
-			back() {
-				uni.navigateBack({
-					delta: 1
-				})
+			openUser,
+			actionTextOf(type) {
+				const t = Number(type)
+				if (t === 1) return '赞了你的'
+				if (t === 2) return '赞了你的'
+				if (t === 4) return '收藏了你的'
+				if (t === 3) return '收藏了你的'
+				return '互动了你的'
 			},
-
-			getAllAgreeAndCollection() {
-				let params = {
-					uid: this.uid
+			typeTagOf(type) {
+				const t = Number(type)
+				if (t === 2) return '评论'
+				if (t === 4) return '专辑'
+				return '笔记'
+			},
+			mapItem(e) {
+				return {
+					_key: (e.itemId || '') + '-' + (e.uid || '') + '-' + (e.time || '') + '-' + e.type,
+					uid: e.uid,
+					username: e.username,
+					avatar: mediaUrl(e.avatar),
+					cover: noticeThumb(e),
+					itemId: e.itemId,
+					aid: e.aid || (Number(e.type) === 4 ? e.itemId : ''),
+					type: e.type,
+					content: e.content || '',
+					actionText: this.actionTextOf(e.type),
+					typeTag: this.typeTagOf(e.type),
+					time: timeAgo(e.time)
 				}
-				getAllAgreeAndCollection(this.page, this.limit, params).then(res => {
-                    console.log(res)
-					res.data.records.forEach((e) => {
-						e.time = timeAgo(e.time)
-						this.dataList.push(e)
-					})
-					this.total = res.data.total
-				})
 			},
-			getImg(mid) {
-
-				let data = {}
-				data.uid = this.uid
-				data.mid = mid
-
-				addBrowseRecord(data).then(res => {
-					uni.navigateTo({
-						url: "/pages/main/main?mid=" + mid
-					})
-				})
-
+			pickRecords(res) {
+				if (!res || res.data == null) return []
+				if (Array.isArray(res.data)) return res.data
+				return res.data.records || []
 			},
-			
-			getAlbum(aid){
-				uni.navigateTo({
-					url: "/pages/user/albums/albumInfo?albumId=" + aid
-				})
-			},
-			
-			loadData() {
-				this.page = this.page + 1
-
-				if (this.total < this.limit) {
+			getAllAgreeAndCollection() {
+				this.loading = true
+				getAllAgreeAndCollection(this.page, this.limit, {
+					uid: this.uid
+				}).then(res => {
+					const list = this.pickRecords(res)
+					this.dataList = list.map(this.mapItem)
+					this.total = (res.data && res.data.total) || this.dataList.length
+					this.isEnd = list.length < this.limit
+				}).catch(() => {
+					this.dataList = []
 					this.isEnd = true
+				}).then(() => {
+					this.loading = false
+				})
+			},
+			onItemTap(item) {
+				if (Number(item.type) === 4) {
+					uni.navigateTo({
+						url: "/pages/user/albums/albumInfo?albumId=" + (item.aid || item.itemId)
+					})
 					return
 				}
-
-				let params = {
+				openNote(item.itemId)
+			},
+			onItemTapAt(index) {
+				this.onItemTap(this.dataList[index])
+			},
+			loadData() {
+				if (this.isEnd || this.loading) return
+				this.loading = true
+				this.page = this.page + 1
+				getAllAgreeAndCollection(this.page, this.limit, {
 					uid: this.uid
-				}
-				getAllAgreeAndCollection(this.page, this.limit, params).then(res => {
-
-					res.data.records.forEach((e) => {
-						e.time = timeAgo(e.time)
-						this.dataList.push(e)
-					})
+				}).then(res => {
+					const list = this.pickRecords(res)
+					this.dataList = this.dataList.concat(list.map(this.mapItem))
+					if (!list.length || list.length < this.limit) this.isEnd = true
+				}).catch(() => {
+					this.isEnd = true
+				}).then(() => {
+					this.loading = false
 				})
-			},
-
-			getUserInfo(uid) {
-				uni.navigateTo({
-					url: "/pages/otherUser/otherUser?uid=" + uid
-				})
-			},
-
+			}
 		}
 	}
 </script>

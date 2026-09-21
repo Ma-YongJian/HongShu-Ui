@@ -1,14 +1,11 @@
-.nav {
+.nav-done {
+	padding: 0 20rpx;
+	height: 44px;
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
-	width: 95%;
-	margin: auto;
-	height: 80rpx;
-}
-
-.nav p {
-	font-size: 32rpx;
+	font-size: 30rpx;
+	color: #3b82f6;
+	font-weight: 500;
 }
 
 .add-tag {

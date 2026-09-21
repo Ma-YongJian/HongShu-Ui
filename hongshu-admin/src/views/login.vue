@@ -6,8 +6,8 @@
       :rules="loginRules"
       class="login-form"
     >
-      <img class="logo" src="@/assets/logo/logo.png" />
-      <h3 class="title">红薯后台管理系统</h3>
+      <img class="logo" src="@/assets/logo/logo.png" alt="来因" />
+      <h3 class="title">来因管理端</h3>
       <el-form-item prop="username">
         <el-input
           v-model="loginForm.username"
@@ -77,7 +77,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>Copyright © 2024 HongShu All Rights Reserved.</span>
+      <span>Copyright © 来因社区</span>
     </div>
   </div>
 </template>
@@ -94,8 +94,8 @@ const router = useRouter();
 const { proxy } = getCurrentInstance();
 
 const loginForm = ref({
-  username: "admin",
-  password: "admin123",
+  username: "",
+  password: "",
   rememberMe: false,
   code: "",
   uuid: "",
@@ -151,7 +151,11 @@ function handleLogin() {
             }
             return acc;
           }, {});
-          router.push({ path: redirect.value || "/", query: otherQueryParams });
+          const target =
+            redirect.value && redirect.value !== "/" && redirect.value !== "/index"
+              ? redirect.value
+              : "/dashboard";
+          router.push({ path: target, query: otherQueryParams });
         })
         .catch(() => {
           loading.value = false;
@@ -193,30 +197,35 @@ getCookie();
 
 <style lang="scss" scoped>
 .logo {
-  margin-bottom: 15px;
-  margin-left: 135px;
-  width: 80px;
-  height: 40px;
+  display: block;
+  margin: 8px auto 12px;
+  width: 96px;
+  height: 42px;
+  object-fit: contain;
 }
 .login {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-image: url("../assets/images/login-background.jpg");
+  background: linear-gradient(180deg, #eff6ff 0%, #e5e7eb 100%);
   background-size: cover;
 }
 .title {
-  margin: 0px auto 30px auto;
+  margin: 0px auto 28px auto;
   text-align: center;
-  color: #707070;
+  color: #1f2937;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 1px;
 }
 
 .login-form {
-  border-radius: 6px;
+  border-radius: 16px;
   background: #ffffff;
   width: 400px;
-  padding: 25px 25px 5px 25px;
+  padding: 28px 28px 8px 28px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
   .el-input {
     height: 40px;
     input {
@@ -250,7 +259,7 @@ getCookie();
   bottom: 0;
   width: 100%;
   text-align: center;
-  color: #fff;
+  color: #6b7280;
   font-family: Arial;
   font-size: 12px;
   letter-spacing: 1px;

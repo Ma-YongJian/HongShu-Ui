@@ -1,6 +1,6 @@
 <template>
   <div>
-    <svg-icon icon-class="question" @click="goto" />
+    <svg-icon icon-class="gitee" @click="goto" />
   </div>
 </template>
 

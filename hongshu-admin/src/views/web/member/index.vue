@@ -6,10 +6,10 @@
       :inline="true"
       v-show="showSearch"
     >
-      <el-form-item label="红薯号" prop="hsId">
+      <el-form-item label="来因号" prop="hsId">
         <el-input
           v-model="queryParams.hsId"
-          placeholder="请输入红薯号"
+          placeholder="请输入来因号"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
@@ -122,7 +122,7 @@
     >
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column label="编号" align="center" prop="id" />
-      <el-table-column label="红薯号" width="150" align="center" prop="hsId" />
+      <el-table-column label="来因号" width="150" align="center" prop="hsId" />
       <el-table-column label="头像" align="center" prop="avatar">
         <template #default="scope">
           <el-avatar :size="60" :src="scope.row.avatar"> </el-avatar>
@@ -250,7 +250,12 @@
           <el-input v-model="form.phone" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" placeholder="请输入密码" />
+          <el-input
+            v-model="form.password"
+            type="password"
+            show-password
+            :placeholder="form.id ? '不修改请留空' : '请输入密码'"
+          />
         </el-form-item>
         <el-form-item label="会员状态" prop="status">
           <el-radio-group v-model="form.status">
@@ -326,7 +331,18 @@ const data = reactive({
         trigger: "blur",
       },
     ],
-    password: [{ required: true, message: "密码不能为空", trigger: "blur" }],
+    password: [
+      {
+        validator: (rule, value, callback) => {
+          if (!form.value.id && !value) {
+            callback(new Error("密码不能为空"));
+          } else {
+            callback();
+          }
+        },
+        trigger: "blur",
+      },
+    ],
   },
 });
 
@@ -389,6 +405,7 @@ function handleUpdate(row) {
   const memberId = row.id || ids.value;
   getMember(memberId).then((response) => {
     form.value = response.data;
+    form.value.password = undefined;
     open.value = true;
     title.value = "修改会员";
   });
@@ -444,11 +461,11 @@ function handleDelete(row) {
 /** 导出按钮操作 */
 function handleExport() {
   proxy.download(
-    "system/post/export",
+    "member/export",
     {
       ...queryParams.value,
     },
-    `post_${new Date().getTime()}.xlsx`
+    `member_${new Date().getTime()}.xlsx`
   );
 }
 

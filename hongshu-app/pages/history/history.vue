@@ -1,16 +1,12 @@
 <template>
 	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<view class="n-left">
-					<view @click="back"><tui-icon name="arrowleft" size="25"></tui-icon></view>
-					<h3>浏览记录</h3>
-				</view>
-				<view @click="delhistory" class="more-icon">
+		<hs-nav-bar title="浏览记录">
+			<template #right>
+				<view class="hs-nav-action" @click="delhistory">
 					<tui-icon name="more-fill" size="22"></tui-icon>
 				</view>
-			</view>
-		</tui-navigation-bar>
+			</template>
+		</hs-nav-bar>
 
 		<scroll-view scroll-y class="page" @scrolltolower="loadData">
 			<tui-grid :unlined="true">
@@ -23,16 +19,12 @@
 										@click="delAffirm(item.id)"></tui-icon>
 								</view>
 								<view class="del-affirm" v-if="isshow && delMids.includes(item.id)"><tui-icon
-										name="circle-fill" color="#ff626c" size="24"
+										name="circle-fill" color="#3d8af5" size="24"
 										@click="delCancel(item.id)"></tui-icon>
 								</view>
 							</view>
-							<view @click="toMain(item.id)">
+							<view @click="onOpenHistory(index)">
 								<image class="cover" :src="item.noteCover" mode="aspectFill" :lazy-load="true" />
-							</view>
-							<view class="card-nums">
-								<tui-icon name="eye" size="15" style="color: floralwhite;"></tui-icon>
-								{{ item.viewCount }}
 							</view>
 							<view class="cont">
 								<view class="content">{{ item.title }}</view>
@@ -52,6 +44,7 @@
 					</tui-grid-item>
 				</block>
 			</tui-grid>
+			<hs-empty v-if="!loading && !dataList.length" title="暂无浏览记录" tip="去发现页看看笔记吧"></hs-empty>
 			<view class="loadStyle" v-if="!isEnd && loading">正在加载中</view>
 			<view class="loadStyle" v-if="isEnd">我也是有底线的~</view>
 		</scroll-view>
@@ -61,7 +54,7 @@
 				<view class="f-del-cicle" v-if="T">
 					<tui-icon name="circle" color="#d6d6d6" size="28" @click="isAll"></tui-icon>
 				</view>
-				<view class="del-affirm" v-else><tui-icon name="circle-fill" color="#ff626c" size="28"
+				<view class="del-affirm" v-else><tui-icon name="circle-fill" color="#3d8af5" size="28"
 						@click="cancalAll"></tui-icon></view>
 				全选
 			</view>
@@ -77,10 +70,18 @@
 <script>
 	import {
 		getAllBrowseRecordByUser,
-		delRecord,
-		addBrowseRecord
+		delRecord
 	} from "@/api/browseRecord.js"
+	import {
+		mapNoteMedia
+	} from '@/utils/upload.js'
+	import {
+		openNote,
+		currentUid,
+		noteDeletedMixin
+	} from '@/utils/noteNav.js'
 	export default {
+		mixins: [noteDeletedMixin],
 		data() {
 			return {
 				dataList: [],
@@ -107,43 +108,45 @@
 				})
 			},
 			getAllBrowseRecordByUser() {
-				let params = {
-					uid: this.userInfo.id
+				if (!currentUid()) {
+					this.dataList = []
+					this.isEnd = true
+					return
 				}
-				getAllBrowseRecordByUser(this.page, this.limit, params).then(res => {
-					this.dataList = res.data
-					this.total = res.data.length
+				getAllBrowseRecordByUser(this.page, this.limit, {
+					uid: currentUid()
+				}).then(res => {
+					const list = Array.isArray(res.data) ? res.data : ((res.data && res.data.records) || [])
+					this.dataList = list.map(mapNoteMedia)
+					this.total = this.dataList.length
+					this.isEnd = this.dataList.length < this.limit
+					this.loading = false
+				}).catch(() => {
+					this.dataList = []
+					this.isEnd = true
+					this.loading = false
 				})
 			},
-
 			loadData() {
+				if (this.isEnd || this.loading) return
 				this.loading = true
-				setTimeout(() => {
-					if (this.total < this.limit) {
-						this.isEnd = true
-						return
-					}
-					this.page = this.page + 1;
-					let params = {
-						uid: this.userInfo.id
-					}
-					getAllBrowseRecordByUser(this.page, this.limit, params).then(res => {
-						this.dataList.push(...res.data)
-						this.total = res.data.length
-					})
-				}, 1000)
-			},
-			toMain(mid) {
-				let data = {}
-				data.uid = this.userInfo.id
-				data.nid = mid
-				console.log("0000000", mid)
-
-				addBrowseRecord(data).then(res => {
-					uni.navigateTo({
-						url: "/pages/main/main?mid=" + mid
-					})
+				this.page = this.page + 1
+				getAllBrowseRecordByUser(this.page, this.limit, {
+					uid: currentUid()
+				}).then(res => {
+					const list = Array.isArray(res.data) ? res.data : ((res.data && res.data.records) || [])
+					this.dataList.push(...list.map(mapNoteMedia))
+					this.loading = false
+					if (!list.length || list.length < this.limit) this.isEnd = true
+				}).catch(() => {
+					this.loading = false
 				})
+			},
+			toMain(item) {
+				openNote(item)
+			},
+			onOpenHistory(index) {
+				this.toMain(this.dataList[index])
 			},
 			delhistory() {
 				this.isshow = !this.isshow

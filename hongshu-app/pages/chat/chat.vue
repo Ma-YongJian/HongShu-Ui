@@ -1,19 +1,16 @@
 <template>
 	<!-- 已使用第三方工具，这里的代码不用了 -->
 	<view>
-		<view class="container" :style="{ 'padding-bottom': `${52 + inputBottom}px` }">
+		<view class="container" :style="'padding-bottom:' + (52 + inputBottom) + 'px'">
 			<view class="header">
 
-				<tui-navigation-bar backgroundColor="#fff" :isFixed="true" :isOpacity="false">
-					<view class="nav">
-
-						<tui-icon name="arrowleft" size="25" @click="back"></tui-icon>
-						<view class="username">{{ toUserInfo.username }}</view>
-
-
-						<tui-icon name="more-fill" size="22"></tui-icon>
-					</view>
-				</tui-navigation-bar>
+				<hs-nav-bar :isFixed="true" :title="toUserInfo.username || '对话'">
+					<template #right>
+						<view class="hs-nav-action">
+							<tui-icon name="more-fill" size="22"></tui-icon>
+						</view>
+					</template>
+				</hs-nav-bar>
 
 
 			</view>
@@ -47,13 +44,13 @@
 				</view>
 			</scroll-view>
 		</view>
-		<view class="bottom-textarea" :style="{ bottom: inputBottom + 'px' }">
+		<view class="bottom-textarea" :style="'bottom:' + inputBottom + 'px'">
 			<view class="textarea-container">
 				<textarea v-model="recordInput" :maxlength="-1" :auto-height="true" :show-confirm-bar="false"
 					:cursor-spacing="10" :fixed="true" :adjust-position="false" @focus="focusTextarea"
 					@blur="blurTextarea" />
 			</view>
-			<tui-button type="danger" height="80rpx" width="100rpx" @click="send()">发送</tui-button>
+			<tui-button type="primary" height="80rpx" width="100rpx" @click="send()">发送</tui-button>
 		</view>
 	</view>
 </template>
@@ -67,19 +64,26 @@
 		getUserInfo
 	} from '@/api/user.js'
 
-	import ZIM from '@/js_sdk/zego-ZIMUniplugin-JS/lib';
-	// import ZIM from '@/js_sdk/zego-ZIMUniPlugin-JS/lib';
 	import {
 		getZimToken
 	} from '@/api/chat.js'
+	// #ifndef MP-WEIXIN
+	import ZIM from '@/js_sdk/zego-ZIMUniplugin-JS/lib';
 	var appID = 1562974438;
-	// 静态同步方法，创建 zim 实例，传入 AppID。
-	// create 方法仅第一次调用时会创建 ZIM 实例，后续调用会返回 null。
 	ZIM.create({
 		appID
 	});
-	// 通过 getInstance 获取单实例，避免热更新导致 create 多次创建返回 null。
 	var zim = ZIM.getInstance();
+	// #endif
+	// #ifdef MP-WEIXIN
+	var zim = {
+		login: function () { return Promise.resolve() },
+		logout: function () {},
+		on: function () {},
+		sendMessage: function () { return Promise.resolve({ message: {} }) },
+		renewToken: function () { return Promise.resolve({ token: '' }) }
+	}
+	// #endif
 
 	export default {
 		data() {

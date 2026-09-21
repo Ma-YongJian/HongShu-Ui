@@ -47,6 +47,9 @@
                       <span class="count">{{ oneComment.twoCommentCount }}</span>
                     </span>
                   </div>
+                  <div class="reply" v-if="canDeleteComment(oneComment)" @click.stop="removeComment(oneComment, oneIndex, -1)">
+                    <span class="like-wrapper"><span class="count">删除</span></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -101,6 +104,13 @@
                           <span class="count">回复</span>
                         </span>
                       </div>
+                      <div
+                        class="reply"
+                        v-if="canDeleteComment(twoComment)"
+                        @click.stop="removeComment(twoComment, oneIndex, twoIndex)"
+                      >
+                        <span class="like-wrapper"><span class="count">删除</span></span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -135,13 +145,20 @@
 </template>
 <script lang="ts" setup>
 import { ChatRound } from "@element-plus/icons-vue";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { ref, watch } from "vue";
-import { getCommentWithCommentByNoteId, getTwoCommentPageByOneCommentId } from "@/api/comment";
+import { getCommentWithCommentByNoteId, getTwoCommentPageByOneCommentId, deleteCommentById } from "@/api/comment";
 import { likeOrCollectionByDTO } from "@/api/likeOrCollection";
 import type { LikeOrCollectionDTO } from "@/type/likeOrCollection";
 import { formateTime } from "@/utils/util";
+import { useUserStore } from "@/store/userStore";
+const userStore = useUserStore();
 const props = defineProps({
   nid: {
+    type: String,
+    default: "",
+  },
+  noteUid: {
     type: String,
     default: "",
   },
@@ -174,6 +191,49 @@ const twoPageSize = 10;
 const showTwoCommentCount = 3;
 const commentMap = new Map();
 const commentTotalMap = new Map();
+
+const currentUserId = () => {
+  try {
+    const user = userStore.getUserInfo();
+    return user && user.id ? String(user.id) : "";
+  } catch {
+    return "";
+  }
+};
+
+const canDeleteComment = (comment: any) => {
+  const me = currentUserId();
+  if (!me || !comment) return false;
+  return String(comment.uid) === me || (props.noteUid && String(props.noteUid) === me);
+};
+
+const removeComment = async (comment: any, one: number, two: number) => {
+  try {
+    await ElMessageBox.confirm("确定删除这条评论？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+  } catch {
+    return;
+  }
+  try {
+    await deleteCommentById(comment.id);
+    if (two === -1) {
+      const removed = dataList.value[one];
+      const childCount = Number((removed && removed.twoCommentCount) || (removed && removed.children && removed.children.length) || 0);
+      dataList.value.splice(one, 1);
+      computedTotal.value = Math.max(0, computedTotal.value - 1 - childCount);
+    } else {
+      dataList.value[one].children.splice(two, 1);
+      if (dataList.value[one].twoCommentCount > 0) dataList.value[one].twoCommentCount -= 1;
+      computedTotal.value = Math.max(0, computedTotal.value - 1);
+    }
+    ElMessage.success("删除成功");
+  } catch (e: any) {
+    ElMessage.error((e && (e.message || e.msg)) || "删除失败");
+  }
+};
 
 const likeComment = (comment: any, status: number, one: number, two: number) => {
   const data = {} as LikeOrCollectionDTO;

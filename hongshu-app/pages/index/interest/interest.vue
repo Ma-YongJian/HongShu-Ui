@@ -1,231 +1,268 @@
 <template>
-	<view class="container">
-		<view class="nav">
-			<view>动态</view>
-		</view>
+	<view class="container" :style="{ height: windowHeight + 'px' }">
+		<hs-nav-bar title="动态" :showBack="false" :isFixed="true" @init="onNavInit"></hs-nav-bar>
 
-		<scroll-view scroll-y class="page" @scrolltolower="loadData" refresher-enabled="true"
-			:refresher-triggered="triggered" @refresherrefresh="onRefresh" :scroll-top="scrollTop" @scroll="scroll">
-			<ul>
-				<li v-for="(item, index) in dataList" :key="index">
-					<view class="item">
-						<view class="top">
-							<view class="avatar-user">
-								<view class="avatar" @click="getUserInfo(item.uid)">
-									<image :src="item.avatar" mode="aspectFill" :lazy-load='true' />
-								</view>
-								<view class="user">
-									<view class="name">{{ item.username }}</view>
-									<view class="time">{{ item.time }}</view>
-								</view>
-							</view>
+		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }" :lower-threshold="80"
+			@scrolltolower="loadData" :refresher-enabled="true" :refresher-triggered="triggered"
+			@refresherrefresh="onRefresh">
+			<view class="feed-item" v-for="(item, index) in dataList" :key="index">
+				<view class="top">
+					<view class="avatar-user">
+						<image class="avatar-img" :src="item.avatar" mode="aspectFill" @click="onTapUser(index)"></image>
+						<view class="user">
+							<view class="name">{{ item.username }}</view>
+							<view class="time">{{ item.time }}</view>
 						</view>
-						<view class="content">
-							{{ item.content }}
-						</view>
-						<view class="main">
-							<view class="img-list" @click="toMain(item.nid)">
-								<view v-for="(img, index) in item.imgsUrl.slice(0, 3)" :key="index"
-									class="image-container">
-									<image :src="img" mode="aspectFill" :lazy-load='true' class="fadeImg" />
-									<view v-if="index === 2 && item.imgsUrl.length > 3" class="overlay">
-										<text class="more-text">+{{ item.imgsUrl.length - 3 }}</text>
-									</view>
-								</view>
-							</view>
-						</view>
-						<!-- 						<view class="main" @click="toMain(item.nid)">
-							<swiper class="swiper-container" indicator-dots="true" autoplay="false">
-								<swiper-item v-for="(img, index) in item.imgsUrl" :key="index" class="image-container">
-									<image :src="img" mode="aspectFill" :lazy-load='true' class="fadeImg" />
-								</swiper-item>
-							</swiper>
-						</view> -->
-
-						<view class="fotter">
-							<view class="icon">
-								<tui-icon name="like-fill" size="16" v-if="item.isLike"
-									@click="cancelAgreeImg(item, index)" style="color: red;">></tui-icon>
-								<tui-icon name="like" size="16" v-else @click="agreeImg(item, index)"></tui-icon>
-								<view class="count">{{ item.likeCount }}</view>
-							</view>
-							<view class="icon" @click="getComment(item.mid)">
-								<tui-icon name="message" size="16"></tui-icon>
-								<view class="count">{{ item.commentCount }}</view>
-							</view>
-							<view class="icon">
-								<tui-icon name="more" size="16"></tui-icon>
+					</view>
+				</view>
+				<view class="content" v-if="item.content">{{ item.content }}</view>
+				<view class="main" v-if="item.previewImgs && item.previewImgs.length" @click="onTapNote(index)">
+					<view class="img-list">
+						<view v-for="(img, imgIndex) in item.previewImgs" :key="imgIndex" class="image-container">
+							<image :src="img" mode="aspectFill" class="fadeImg"></image>
+							<view v-if="imgIndex === 2 && item.moreImgCount" class="overlay">
+								<text class="more-text">+{{ item.moreImgCount }}</text>
 							</view>
 						</view>
 					</view>
-				</li>
-			</ul>
-			<view class="loadStyle" v-if="!isEnd && loading">
-				<tui-icon name="loading" :size="18"></tui-icon>
+				</view>
+				<view class="fotter">
+					<view class="icon">
+						<tui-icon name="like-fill" :size="16" v-if="item.isLike" @click="cancelAgreeImg(index)"
+							color="#ff2442"></tui-icon>
+						<tui-icon name="like" :size="16" v-else @click="agreeImg(index)"></tui-icon>
+						<view class="count">{{ item.likeCount || 0 }}</view>
+					</view>
+					<view class="icon" @click="onTapComment(index)">
+						<tui-icon name="message" :size="16"></tui-icon>
+						<view class="count">{{ item.commentCount || 0 }}</view>
+					</view>
+				</view>
 			</view>
-			<view class="loadStyle" v-if="isEnd">我也是有底线的~</view>
+			<hs-empty v-if="!loading && !dataList.length" :title="hasLogin ? '还没有关注动态' : '登录后查看关注动态'"
+				:tip="hasLogin ? '去发现页关注感兴趣的人' : ''" :action="hasLogin ? '' : '去登录'" @action="goLogin"></hs-empty>
+			<view class="loadStyle" v-if="loading && dataList.length">正在加载中</view>
+			<view class="loadStyle" v-if="isEnd && dataList.length">我也是有底线的~</view>
+			<view class="list-footer"></view>
 		</scroll-view>
 		<trend-comment :popupShow="popupShow" @popup="popup" :mid="mid" :seed="seed"></trend-comment>
 	</view>
 </template>
 
 <script>
-	import {
-		getAllFollowTrends
-	} from "@/api/interest.js"
-	import {
-		addBrowseRecord
-	} from "@/api/browseRecord.js"
+	import { getAllFollowTrends } from "@/api/interest.js"
 	import TrendComment from "@/components/trendComment.vue"
-	import {
-		agree,
-		cancelAgree
-	} from "@/api/agreeCollect.js"
-	import {
-		timeAgo
-	} from "@/utils/webUtils.js"
+	import { agree, cancelAgree } from "@/api/agreeCollect.js"
+	import { timeAgo } from "@/utils/webUtils.js"
+	import { mapNoteMedia } from '@/utils/upload.js'
+	import { openNote, openUser, currentUid, ensureLogin, noteDeletedMixin } from '@/utils/noteNav.js'
 	export default {
+		mixins: [noteDeletedMixin],
 		components: {
 			TrendComment,
 		},
 		data() {
 			return {
 				userInfo: {},
-				triggered: false,
 				page: 1,
-				limit: 5,
+				limit: 10,
 				dataList: [],
 				popupShow: false,
-				isEnd: false, //是否到底底部了
-				loading: false, //是否正在加载
+				isEnd: false,
+				loading: false,
+				triggered: false,
 				total: 0,
 				mid: '',
 				seed: 0,
-				scrollTop: 0,
-				old: {
-					scrollTop: 0
-				},
+				navHeight: 64,
+				windowHeight: 667,
+				pageHeight: 600,
 			}
 		},
-		created() {
-			this.userInfo = uni.getStorageSync("userInfo")
-			if (typeof this.userInfo == 'undefined' || this.userInfo == null || this.userInfo == '') {
-				uni.showToast({
-					title: "用户未登录",
-					icon: 'none',
-				})
-				return;
-			} else {
-				this.getAllFollowTrends()
+		computed: {
+			hasLogin() {
+				return !!currentUid()
 			}
 		},
-
+		onLoad() {
+			this.measurePage()
+		},
+		onShow() {
+			this.measurePage()
+			this.userInfo = uni.getStorageSync("userInfo") || {}
+			if (!this.hasLogin) {
+				this.dataList = []
+				this.isEnd = true
+				this.loading = false
+				return
+			}
+			if (!this.dataList.length && !this.loading) {
+				this.getAllFollowTrends(true)
+			}
+		},
+		onPullDownRefresh() {
+			this.getAllFollowTrends(true)
+		},
+		onReachBottom() {
+			this.loadData()
+		},
 		methods: {
-			getComment(mid) {
-				this.noteId = mid
+			onNavInit(info) {
+				if (info && info.height) {
+					this.navHeight = info.height
+					this.measurePage()
+				}
+			},
+			measurePage() {
+				try {
+					const sys = uni.getSystemInfoSync()
+					const nav = this.navHeight || (sys.statusBarHeight || 0) + 44
+					const windowH = sys.windowHeight || sys.screenHeight || 667
+					this.windowHeight = windowH
+					this.pageHeight = Math.max(240, windowH - nav)
+				} catch (e) {
+					this.windowHeight = 667
+					this.pageHeight = 600
+				}
+			},
+			pickRecords(res) {
+				if (!res || res.data == null) return []
+				if (Array.isArray(res.data)) return res.data
+				return res.data.records || res.data.list || []
+			},
+			pickTotal(res) {
+				const raw = res && res.data
+				if (raw && raw.total != null && raw.total !== '') {
+					const n = Number(raw.total)
+					if (!isNaN(n) && n >= 0) return n
+				}
+				return -1
+			},
+			markEnd(records, list) {
+				if (!records.length) {
+					this.isEnd = true
+					return
+				}
+				if (this.total >= 0 && list.length >= this.total) {
+					this.isEnd = true
+					return
+				}
+				if (records.length < this.limit) {
+					this.isEnd = true
+					return
+				}
+				this.isEnd = false
+			},
+			mapItem(e) {
+				const row = mapNoteMedia(Object.assign({}, e, {
+					imgsUrl: e.imgsUrl || e.imgUrls || []
+				}))
+				const ts = typeof e.time === 'number' ? e.time : new Date(e.time).getTime()
+				row.time = timeAgo(ts || Date.now())
+				row.isLike = !!(e.isLike || e.islike)
+				row.likeCount = e.likeCount || 0
+				row.commentCount = e.commentCount || 0
+				const imgs = Array.isArray(row.imgsUrl) ? row.imgsUrl : []
+				row.previewImgs = imgs.slice(0, 3)
+				row.moreImgCount = imgs.length > 3 ? imgs.length - 3 : 0
+				return row
+			},
+			onTapComment(index) {
+				const item = this.dataList[index]
+				if (!item) return
+				this.mid = item.nid
 				this.seed = Math.random()
-				this.popupShow = true;
+				this.popupShow = true
 				uni.hideTabBar()
 			},
 			popup(popupShow) {
 				this.popupShow = popupShow
-			},
-			getAllFollowTrends() {
-				let params = {
-					uid: this.userInfo.id
+				if (!popupShow) {
+					uni.showTabBar()
 				}
-				getAllFollowTrends(this.page, this.limit, params).then(res => {
-					res.data.records.forEach(e => {
-						e.time = timeAgo(e.time)
-						e.imgsUrl = e.imgUrls
-						this.dataList.push(e)
-					})
-					this.total = res.data.length
-				})
 			},
-
-			onRefresh() {
-				this.triggered = true;
-				this.isEnd = false
-				this.dataList = [];
-				setTimeout(() => {
-					this.triggered = false;
+			getAllFollowTrends(reset) {
+				if (!this.hasLogin) {
+					this.dataList = []
+					this.isEnd = true
+					this.loading = false
+					this.$nextTick(() => {
+						this.triggered = false
+					})
+					uni.stopPullDownRefresh()
+					return
+				}
+				if (this.loading && !reset) return
+				if (reset) {
 					this.page = 1
-					this.getAllFollowTrends()
-				}, 500)
-			},
-
-			loadData() {
-				this.loading = true;
-				this.page = this.page + 1;
-				let params = {
-					uid: this.userInfo.id
+					this.isEnd = false
 				}
-				getAllFollowTrends(this.page, this.limit, params).then(res => {
-					const newRecords = res.data.records;
-					if (newRecords.length < this.limit) {
-						this.isEnd = true;
-					}
-					newRecords.forEach(e => {
-						e.time = timeAgo(e.time);
-						e.imgsUrl = e.imgUrls;
-						this.dataList.push(e);
-					});
-					this.total += newRecords.length;
-					this.loading = false;
+				this.loading = true
+				getAllFollowTrends(this.page, this.limit, {
+					uid: currentUid()
+				}).then(res => {
+					const records = this.pickRecords(res)
+					const list = records.map(this.mapItem)
+					this.dataList = reset ? list : this.dataList.concat(list)
+					this.total = this.pickTotal(res)
+					this.markEnd(records, this.dataList)
 				}).catch(() => {
-					this.loading = false;
-				});
-			},
-
-			getUserInfo(uid) {
-				uni.navigateTo({
-					url: "/pages/otherUser/otherUser?uid=" + uid
-				})
-			},
-
-			toMain(nid) {
-				let data = {}
-				data.uid = this.userInfo.id
-				data.noteId = nid
-				addBrowseRecord(data).then(res => {
-					uni.navigateTo({
-						url: "/pages/main/main?mid=" + nid
+					if (reset) this.dataList = []
+					this.isEnd = true
+				}).then(() => {
+					this.loading = false
+					this.$nextTick(() => {
+						this.triggered = false
 					})
+					uni.stopPullDownRefresh()
 				})
 			},
-
-			toAlbum(aid) {
-				uni.navigateTo({
-					url: "/pages/user/albums/albumInfo?albumId=" + aid
+			onRefresh() {
+				if (this.triggered) return
+				this.triggered = true
+				this.getAllFollowTrends(true)
+			},
+			loadData() {
+				if (this.isEnd || this.loading || !this.hasLogin) return
+				this.page = this.page + 1
+				this.getAllFollowTrends(false)
+			},
+			onTapUser(index) {
+				const item = this.dataList[index]
+				if (item) openUser(item.uid)
+			},
+			onTapNote(index) {
+				const item = this.dataList[index]
+				if (item) openNote(item.nid)
+			},
+			goLogin() {
+				ensureLogin()
+			},
+			agreeImg(index) {
+				const item = this.dataList[index]
+				if (!item || !ensureLogin()) return
+				agree({
+					uid: currentUid(),
+					type: 1,
+					likeOrCollectionId: item.nid,
+					publishUid: item.uid
+				}).then(() => {
+					this.$set(this.dataList[index], 'likeCount', (this.dataList[index].likeCount || 0) * 1 + 1)
+					this.$set(this.dataList[index], 'isLike', true)
 				})
 			},
-
-			agreeImg(item, index) {
-				let data = {}
-				data.uid = uni.getStorageSync("userInfo").id
-				data.type = 1
-				data.likeOrCollectionId = item.nid
-				data.publishUid = item.uid
-				agree(data).then(res => {
-					this.dataList[index].likeCount = this.dataList[index].likeCount * 1 + 1
-					this.dataList[index].isLike = true
+			cancelAgreeImg(index) {
+				const item = this.dataList[index]
+				if (!item || !ensureLogin()) return
+				cancelAgree({
+					uid: currentUid(),
+					likeOrCollectionId: item.nid,
+					publishUid: item.uid,
+					type: 1
+				}).then(() => {
+					this.$set(this.dataList[index], 'likeCount', Math.max(0, (this.dataList[index].likeCount || 0) * 1 - 1))
+					this.$set(this.dataList[index], 'isLike', false)
 				})
-			},
-
-			cancelAgreeImg(item, index) {
-				let data = {}
-				data.uid = uni.getStorageSync("userInfo").id
-				data.likeOrCollectionId = item.nid
-				data.publishUid = item.uid
-				data.type = 1
-				cancelAgree(data).then(res => {
-					this.dataList[index].likeCount = this.dataList[index].likeCount * 1 - 1
-					this.dataList[index].isLike = false
-				})
-			},
-			scroll(e) {
-				this.old.scrollTop = e.detail.scrollTop
 			},
 		}
 	}

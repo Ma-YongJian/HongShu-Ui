@@ -109,7 +109,7 @@
                       <span class="like-wrapper like-active">
                         <i
                           class="iconfont icon-follow-fill"
-                          :style="{ width: '1em', height: '1em', color: item.isLike ? 'red' : 'black' }"
+                          :style="{ width: '1em', height: '1em', color: item.isLike ? '#f87171' : undefined }"
                           v-if="item.isLike"
                         >
                         </i>
@@ -276,7 +276,13 @@ const toMain = (noteId: string) => {
   mainShow.value = true;
 };
 
-const close = () => {
+const close = (id?: string, extra?: any) => {
+  if (extra && extra.deleted) {
+    const target = String(id || nid.value || "");
+    if (target) {
+      noteList.value = noteList.value.filter((item) => String(item.id) !== target);
+    }
+  }
   mainShow.value = false;
 };
 
@@ -496,7 +502,7 @@ initData();
         .active {
           font-weight: 600;
           background: rgba(226, 86, 105, 0.06);
-          color: #ff2442;
+          color: var(--el-color-primary);
         }
 
         .channel {
@@ -715,7 +721,7 @@ initData();
               line-height: 1.25rem;
               font-size: 0.8125rem;
               color: #fff;
-              background-color: red;
+              background-color: var(--el-color-primary);
               text-align: center;
               border-radius: 100%;
             }
@@ -759,7 +765,7 @@ initData();
           }
 
           .reds-button-new.primary {
-            background-color: #ff2e4d;
+            background-color: var(--el-color-primary);
             color: #fff;
           }
 

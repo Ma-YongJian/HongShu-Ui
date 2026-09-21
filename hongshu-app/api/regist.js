@@ -15,17 +15,17 @@ export function sendMsm(data) {
 }
 
 export function register(data) {
-	return request.post(appConfig.WEB_API + `/auth/register`, data)
+	return request.post(appConfig.WEB_API + `/web/auth/register`, data)
 }
 
 export function check(data) {
-	return request.post(appConfig.WEB_API + `/auth/check`, data)
+	return request.post(appConfig.WEB_API + `/web/auth/isRegister`, data)
 }
 
 export function updatePassword(data) {
-	return request.post(appConfig.WEB_API + `/auth/updatePassword`, data)
+	return request.post(appConfig.WEB_API + `/web/auth/updatePassword`, data)
 }
 
 export function isRegist(data) {
-	return request.post(appConfig.WEB_API + `/auth/isRegist`, data)
+	return request.post(appConfig.WEB_API + `/web/auth/isRegister`, data)
 }

@@ -4,13 +4,13 @@ export function getSubjectList(query) {
   return request({
     url: '/album/list',
     method: 'get',
-    data: query
+    params: query
   })
 }
 
 export function addSubject(params) {
   return request({
-    url: '/album/add',
+    url: '/album',
     method: 'post',
     data: params
   })
@@ -18,18 +18,15 @@ export function addSubject(params) {
 
 export function editSubject(params) {
   return request({
-    url: '/album/edit',
+    url: '/album',
     method: 'put',
     data: params
   })
 }
 
-export function deleteBatchSubject(params) {
+export function deleteBatchSubject(ids) {
   return request({
-    url: '/album/deleteBatch',
-    method: 'delete',
-    data: params
+    url: '/album/' + ids,
+    method: 'delete'
   })
 }
-
-

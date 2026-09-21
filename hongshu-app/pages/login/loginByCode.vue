@@ -1,8 +1,6 @@
 <template>
 	<view class="container">
-		<view class="top">
-			<view class="title">登录</view>
-		</view>
+		<hs-nav-bar title="验证码登录"></hs-nav-bar>
 		<view class="main">
 			<view class="center">
 				<input placeholder="请输入手机号" class="info-input" v-model="value" />
@@ -15,7 +13,7 @@
 			</view>
 
 			<view class="regist">
-				<tui-button @click="loginByCode" type="danger" shape="circle">登录</tui-button>
+				<tui-button @click="loginByCode" type="primary" shape="circle">登录</tui-button>
 			</view>
 		</view>
 
@@ -32,17 +30,14 @@
 	import {
 		tokenUtil
 	} from "@/utils/token.js"
-	import socket from 'plus-websocket'
 	import {
 		loginByCode
 	} from "@/api/login.js"
 	import {
-		appConfig
-	} from '@/config/config.js'
-	import {
 		isMobile,
 		isEmail
 	} from '@/utils/validate.js'
+	import { subscribeIm } from '@/utils/imSocket.js'
 
 	export default {
 		data() {
@@ -107,43 +102,32 @@
 				}
 
 				loginByCode(this.userInfo).then(res => {
-
-					if (res.data.res == 0) {
-						uni.showToast({
-							title: res.data.message
-						})
-					} else {
-						let user = res.data.userInfo
-						tokenUtil.set(res.data.JwtToken)
+					const data = (res && res.data) || {}
+					const user = data.userInfo
+					const token = data.accessToken || data.JwtToken
+					if (res.code === 200 && user && token) {
+						uni.removeStorageSync('JwtToken')
+						tokenUtil.set(token)
+						tokenUtil.setUserId(user.id)
 						uni.setStorageSync("userInfo", user)
-						this.createWs()
+						subscribeIm()
+						uni.showToast({
+							title: "登录成功",
+							icon: 'success'
+						})
 						setTimeout(() => {
 							uni.reLaunch({
 								url: "/pages/index/index"
 							});
 						}, 500)
+						return
 					}
+					uni.showToast({
+						title: (res && (res.message || data.message)) || "登录失败",
+						icon: 'none'
+					})
 				})
 
-			},
-			createWs() {
-				socket.connectSocket({
-					// ws://192.168.1.103:8083/platform/ws/
-					url: 'ws://' + appConfig.WS_API + uni.getStorageSync("userInfo").id
-				});
-				socket.onSocketOpen(function(res) {
-					console.log('WebSocket连接已打开！');
-				});
-				socket.onSocketError(function(res) {
-					//console.log('WebSocket连接打开失败，请检查！');
-				});
-				socket.onSocketMessage(function(res) {
-
-					uni.$emit('messageCount', {
-						'records': res.data
-					})
-
-				});
 			},
 
 		}

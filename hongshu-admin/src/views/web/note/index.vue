@@ -36,7 +36,7 @@
       <el-form-item label="作者" prop="uid">
         <el-input
           v-model="queryParams.uid"
-          placeholder="请输入作者"
+          placeholder="请输入作者ID"
           clearable
           style="width: 200px"
           @keyup.enter="handleQuery"
@@ -155,28 +155,44 @@
       @selection-change="handleSelectionChange"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="序号" align="center" prop="id" />
+      <el-table-column label="序号" align="center" prop="id" width="80" />
       <el-table-column
         label="分类"
         align="center"
         prop="cpid"
+        width="110"
         :formatter="categoryFormatter"
+        show-overflow-tooltip
       />
-      <el-table-column label="标题" align="center" prop="title" />
-      <el-table-column label="作者" align="center" prop="author" />
-      <el-table-column label="笔记封面" align="center" prop="noteCover">
+      <el-table-column
+        label="标题"
+        align="left"
+        prop="title"
+        min-width="160"
+        show-overflow-tooltip
+      />
+      <el-table-column label="作者" align="center" prop="author" width="110" show-overflow-tooltip />
+      <el-table-column label="封面" align="center" prop="noteCover" width="80">
         <template #default="scope">
-          <el-avatar
-            :size="60"
+          <el-image
+            v-if="scope.row.noteCover"
+            class="cover-thumb"
             :src="scope.row.noteCover"
-            shape="square"
-            @mouseover="showPreview(scope.row.noteCover, $event)"
-            @mouseleave="hidePreview"
+            :preview-src-list="[scope.row.noteCover]"
+            fit="cover"
+            preview-teleported
           />
+          <span v-else>—</span>
         </template>
       </el-table-column>
-      <el-table-column label="内容" align="center" prop="content" />
-      <el-table-column label="图片数量" align="center" prop="count" />
+      <el-table-column
+        label="内容"
+        align="left"
+        prop="content"
+        min-width="180"
+        show-overflow-tooltip
+      />
+      <el-table-column label="图片" align="center" prop="count" width="70" />
       <!-- <el-table-column label="排序" align="center" prop="sort" /> -->
       <el-table-column label="是否置顶" align="center" prop="pinned">
         <template #default="scope">
@@ -190,7 +206,7 @@
       </el-table-column>
       <el-table-column label="类型" align="center" prop="noteType">
         <template #default="scope">
-          <dict-tag :options="note_type" :value="scope.row.noteType" />
+          <dict-tag :options="note_type" :value="displayNoteType(scope.row.noteType)" />
         </template>
       </el-table-column>
       <el-table-column label="浏览次数" align="center" prop="viewCount" />
@@ -255,13 +271,8 @@
       @pagination="getList"
     />
 
-    <!-- 放大预览图片的容器 -->
-    <div v-if="previewVisible" class="image-preview" :style="previewStyle">
-      <img :src="previewSrc" alt="Preview" />
-    </div>
-
     <!-- 添加或修改笔记对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="560px" append-to-body>
       <el-form ref="noteRef" :model="form" :rules="rules" label-width="80px">
         <el-col :span="13">
           <el-form-item label="分类" prop="pid">
@@ -314,8 +325,9 @@
         </el-form-item>
         <el-form-item label="笔记内容" prop="content">
           <el-input
-            v-model="form.remark"
+            v-model="form.content"
             type="textarea"
+            :autosize="{ minRows: 3, maxRows: 8 }"
             placeholder="请输入内容"
           />
         </el-form-item>
@@ -388,9 +400,6 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
-const previewVisible = ref(false);
-const previewSrc = ref("");
-const previewStyle = reactive({ top: "0px", left: "0px" });
 const navbarOptions = ref([]);
 const categoriesMap = ref({});
 
@@ -413,20 +422,6 @@ const data = reactive({
 });
 
 const { queryParams, form, rules } = toRefs(data);
-
-/** 显示放大预览图片 */
-function showPreview(src, event) {
-  previewSrc.value = src;
-  previewVisible.value = true;
-  previewStyle.top = event.clientY + 10 + "px";
-  previewStyle.left = event.clientX + 10 + "px";
-}
-
-/** 隐藏放大预览图片 */
-function hidePreview() {
-  previewVisible.value = false;
-  previewSrc.value = "";
-}
 
 /** ES重置 */
 function refreshNote() {
@@ -470,19 +465,32 @@ function getTreeSelect() {
 /** 生成分类映射 */
 function createCategoriesMap(data) {
   categoriesMap.value = {};
-  data.forEach((item) => {
+  (data || []).forEach((item) => {
+    if (!item || item.id === undefined || item.id === null) return;
     categoriesMap.value[item.id] = item.title;
+    categoriesMap.value[String(item.id)] = item.title;
   });
 }
 
 /** 获取分类名称 */
-function getCategoryTitle(pid) {
-  return categoriesMap.value[pid] || "未知分类";
+function getCategoryTitle(pid, cid) {
+  const lookup = (val) => {
+    if (val === undefined || val === null || val === "") return "";
+    const key = String(val);
+    if (key === "0" || key === "-1") return "";
+    return categoriesMap.value[val] || categoriesMap.value[key] || "";
+  };
+  return lookup(pid) || lookup(cid) || "未知分类";
 }
 
 /** 分类名称格式化器 */
 function categoryFormatter(row, column, cellValue) {
-  return getCategoryTitle(cellValue);
+  return getCategoryTitle(cellValue, row && row.cid);
+}
+
+function displayNoteType(val) {
+  if (val === 0 || val === "0") return "1";
+  return val;
 }
 /** 取消按钮 */
 function cancel() {
@@ -571,7 +579,11 @@ function submitForm() {
 function handleDelete(row) {
   const noteIds = row.id || ids.value;
   proxy.$modal
-    .confirm('是否确认删除笔记编号为"' + noteIds + '"的数据项？')
+    .confirm(
+      row?.title
+        ? `是否确认删除笔记「${row.title}」？`
+        : `是否确认删除选中的 ${Array.isArray(noteIds) ? noteIds.length : 1} 条笔记？`
+    )
     .then(function () {
       return delNote(noteIds);
     })
@@ -585,11 +597,11 @@ function handleDelete(row) {
 /** 导出按钮操作 */
 function handleExport() {
   proxy.download(
-    "system/post/export",
+    "note/export",
     {
       ...queryParams.value,
     },
-    `post_${new Date().getTime()}.xlsx`
+    `note_${new Date().getTime()}.xlsx`
   );
 }
 
@@ -608,21 +620,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.image-preview {
-  position: fixed;
-  z-index: 1000;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  padding: 5px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-.image-preview img {
-  max-width: 300px;
-  max-height: 300px;
-}
-
 .image-uploader .el-upload {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
@@ -632,7 +629,7 @@ onMounted(() => {
 }
 
 .image-uploader .el-upload:hover {
-  border-color: #409eff;
+  border-color: #3b82f6;
 }
 
 .image-uploader-icon {

@@ -140,8 +140,8 @@
     <div class="block">
       <el-pagination
         @current-change="handleCurrentChange"
-        :current-page="currentPage"
-        :page-size="pageSize"
+        :current-page="queryParams.pageNum"
+        :page-size="queryParams.pageSize"
         layout="total, prev, pager, next, jumper"
         :total="total"
       >
@@ -150,32 +150,13 @@
 
     <!-- 添加或修改对话框 -->
     <el-dialog :title="title" v-model="dialogFormVisible">
-      <el-form :model="form" :rules="rules" ref="form">
+      <el-form :model="form" :rules="rules" ref="albumFormRef">
         <el-form-item
           label="封面图"
           :label-width="formLabelWidth"
           prop="albumCover"
         >
-          <div
-            class="imgBody"
-            v-if="form.photoList && form.photoList.length > 0"
-          >
-            <i
-              class="el-icon-error inputClass"
-              v-show="icon"
-              @click="deletePhoto"
-              @mouseover="icon = true"
-            ></i>
-            <img
-              @mouseover="icon = true"
-              @mouseout="icon = false"
-              :src="form.photoList[0]"
-              style="display: inline; width: 195px; height: 105px"
-            />
-          </div>
-          <div v-else class="uploadImgBody" @click="checkPhoto">
-            <i class="el-icon-plus avatar-uploader-icon"></i>
-          </div>
+          <image-upload v-model="form.albumCover" :limit="1" />
         </el-form-item>
 
         <el-form-item label="专辑名" :label-width="formLabelWidth" prop="title">
@@ -195,16 +176,6 @@
         <el-button type="primary" @click="submitForm">确 定</el-button>
       </div>
     </el-dialog>
-
-    <CheckPhoto
-      v-if="!isFirstPhotoVisible"
-      @choose_data="getChooseData"
-      @cancelModel="cancelModel"
-      :photoVisible="photoVisible"
-      :photos="photoList"
-      :files="fileIds"
-      :limit="1"
-    ></CheckPhoto>
   </div>
 </template>
 
@@ -218,7 +189,6 @@ import {
   editSubject,
   deleteBatchSubject,
 } from "@/api/web/album";
-import CheckPhoto from "@/components/CheckPhoto";
 
 const router = useRouter();
 const tableData = ref([]);
@@ -231,11 +201,7 @@ const selectUids = ref([]);
 const formLabelWidth = ref("120px");
 const dialogFormVisible = ref(false);
 const isEditForm = ref(false);
-const photoVisible = ref(false);
-const photoList = ref([]);
-const fileIds = ref("");
-const icon = ref(false);
-const isFirstPhotoVisible = ref(true);
+const albumFormRef = ref();
 
 const data = reactive({
   form: {},
@@ -245,7 +211,7 @@ const data = reactive({
     title: undefined,
   },
   rules: {
-    fileUid: [{ required: true, message: "封面图片不能为空", trigger: "blur" }],
+    albumCover: [{ required: true, message: "封面图片不能为空", trigger: "blur" }],
     subjectName: [
       { required: true, message: "专辑名不能为空", trigger: "blur" },
       { min: 1, max: 20, message: "长度在1到20个字符" },
@@ -266,6 +232,8 @@ function subjectList() {
 }
 
 function handleFind() {
+  queryParams.value.title = keyword.value;
+  queryParams.value.pageNum = 1;
   subjectList();
 }
 
@@ -273,6 +241,8 @@ function getFormObject() {
   return {
     id: null,
     title: null,
+    uid: null,
+    albumCover: null,
     sort: 0,
   };
 }
@@ -301,42 +271,15 @@ function checkAll() {
   }
 }
 
-function checkPhoto() {
-  photoList.value = [];
-  fileIds.value = "";
-  photoVisible.value = true;
-  isFirstPhotoVisible.value = false;
-}
-
-function getChooseData(data) {
-  photoVisible.value = false;
-  photoList.value = data.photoList;
-  fileIds.value = data.fileIds;
-  const fileId = fileIds.value.replace(",", "");
-  if (photoList.value.length >= 1) {
-    form.fileUid = fileId;
-    form.photoList = photoList.value;
-  }
-}
-
-function cancelModel() {
-  photoVisible.value = false;
-}
-
-function deletePhoto() {
-  form.photoList = [];
-  form.fileUid = "";
-}
-
 function handleCurrentChange(val) {
-  currentPage.value = val;
+  queryParams.value.pageNum = val;
   subjectList();
 }
 
 function handleAdd() {
   title.value = "增加专辑";
   dialogFormVisible.value = true;
-  Object.assign(form, getFormObject());
+  Object.assign(form.value, getFormObject());
   isEditForm.value = false;
 }
 
@@ -344,37 +287,30 @@ function handleEdit(row) {
   title.value = "编辑专辑";
   dialogFormVisible.value = true;
   isEditForm.value = true;
-  Object.assign(form, row);
+  Object.assign(form.value, row);
 }
 
 function goSubjectItem(row) {
-  const uid = row.uid;
   router.push({
-    path: "subjectItem",
-    query: { subjectUid: uid },
+    path: "/note/albumItem",
+    query: { albumId: row.id },
   });
 }
 
 function handleDelete(row) {
-  ElMessageBox.confirm("此操作将会把该专题删除, 是否继续?", "提示", {
+  ElMessageBox.confirm("此操作将会把该专辑删除, 是否继续?", "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   })
     .then(() => {
-      const params = [row];
-      deleteBatchSubject(params).then((response) => {
-        if (response.code == "success") {
-          ElMessage.success(response.message);
-        } else {
-          ElMessage.error(response.message);
-        }
-        subjectList();
-      });
+      return deleteBatchSubject(row.id);
     })
-    .catch(() => {
-      ElMessage.info("已经取消删除");
-    });
+    .then(() => {
+      ElMessage.success("删除成功");
+      subjectList();
+    })
+    .catch(() => {});
 }
 
 function handleDeleteBatch() {
@@ -382,54 +318,29 @@ function handleDeleteBatch() {
     ElMessage.error("请先选中需要删除的内容！");
     return;
   }
-  ElMessageBox.confirm("此操作将把选中的专题删除, 是否继续?", "提示", {
+  ElMessageBox.confirm("此操作将把选中的专辑删除, 是否继续?", "提示", {
     confirmButtonText: "确定",
     cancelButtonText: "取消",
     type: "warning",
   })
     .then(() => {
-      const deleteList = selectUids.value.map((id) => ({ id }));
-      deleteBatchSubject(deleteList).then((response) => {
-        if (response.code == this.$ECode.SUCCESS) {
-          ElMessage.success(response.message);
-        } else {
-          ElMessage.error(response.message);
-        }
-        subjectList();
-      });
+      return deleteBatchSubject(selectUids.value.join(","));
     })
-    .catch(() => {
-      ElMessage.info("已取消删除");
-    });
+    .then(() => {
+      ElMessage.success("删除成功");
+      selectUids.value = [];
+      subjectList();
+    })
+    .catch(() => {});
 }
 
 function submitForm() {
-  this.$refs.form.validate((valid) => {
-    if (!valid) {
-      console.log("校验出错");
-    } else {
-      if (isEditForm.value) {
-        editSubject(form).then((response) => {
-          if (response.code == this.$ECode.SUCCESS) {
-            ElMessage.success(response.message);
-            dialogFormVisible.value = false;
-            subjectList();
-          } else {
-            ElMessage.error(response.message);
-          }
-        });
-      } else {
-        addSubject(form).then((response) => {
-          if (response.code == this.$ECode.SUCCESS) {
-            ElMessage.success(response.message);
-            dialogFormVisible.value = false;
-            subjectList();
-          } else {
-            ElMessage.error(response.message);
-          }
-        });
-      }
-    }
+  const payload = { ...form.value };
+  const run = isEditForm.value ? editSubject(payload) : addSubject(payload);
+  run.then(() => {
+    ElMessage.success(isEditForm.value ? "修改成功" : "新增成功");
+    dialogFormVisible.value = false;
+    subjectList();
   });
 }
 
@@ -437,51 +348,6 @@ onMounted(subjectList);
 </script>
 
 <style scoped>
-.avatar-uploader .el-upload {
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  margin: 0, 0, 0, 10px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.avatar-uploader .el-upload:hover {
-  border-color: #409eff;
-}
-.avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 195px;
-  height: 105px;
-  line-height: 105px;
-  text-align: center;
-}
-.imgBody {
-  width: 195px;
-  height: 105px;
-  border: solid 2px #ffffff;
-  float: left;
-  position: relative;
-}
-.uploadImgBody {
-  margin-left: 5px;
-  width: 195px;
-  height: 105px;
-  border: dashed 1px #c0c0c0;
-  float: left;
-  position: relative;
-}
-.uploadImgBody :hover {
-  border: dashed 1px #00ccff;
-}
-.inputClass {
-  position: absolute;
-}
-.img {
-  width: 100%;
-  height: 100%;
-}
-
 .media-title {
   color: #8492a6;
   font-size: 14px;

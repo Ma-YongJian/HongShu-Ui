@@ -1,5 +1,6 @@
 <template>
 	<view class="container">
+		<hs-nav-bar title="专辑"></hs-nav-bar>
 
 		<view class="create" v-if="T">
 			<view class="create-btn">
@@ -13,7 +14,7 @@
 					<tui-grid-item :cell="2" backgroundColor="#f4f4f4" :border="false" :bottomLine="false">
 						<view class="card">
 							<view @click="searchAlbum(item.id)">
-								<image :src="item.cover" mode="aspectFill" :lazy-load='true' />
+								<image :src="mediaUrl(item.cover)" mode="aspectFill" :lazy-load='true' />
 							</view>
 							<view class="cont">
 								<h5>{{ item.name }}</h5>
@@ -23,6 +24,7 @@
 					</tui-grid-item>
 				</block>
 			</tui-grid>
+			<hs-empty v-if="!dataList.length" title="暂无专辑" :action="T ? '创建专辑' : ''" @action="createAlbum"></hs-empty>
 		</view>
 	</view>
 </template>
@@ -34,6 +36,9 @@
 	import {
 		getUserInfo
 	} from "@/api/user.js"
+	import {
+		mediaUrl
+	} from '@/utils/upload.js'
 	export default {
 		props: {
 			seed: Number,
@@ -62,6 +67,7 @@
 
 		},
 		methods: {
+			mediaUrl,
 
 			getUserInfo(uid) {
 				let params = {

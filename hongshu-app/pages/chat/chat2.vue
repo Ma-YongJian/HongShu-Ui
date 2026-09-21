@@ -1,266 +1,308 @@
 <template>
-	<!-- 使用websocket做聊天功能(暂未完成) -->
-	<view>
-		<view class="container" :style="{ 'padding-bottom': `${175 + inputBottom}rpx` }">
-			<view class="header">
-				<tui-navigation-bar backgroundColor="#fff" :isFixed="true" :isOpacity="false">
-					<view class="nav">
-						<tui-icon name="arrowleft" size="25" @click="back"></tui-icon>
-						<view @click="getUserInfo(toUserInfo.id)">
-							<image class="avatar" :src="toUserInfo.avatar" mode="aspectFill" />
-						</view>
-						<view class="username">{{ toUserInfo.username }}</view>
-						<tui-icon name="more-fill" size="22"></tui-icon>
-					</view>
-				</tui-navigation-bar>
-			</view>
-
-			<scroll-view class="content" :scroll-y="true" :scroll-top="scrollTop" refresher-enabled="true"
-				:refresher-triggered="triggered" @refresherrefresh="onRefresh">
-				<view v-for="(item, index) in dataList" id="chatBox">
-					<view class="tui-chat-item" v-if="item.sendUid != userInfo.id">
-						<image class="tui-user-avatar tui-mr" :src="toUserInfo.avatar" mode="aspectFill"
-							@click="getUserInfo(toUserInfo.id)" />
-						<view class="tui-chat-box">
-							<!-- <view class="tui-user-name" >{{toUserInfo.username}}</view> -->
-							<view class="left-chat-time">{{ item.time }}</view>
-							<tui-bubble-popup direction="left" position="relative" :mask="false" :show="true"
-								triangleLeft="-22rpx" triangleTop="30rpx" width="100%" backgroundColor="#ff7900">
-								<view class="tui-chat-text">{{ item.content }}</view>
-							</tui-bubble-popup>
-						</view>
-					</view>
-
-					<view class="tui-chat-item tui-flex-end" v-else>
-						<view class="tui-chat-box">
-							<!-- <view class="tui-user-name" >{{userInfo.username}}</view> -->
-							<view class="right-chat-time">{{ item.time }}</view>
-							<tui-bubble-popup direction="right" position="relative" :mask="false" :show="true"
-								triangleRight="-22rpx" triangleTop="30rpx" width="100%" :flexEnd="true"
-								backgroundColor="#19be6b">
-								<view class="tui-chat-text">{{ item.content }}</view>
-							</tui-bubble-popup>
-						</view>
-						<image class="tui-user-avatar tui-ml" :src="userInfo.avatar" mode="aspectFill"
-							@click="getUserInfo(userInfo.id)" />
-					</view>
+	<view class="chat-page">
+		<hs-nav-bar :isFixed="true">
+			<template #center>
+				<view class="nav-mid" @click="goUser(toUid)">
+					<image class="nav-avatar" :src="peerAvatar" mode="aspectFill"></image>
+					<view class="nav-name">{{ toUserInfo.username || '对话' }}</view>
 				</view>
-			</scroll-view>
-		</view>
-		<view class="bottom-textarea" :style="{ bottom: inputBottom + 'px' }">
-			<view class="textarea-container">
-				<textarea v-model="recordInput" :maxlength="-1" :auto-height="true" :show-confirm-bar="false"
-					:cursor-spacing="10" :fixed="true" :adjust-position="false" @focus="focusTextarea"
-					@blur="blurTextarea" />
+			</template>
+			<template #right>
+				<view class="hs-nav-action" @click="goUser(toUid)">
+					<tui-icon name="more-fill" size="22" color="#111827"></tui-icon>
+				</view>
+			</template>
+		</hs-nav-bar>
+
+		<scroll-view class="chat-scroll" scroll-y :scroll-into-view="scrollInto" :scroll-with-animation="true"
+			refresher-enabled="true" :refresher-triggered="triggered" @refresherrefresh="onRefresh" @tap="closeKeyboard">
+			<view v-if="!dataList.length && loaded" class="empty-tip">还没有消息，打个招呼吧</view>
+			<view v-for="(item, index) in dataList" :id="'msg-' + index" :key="item._key">
+				<view v-if="item.showTime" class="time-tip">{{ item.time }}</view>
+				<view class="msg-row" :class="{ mine: isMine(item) }">
+					<image v-if="!isMine(item)" class="msg-avatar" :src="peerAvatar" mode="aspectFill"
+						@click="goUser(toUid)"></image>
+					<view class="bubble" :class="isMine(item) ? 'bubble-mine' : 'bubble-other'">
+						<text class="bubble-text">{{ item.content }}</text>
+					</view>
+					<image v-if="isMine(item)" class="msg-avatar" :src="myAvatar" mode="aspectFill"
+						@click="goUser(userInfo.id)"></image>
+				</view>
 			</view>
-			<tui-button type="danger" height="82rpx" width="100rpx" @click="send()">发送</tui-button>
+			<view id="msg-bottom" class="scroll-anchor"></view>
+		</scroll-view>
+
+		<view class="composer" :style="{ paddingBottom: composerPad }">
+			<input class="composer-input" v-model="recordInput" confirm-type="send" :adjust-position="true"
+				:cursor-spacing="16" maxlength="700" placeholder="发送消息" @confirm="send" />
+			<view class="send-btn" :class="{ disabled: !canSend }" @click="send">发送</view>
 		</view>
 	</view>
 </template>
 
 <script>
-	import {
-		addChatRecord,
-		getChatRecord
-	} from "@/api/chat.js"
-	import {
-		getUserInfo
-	} from '@/api/user.js'
-	import socket from 'plus-websocket'
-	import {
-		appConfig
-	} from '@/config/config.js'
-	import {
-		timestampToDateTime
-	} from "@/utils/webUtils.js"
+	import { addChatRecord, getChatRecord } from "@/api/chat.js"
+	import { getUserInfo } from '@/api/user.js'
+	import { mediaUrl } from '@/utils/upload.js'
+	import { subscribeIm, parseImPayload } from '@/utils/imSocket.js'
+	import { timestampToDateTime } from "@/utils/webUtils.js"
+
 	export default {
 		data() {
 			return {
-				records: [],
 				recordInput: "",
-				itemAverageHeight: 500, //每条数据平均高度，为确保能滚到底部，可以设置大一些
-				scrollTop: 1000,
-				inputBottom: 0,
+				scrollInto: '',
 				userInfo: {},
 				toUid: '',
 				page: 1,
-				limit: 10,
+				limit: 20,
 				total: 0,
 				dataList: [],
 				toUserInfo: {},
 				triggered: false,
-				version: 0,
-				isOpen: false,
-
-			};
+				loaded: false,
+				sending: false,
+				localSeq: 0,
+				unsub: null,
+				composerPad: 'env(safe-area-inset-bottom)',
+				statusBarHeight: 0
+			}
+		},
+		computed: {
+			myAvatar() {
+				return mediaUrl(this.userInfo.avatar)
+			},
+			peerAvatar() {
+				return mediaUrl(this.toUserInfo.avatar)
+			},
+			canSend() {
+				return !!(this.recordInput && this.recordInput.trim()) && !this.sending
+			}
 		},
 		onLoad(option) {
-			this.toUid = option.toUid
-			this.userInfo = uni.getStorageSync("userInfo")
+			this.statusBarHeight = (uni.getSystemInfoSync() || {}).statusBarHeight || 0
+			this.toUid = option.toUid || option.to || ''
+			this.userInfo = uni.getStorageSync("userInfo") || {}
 			this.getToUserInfo()
+			this.getList(true)
 		},
-		created() {
-			this.createWs()
-		},
-
 		onShow() {
-			this.getList()
+			this.unsub = subscribeIm((data) => this.acceptMessage(data))
 		},
-
-		onBackPress() {
-			// console.log("左滑退出")
-			// uni.setStorageSync("refresh",true)
+		onHide() {
+			if (this.unsub) {
+				this.unsub()
+				this.unsub = null
+			}
 		},
-
+		onUnload() {
+			if (this.unsub) {
+				this.unsub()
+				this.unsub = null
+			}
+		},
 		methods: {
 			back() {
 				uni.navigateBack({
 					delta: 1
 				})
 			},
-
-			getToUserInfo() {
-				let params = {
-					userId: this.toUid
-				}
-
-				getUserInfo(params).then(res => {
-					this.toUserInfo = res.data
+			closeKeyboard() {
+				uni.hideKeyboard()
+			},
+			goUser(uid) {
+				if (!uid) return
+				uni.navigateTo({
+					url: "/pages/otherUser/otherUser?uid=" + uid
 				})
-
 			},
-			//创建聊天
-			acceptMessage(data) {
-				let that = this
-
-				let messageList = JSON.parse(data)
-				if (Object.getPrototypeOf(messageList) == Array.prototype) {
-					let params = {
-						uid: that.toUid
-					}
-					getUserInfo(params).then(res => {
-
-						messageList.forEach(item => {
-							if (item.sendId == that.toUid) {
-								let messageData = {}
-								messageData.sendUid = item.sendId
-								messageData.content = item.content
-								messageData.username = res.data.username
-								messageData.avatar = res.data.avatar
-								that.dataList.push(messageData)
-							}
-						})
-
-					})
+			isMine(item) {
+				return String(item.sendUid) === String(this.userInfo.id)
+			},
+			shouldShowTime(list, index) {
+				if (index === 0) return true
+				const prev = Number(list[index - 1].timestamp) || 0
+				const cur = Number(list[index].timestamp) || 0
+				return !prev || cur - prev > 5 * 60 * 1000
+			},
+			nextLocalKey() {
+				this.localSeq += 1
+				return 'local-' + Date.now() + '-' + this.localSeq
+			},
+			msgKey(item) {
+				if (item && item._key) return item._key
+				if (item && item.id != null && item.id !== '') return 'id-' + item.id
+				return this.nextLocalKey()
+			},
+			isDupMsg(a, b) {
+				if (!a || !b) return false
+				if (a.id != null && a.id !== '' && b.id != null && b.id !== '' && String(a.id) === String(b.id)) {
+					return true
 				}
+				return String(a.sendUid) === String(b.sendUid) &&
+					String(a.content) === String(b.content) &&
+					Math.abs((Number(a.timestamp) || 0) - (Number(b.timestamp) || 0)) < 8000
 			},
-
-
-			//
+			uniqMessages(list) {
+				const seenId = {}
+				const out = []
+				;(list || []).forEach((item) => {
+					if (!item) return
+					if (item.id != null && item.id !== '') {
+						const idKey = String(item.id)
+						if (seenId[idKey]) return
+						seenId[idKey] = true
+					} else {
+						const last = out[out.length - 1]
+						if (last && this.isDupMsg(last, item)) return
+					}
+					out.push(item)
+				})
+				return out
+			},
+			decorate(list) {
+				return this.uniqMessages(list).map((item, index, arr) => {
+					const row = Object.assign({}, item)
+					row.time = timestampToDateTime(row.timestamp)
+					row.showTime = this.shouldShowTime(arr, index)
+					row._key = this.msgKey(row)
+					return row
+				})
+			},
+			pushMsg(payload) {
+				const last = this.dataList[this.dataList.length - 1]
+				if (last && this.isDupMsg(last, payload)) return
+				const row = Object.assign({
+					timestamp: Date.now()
+				}, payload)
+				row.time = timestampToDateTime(row.timestamp)
+				row.showTime = this.shouldShowTime(this.dataList.concat([row]), this.dataList.length)
+				row._key = this.msgKey(row)
+				this.dataList.push(row)
+				this.scrollToBottom()
+			},
+			scrollToBottom() {
+				this.scrollInto = ''
+				this.$nextTick(() => {
+					this.scrollInto = 'msg-bottom'
+				})
+			},
+			getToUserInfo() {
+				if (!this.toUid) return
+				getUserInfo({
+					userId: this.toUid
+				}).then((res) => {
+					if (res.code === 200) {
+						this.toUserInfo = res.data || {}
+					}
+				})
+			},
 			send() {
-				let that = this
-				if (that.recordInput == '' || that.recordInput == null) {
+				const text = (this.recordInput || '').trim()
+				if (!text) {
 					uni.showToast({
 						title: "内容不能为空~",
 						icon: 'none'
 					})
 					return
 				}
-				let MessageDTO = {}
-
-				MessageDTO.sendUid = that.userInfo.id + ''
-				MessageDTO.acceptUid = that.toUid + ''
-				MessageDTO.msgType = 1
-				MessageDTO.chatType = 0
-				MessageDTO.content = that.recordInput
-
-				//往数据库中添加数据
-				addChatRecord(MessageDTO).then(res => {
-					let messageData = {}
-					messageData.sendUid = that.userInfo.id
-					messageData.avatar = that.userInfo.avatar
-					messageData.content = that.recordInput
-					that.dataList.push(messageData)
-					that.recordInput = ''
-					that.scrollTop = that.scrollTop + that.itemAverageHeight;
+				if (this.sending) return
+				this.sending = true
+				addChatRecord({
+					sendUid: String(this.userInfo.id),
+					acceptUid: String(this.toUid),
+					msgType: 1,
+					chatType: 0,
+					content: text
+				}).then((res) => {
+					if (res.code !== 200) {
+						uni.showToast({
+							title: res.message || '发送失败',
+							icon: 'none'
+						})
+						return
+					}
+					const saved = (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) ? res.data : {}
+					this.pushMsg({
+						id: saved.id,
+						sendUid: this.userInfo.id,
+						acceptUid: this.toUid,
+						content: text,
+						timestamp: saved.timestamp || Date.now()
+					})
+					this.recordInput = ''
+				}).catch(() => {
+					uni.showToast({
+						title: '发送失败',
+						icon: 'none'
+					})
+				}).then(() => {
+					this.sending = false
 				})
 			},
-
-			getList() {
-				//获取记录信息
-				let params = {
-					sendUid: this.userInfo.id,
-					acceptUid: this.toUid
+			getList(reset) {
+				if (reset) {
+					this.page = 1
+					this.dataList = []
 				}
-				getChatRecord(this.page, this.limit, params).then(res => {
-					this.dataList = res.data.records.map(item => {
-					        item.time = timestampToDateTime(item.timestamp);
-					        return item;
-					    }).reverse();
-					this.total = res.data.total
-					this.scrollTop = this.scrollTop + this.dataList.length * this.itemAverageHeight;
+				getChatRecord(this.page, this.limit, {
+					acceptUid: this.toUid
+				}).then((res) => {
+					this.loaded = true
+					if (res.code !== 200 || !res.data) return
+					const records = (res.data.records || []).slice().reverse()
+					this.total = res.data.total || 0
+					if (reset) {
+						this.dataList = this.decorate(records)
+					} else {
+						this.dataList = this.decorate(records.concat(this.dataList))
+					}
+					if (reset) this.scrollToBottom()
+				}).catch(() => {
+					this.loaded = true
 				})
 			},
-			focusTextarea(e) {
-				this.inputBottom = e.detail.height;
-				this.scrollTop += 1; //滚到底部
-			},
-			blurTextarea(e) {
-				this.inputBottom = 0;
-				this.scrollTop += 1; //滚到底部
-			},
-
 			onRefresh() {
-
-				//重新打开websocket
-				this.createWs()
-
-				this.triggered = true;
-				setTimeout(() => {
-					this.triggered = false;
-				}, 1000)
-
-				this.page = this.page + 1
-
-				if (this.dataList.length >= this.total) {
+				this.triggered = true
+				if (this.dataList.length >= this.total && this.total > 0) {
+					setTimeout(() => {
+						this.triggered = false
+					}, 300)
 					return
 				}
-				let params = {
-					sendUid: this.userInfo.id,
+				this.page += 1
+				getChatRecord(this.page, this.limit, {
 					acceptUid: this.toUid
+				}).then((res) => {
+					const records = (res.data && res.data.records || []).slice().reverse()
+					this.dataList = this.decorate(records.concat(this.dataList))
+				}).then(() => {
+					this.triggered = false
+				})
+			},
+			acceptMessage(raw) {
+				const msg = parseImPayload(raw)
+				if (!msg) return
+				if (Array.isArray(msg) || Array.isArray(msg.content) || msg.msgType === 5 || msg.msgType === '5') {
+					return
 				}
-				getChatRecord(this.page, this.limit, params).then(res => {
-
-					this.dataList.unshift(...res.data.records.reverse())
+				const sendUid = String(msg.sendUid || '')
+				const acceptUid = String(msg.acceptUid || '')
+				const me = String(this.userInfo.id)
+				const peer = String(this.toUid)
+				if (sendUid !== peer || acceptUid !== me) return
+				const content = typeof msg.content === 'string' ? msg.content : String(msg.content || '')
+				if (!content || content === '[object Object]') return
+				this.pushMsg({
+					id: msg.id,
+					sendUid,
+					acceptUid,
+					content,
+					timestamp: msg.timestamp || Date.now()
 				})
-			},
-
-			getUserInfo(uid) {
-				uni.navigateTo({
-					url: "/pages/otherUser/otherUser?uid=" + uid
-				})
-			},
-
-			//重新打开websocket
-			createWs() {
-				let that = this
-				socket.connectSocket({
-					// ws://192.168.1.103:8083/platform/ws/
-					url: 'ws://' + appConfig.WS_API + uni.getStorageSync("userInfo").id
-				});
-				socket.onSocketOpen(function(res) {
-					console.log('WebSocket连接已打开！');
-				});
-				socket.onSocketError(function(res) {
-					console.log('WebSocket连接打开失败，请检查！');
-				});
-				socket.onSocketMessage(function(res) {
-					that.acceptMessage(res.data)
-				});
-
-			},
-		},
-	};
+			}
+		}
+	}
 </script>
 
 <style scoped>

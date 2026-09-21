@@ -1,11 +1,6 @@
 <template>
 	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<tui-icon name="arrowleft" size="25" @click="back"></tui-icon>
-				<h3>修改密码</h3>
-			</view>
-		</tui-navigation-bar>
+		<hs-nav-bar title="找回密码"></hs-nav-bar>
 
 		<view class="main" v-if="!check">
 			<view class="center">
@@ -19,7 +14,7 @@
 			</view>
 
 			<view class="regist">
-				<tui-button @click="next()" type="danger" shape="circle">下一步</tui-button>
+				<tui-button @click="next()" type="primary" shape="circle">下一步</tui-button>
 			</view>
 		</view>
 
@@ -28,7 +23,7 @@
 			<input placeholder="重新输入密码" class="info-input" type="password" v-model="checkPassword" />
 
 			<view class="regist">
-				<tui-button @click="updatePassword" type="danger" shape="circle">修改密码</tui-button>
+				<tui-button @click="updatePassword" type="primary" shape="circle">修改密码</tui-button>
 			</view>
 		</view>
 	</view>

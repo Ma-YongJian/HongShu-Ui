@@ -6,6 +6,16 @@
 @import './btn.scss';
 @import './ruoyi.scss';
 
+:root {
+  --el-color-primary: #3b82f6;
+  --el-color-primary-light-3: #60a5fa;
+  --el-color-primary-light-5: #93c5fd;
+  --el-color-primary-light-7: #bfdbfe;
+  --el-color-primary-light-8: #dbeafe;
+  --el-color-primary-light-9: #eff6ff;
+  --el-color-primary-dark-2: #2563eb;
+}
+
 body {
   height: 100%;
   margin: 0;

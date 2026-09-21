@@ -6,7 +6,7 @@
       :rules="registerRules"
       class="register-form"
     >
-      <h3 class="title">红薯后台管理系统</h3>
+      <h3 class="title">来因管理端</h3>
       <el-form-item prop="username">
         <el-input
           v-model="registerForm.username"
@@ -85,7 +85,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-register-footer">
-      <span>Copyright © 2024 HongShu All Rights Reserved.</span>
+      <span>Copyright © 来因社区</span>
     </div>
   </div>
 </template>
@@ -200,20 +200,23 @@ getCode();
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-image: url("../assets/images/login-background.jpg");
+  background: linear-gradient(180deg, #eff6ff 0%, #e5e7eb 100%);
   background-size: cover;
 }
 .title {
-  margin: 0px auto 30px auto;
+  margin: 0px auto 28px auto;
   text-align: center;
-  color: #707070;
+  color: #1f2937;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .register-form {
-  border-radius: 6px;
+  border-radius: 16px;
   background: #ffffff;
   width: 400px;
-  padding: 25px 25px 5px 25px;
+  padding: 28px 28px 8px 28px;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
   .el-input {
     height: 40px;
     input {
@@ -247,7 +250,7 @@ getCode();
   bottom: 0;
   width: 100%;
   text-align: center;
-  color: #fff;
+  color: #6b7280;
   font-family: Arial;
   font-size: 12px;
   letter-spacing: 1px;

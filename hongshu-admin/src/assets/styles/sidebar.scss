@@ -89,7 +89,12 @@
     }
 
     & .theme-dark .is-active > .el-sub-menu__title {
-      color: $base-menu-color-active !important;
+      color: #93c5fd !important;
+    }
+
+    & .theme-dark .el-menu-item.is-active {
+      background-color: rgba(59, 130, 246, 0.18) !important;
+      color: #93c5fd !important;
     }
 
     & .nest-menu .el-sub-menu>.el-sub-menu__title,

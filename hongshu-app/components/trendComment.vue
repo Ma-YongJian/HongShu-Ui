@@ -21,7 +21,7 @@
 						<tui-icon name="imface" size="20"></tui-icon>
 					</view>
 					<view>
-						<tui-button type="danger" height="60rpx" width="100rpx" @click="addComment">发送</tui-button>
+						<tui-button type="primary" height="60rpx" width="100rpx" @click="addComment">发送</tui-button>
 					</view>
 				</view>
 			</view>

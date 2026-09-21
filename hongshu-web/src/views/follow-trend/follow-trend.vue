@@ -50,7 +50,7 @@
                   <div class="icon-item">
                     <i
                       class="iconfont icon-follow-fill"
-                      :style="{ width: '1em', height: '1em', color: item.isLike ? 'red' : 'black' }"
+                      :style="{ width: '1em', height: '1em', color: item.isLike ? '#f87171' : undefined }"
                       @click="like(item.nid, item.uid, index, -1)"
                       v-if="item.isLike"
                     >
@@ -250,16 +250,23 @@ const toMain = (noteId: string) => {
   mainShow.value = true;
 };
 
-const close = (nid: string, val: any) => {
-  const index = trendData.value.findIndex((item) => item.nid === nid);
-  console.log("---val", val, index);
-  const _data = trendData.value[index];
-  if (_data.isLike != val.isLike) {
-    _data.isLike = val.isLike;
-    _data.likeCount += val.isLike ? 1 : -1;
+const close = (noteId: string, val: any) => {
+  if (val && val.deleted) {
+    const target = String(noteId || nid.value || "");
+    trendData.value = trendData.value.filter((item) => String(item.nid || item.id) !== target);
+    mainShow.value = false;
+    return;
   }
-  if (val.isComment) {
-    _data.commentCount += 1;
+  const index = trendData.value.findIndex((item) => item.nid === noteId);
+  const _data = trendData.value[index];
+  if (_data && val) {
+    if (_data.isLike != val.isLike) {
+      _data.isLike = val.isLike;
+      _data.likeCount += val.isLike ? 1 : -1;
+    }
+    if (val.isComment) {
+      _data.commentCount += 1;
+    }
   }
   mainShow.value = false;
 };

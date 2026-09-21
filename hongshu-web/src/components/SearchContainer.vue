@@ -81,7 +81,14 @@ watchEffect(() => {
     }
 
     .sug-item:hover {
-      background: #f8f8f8;
+      background: rgba(59, 130, 246, 0.06);
+    }
+
+    .sug-item :deep(em),
+    .sug-item :deep(span[style]) {
+      color: var(--el-color-primary) !important;
+      font-style: normal;
+      font-weight: 600;
     }
   }
 }

@@ -145,7 +145,7 @@
 /** 表格更多操作下拉样式 */
 .el-table .el-dropdown-link {
 	cursor: pointer;
-	color: #409EFF;
+	color: #3b82f6;
 	margin-left: 10px;
 }
 
@@ -278,4 +278,11 @@
 /* 表格右侧工具栏样式 */
 .top-right-btn {
 	margin-left: auto;
+}
+
+.cover-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
 }

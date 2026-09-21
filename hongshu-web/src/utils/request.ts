@@ -25,6 +25,9 @@ service.interceptors.request.use(
       config.headers.accessToken = userStore.getToken();
       config.headers.userId = userStore.getUserInfo().id;
     }
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
     return config;
   },
   (error: any) => {

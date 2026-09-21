@@ -1,354 +1,277 @@
 <template>
-	<view class="container">
-
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<view class="n-left">
-					<view @click="back"><tui-icon name="arrowleft" size="25"></tui-icon></view>
+	<view class="search-page">
+		<hs-nav-bar :hasRightSlot="true" :border="false">
+			<template #center>
+				<view class="search-box">
+					<tui-icon name="search-2" :size="18" color="#8a8a8a"></tui-icon>
+					<input class="search-input" placeholder="搜索笔记、用户" placeholder-class="search-ph"
+						v-model="keyword" :focus="true" confirm-type="search" maxlength="40"
+						@input="onInput" @confirm="search" @focus="onFocus" />
 				</view>
+			</template>
+			<template #right>
+				<view class="search-action" @click="onNavAction">{{ navActionText }}</view>
+			</template>
+		</hs-nav-bar>
 
-				<view class="tui-search-box">
-					<tui-icon name="search-2" :size="18" color="#bfbfbf"></tui-icon>
-					<input class="tui-search-text" placeholder="请输入搜索内容" v-model="keyword" :focus="cursor"
-						@input="change" />
-				</view>
-				<view class="tui-notice-box">
-					<tui-button type="danger" height="54rpx" width="100rpx" :size="24" @click="search">搜索</tui-button>
-				</view>
-
-			</view>
-		</tui-navigation-bar>
-
-		<view class="search-list" v-if='cursor'>
-			<view v-if="userList.length>0">
-				<view class="tui-item-box" v-for="(user,index) in userList" :key="index">
-					<view class="tui-msg-box" @click="getUserInfo(user.id)">
-						<image :src="user.avatar" class="tui-msg-pic" mode="aspectFill"></image>
-						<view class="tui-msg-item">
-							<view class="tui-msg-name">{{user.username}}</view>
-							<view class="tui-msg-type">
-								<view>用户id：{{ user.userId }}</view>
-								<view>粉丝：{{ user.fanCount }}</view>
-							</view>
-						</view>
-					</view>
+		<view class="suggest-wrap" v-if="showSuggest">
+			<view class="user-row" v-for="(user, index) in userList" :key="index" @click="onTapUser(index)">
+				<image class="user-avatar" :src="mediaUrl(user.avatar)" mode="aspectFill"></image>
+				<view class="user-meta">
+					<view class="user-name">{{ user.username }}</view>
+					<view class="user-sub">来因号 {{ user.hsId || user.userId || '-' }} · 粉丝 {{ user.fanCount || 0 }}</view>
 				</view>
 			</view>
-
-			<view class="search-item" v-for="(item,index) in searchData" @click="selectTag(item.keyword)"
-				v-html="item.highLightKeyword"></view>
+			<view class="suggest-row" v-for="(item, index) in searchData" :key="index" @click="onTapSuggest(index)">
+				<tui-icon name="search-2" :size="16" color="#c0c4cc"></tui-icon>
+				<text class="suggest-text">{{ item.keyword || item.content }}</text>
+			</view>
 		</view>
 
-		<view v-else>
-			<view class="input-history w" v-show="dataList.length>0">
-				<view class="top">
-					<view> 搜索历史
-					 <tui-icon name="clock" :size="18" style="margin-right: 250px;"></tui-icon>
-					 </view>
-					<view class="all-del" v-if="D">
-						<tui-button type="white" :size="20" height="40rpx" width="120rpx" @click="allDel"
-							:link='true'>全部删除</tui-button>
-						<tui-button type="white" :size="20" height="40rpx" width="60rpx" @click="cancelDel"
-							:link='true'>取消</tui-button>
+		<view v-else class="search-body">
+			<view class="search-card" v-if="showHistory">
+				<view class="section-header">
+					<text class="section-title">最近搜索</text>
+					<view class="header-actions" v-if="dataList.length">
+						<text class="header-link" @click="toggleManage">{{ startDelete ? '完成' : '管理' }}</text>
+						<text class="header-link header-danger" v-if="startDelete" @click="allDel">清空</text>
 					</view>
-
-					<tui-icon name="delete" :size="18" @click="showDel" v-else></tui-icon>
 				</view>
-				<view class="his-main">
-					<view class="tag-item" v-for="(item,index) in dataList" :key="index" v-show="index<searchLimit">
-						<tui-tag type="gray" shape="circle" margin='5rpx' @click="selectTag(item.content)">
-							<p>{{item.content}}</p>
-						</tui-tag>
-						<view class="del-tag" v-if="D">
-							<tui-icon name="shut" :size="12" @click="deleteTag(item,index)"></tui-icon>
-						</view>
+				<view class="history-list" v-if="dataList.length">
+					<view class="history-tag" :class="{ managing: startDelete }"
+						v-for="(item, index) in dataList" :key="index" @click="onHistoryTap(index)">
+						<text class="tag-text">{{ item.content || item.keyword }}</text>
+						<text v-if="startDelete" class="tag-close">×</text>
 					</view>
-					<tui-tag type="gray" shape="circle" margin='10rpx' v-if="!T&&dataList.length>8"><tui-icon
-							name="arrowdown" @click="arrowdown"></tui-icon></tui-tag>
-					<tui-tag type="gray" shape="circle" margin='10rpx' v-if="T"><tui-icon name="arrowup"
-							@click="arrowup"></tui-icon></tui-tag>
 				</view>
+				<view v-else class="empty-text">暂无搜索记录</view>
 			</view>
 
-			<view class="input-guess w">
-				<view class="top">
-					<view>猜你想搜
-						<tui-icon name="search" :size="18" style="margin-right: 200px;"></tui-icon>
-					</view>
-					<tui-icon name="refresh" :size="18" @click="refresh"></tui-icon>
+			<view class="search-card" v-if="hotSearchList.length">
+				<view class="hot-header">
+					<text class="hot-flame">🔥</text>
+					<text class="section-title">热门搜索</text>
 				</view>
-				<view class="gus-main">
-					<view v-for="(item,index) in dataList2">
-						<view @click="selectTag(item.title)" class="gus-item">
-							<p>{{item.title}}</p>
-						</view>
-					</view>
-				</view>
-			</view>
-
-			<view class="hot-search w">
-
-				<view class="top">热门搜索
-					<img src="@/static/images/3.png" class="redian" crossorigin="anonymous" />
-				</view>
-
-				<view class="hot-main">
-					<view class="hot-item" v-for="(item, index) in hotSearchList" :key="index">
-						<view class="hot-item-l" @click="selectTag(item.keyword)">
-							<tui-icon name="circle" :size="8" color="#ff0000" v-if="index==0"></tui-icon>
-							<tui-icon name="circle" :size="8" color="#ff5500" v-if="index==1"></tui-icon>
-							<tui-icon name="circle" :size="8" color="#ffaa00" v-if="index==2"></tui-icon>
-							<tui-icon name="circle" :size="8" v-if="index!=0&&index!=1&&index!=2"></tui-icon>
-							<view class="hot-content">{{item.keyword}}</view>
-							<img src="@/static/images/1.png" class="xin" crossorigin="anonymous" />
-							<img v-show="item.count > 100" src="@/static/images/2.png" class="re" crossorigin="anonymous" />
-							<view class="con-tag new-tag" v-if="item.type==2">新</view>
-							<view class="con-tag hot-tag" v-if="item.type==1">热</view>
-						</view>
-						<view class="hot-item-r">
-							{{item.count}}
-						</view>
+				<view class="hot-list">
+					<view class="hot-row" v-for="(item, index) in hotSearchList" :key="index"
+						@click="onTapHot(index)">
+						<text class="hot-rank" :class="'rank-' + (index < 3 ? index + 1 : 'n')">{{ index + 1 }}</text>
+						<text class="hot-keyword">{{ item }}</text>
 					</view>
 				</view>
 			</view>
 		</view>
-
-
 	</view>
 </template>
 
 <script>
-	import {
-		getCategory,
-	} from '@/api/category.js'
-	import {
-		getAllSearchRecord,
-		addSearchRecord,
-		deleteSearchRecord
-	} from "@/api/searchRecord.js"
-	import {
-		getRecommend
-	} from "@/api/imgDetail.js"
-	import {
-		addSearchRecordData,
-		esSearchRecord,
-		esAllSearchRecord
-	} from "@/api/search.js"
-	import {
-		searchUserByUsername
-	} from "@/api/user.js"
+	import { getAllSearchRecord, addSearchRecord, deleteSearchRecord } from '@/api/searchRecord.js'
+	import { addSearchRecordData, esSearchRecord, esAllSearchRecord } from '@/api/search.js'
+	import { getAllTag } from '@/api/tag.js'
+	import { searchUserByUsername } from '@/api/user.js'
+	import { mediaUrl } from '@/utils/upload.js'
+	import { currentUid, openUser } from '@/utils/noteNav.js'
+
+	function uniqueTexts(list) {
+		const out = []
+		const seen = {}
+		;(list || []).forEach(text => {
+			const key = String(text || '').trim()
+			if (!key || seen[key]) return
+			seen[key] = true
+			out.push(key)
+		})
+		return out
+	}
+
 	export default {
 		data() {
 			return {
 				keyword: '',
-				D: false,
-
 				dataList: [],
-				dataList2: [],
-				delList: [],
-				page: 1,
-				limit: 6,
-
-				searchLimit: 8,
-				T: false,
-				//键盘
-				cursor: false, //是否聚焦
-
-				//聚焦内容
+				startDelete: false,
 				searchData: [],
-
-				//热门搜索
 				hotSearchList: [],
-
-				//搜索用户
-				userList: [],
-
+				userList: []
 			}
 		},
-
-		created() {
+		computed: {
+			showHistory() {
+				return !!(currentUid() || (this.dataList && this.dataList.length))
+			},
+			showSuggest() {
+				return !!(this.keyword && String(this.keyword).trim())
+			},
+			navActionText() {
+				return this.showSuggest ? '搜索' : '取消'
+			}
+		},
+		onShow() {
 			this.getAllSearchRecord()
-			this.getCategory()
-			this.esAllSearchRecord()
+			this.loadHot()
 		},
-
-		onLoad(options) {
-
-		},
-
 		methods: {
-			back() {
-				uni.reLaunch({
-					url: "/pages/index/index"
+			mediaUrl,
+			onFocus() {
+				this.startDelete = false
+			},
+			onInput() {
+				this.startDelete = false
+				const word = String(this.keyword || '').trim()
+				if (!word) {
+					this.userList = []
+					this.searchData = []
+					return
+				}
+				const params = { keyword: word }
+				searchUserByUsername(params).then(res => {
+					this.userList = res.data || []
+				}).catch(() => {
+					this.userList = []
+				})
+				esAllSearchRecord(params).then(res => {
+					this.searchData = res.data || []
+				}).catch(() => {
+					this.searchData = []
 				})
 			},
-
-			showDel() {
-				this.D = true
-			},
-
-			allDel() {
-				let params = {
-					uid: uni.getStorageSync("userInfo").id,
-					keyword: this.keyword
+			onNavAction() {
+				if (!this.showSuggest) {
+					uni.navigateBack({
+						fail: () => {
+							uni.switchTab({ url: '/pages/index/index' })
+						}
+					})
+					return
 				}
-				deleteSearchRecord(params).then(res => {
+				this.search()
+			},
+			onTapUser(index) {
+				const user = this.userList[index]
+				if (user) openUser(user.id)
+			},
+			onTapSuggest(index) {
+				const item = this.searchData[index]
+				if (!item) return
+				this.keyword = item.keyword || item.content || ''
+				this.search()
+			},
+			onTapHot(index) {
+				const word = this.hotSearchList[index]
+				if (!word) return
+				this.keyword = word
+				this.search()
+			},
+			onHistoryTap(index) {
+				const item = this.dataList[index]
+				if (!item) return
+				const word = item.content || item.keyword
+				if (this.startDelete) {
+					this.deleteOne(word, index)
+					return
+				}
+				this.keyword = word
+				this.search()
+			},
+			toggleManage() {
+				this.startDelete = !this.startDelete
+			},
+			getAllSearchRecord() {
+				const uid = currentUid()
+				if (!uid) {
+					this.dataList = []
+					return
+				}
+				getAllSearchRecord({ uid }).then(res => {
+					const list = res.data || []
+					const unique = []
+					const seen = {}
+					list.forEach(item => {
+						const key = item.content || item.keyword
+						if (!key || seen[key]) return
+						seen[key] = true
+						unique.push(item)
+					})
+					this.dataList = unique
+				}).catch(() => {
 					this.dataList = []
 				})
 			},
-
-			cancelDel() {
-				this.D = false
-			},
-
-			deleteTag(item, index) {
-
-				this.dataList.splice(index, 1)
-				this.delList.push(item)
-				let params = {
-					uid: uni.getStorageSync("userInfo").id,
-					keyword: item.content
-				}
-				deleteSearchRecord(params).then()
-			},
-
-			arrowdown() {
-				this.T = true
-				this.searchLimit = 20
-			},
-			arrowup() {
-				this.T = false
-				this.searchLimit = 8
-			},
-
-			change() {
-				if (this.keyword == '') {
-					this.cursor = false
+			search() {
+				const word = String(this.keyword || '').replace(/[\n\r\s]+/g, '')
+				if (!word) {
+					uni.showToast({ title: '请输入搜索内容', icon: 'none' })
 					return
 				}
-
-				this.cursor = true
-
-				let params = {
-					keyword: this.keyword
+				this.keyword = word
+				this.addSearchRecord()
+				const params = {
+					uid: currentUid(),
+					keyword: word
 				}
-
-				searchUserByUsername(params).then(res => {
-
-					this.userList = res.data
-				})
-
-				esSearchRecord(params).then(res => {
-
-					this.searchData = res.data
-				})
-
-
-			},
-
-			selectTag(item) {
-				this.keyword = item
-				this.search()
-			},
-			getAllSearchRecord() {
-
-				let params = {
-					uid: uni.getStorageSync("userInfo").id,
-					keyword: this.keyword
+				const go = () => {
+					uni.navigateTo({
+						url: '/pages/index/search/searchList?keyword=' + encodeURIComponent(word)
+					})
 				}
-				getAllSearchRecord(params).then(res => {
-					if (typeof(res.data) != 'undefined') {
-						this.dataList = res.data
+				addSearchRecordData(params).then(go).catch(go)
+			},
+			addSearchRecord() {
+				const uid = currentUid()
+				if (!uid) return
+				addSearchRecord({
+					uid,
+					keyword: this.keyword
+				})
+			},
+			deleteOne(word, index) {
+				const uid = currentUid()
+				this.dataList.splice(index, 1)
+				if (!uid || !word) return
+				deleteSearchRecord({
+					uid,
+					keyword: word
+				}).catch(() => {
+					this.getAllSearchRecord()
+				})
+			},
+			allDel() {
+				const uid = currentUid()
+				uni.showModal({
+					title: '清空搜索记录',
+					content: '确定清空全部搜索记录吗？',
+					confirmText: '清空',
+					success: (res) => {
+						if (!res.confirm) return
+						this.dataList = []
+						this.startDelete = false
+						if (!uid) return
+						deleteSearchRecord({ uid }).catch(() => {
+							this.getAllSearchRecord()
+						})
 					}
 				})
 			},
-
-			search() {
-				if (this.keyword == '' || this.keyword == null) {
-					uni.showToast({
-						title: "内容不能为空~",
-						icon: 'none'
-					})
-					return
-				}
-				//添加一条搜索记录
-				this.addSearchRecord()
-				let params = {
-					uid: uni.getStorageSync("userInfo").id,
-					keyword: this.keyword
-				}
-				addSearchRecordData(params).then(res => {
-					uni.navigateTo({
-						url: "/pages/index/search/searchList?keyword=" + this.keyword
-					})
-				})
-			},
-
-			getRecommend() {
-				let params = {
-					uid: uni.getStorageSync("userInfo").id
-				}
-				getRecommend(this.page, this.limit, params).then(res => {
-					this.dataList2 = res.data.records
-
-				})
-			},
-
-			getCategory() {
-				getCategory().then(res => {
-					const shuffled = res.data.sort(() => 0.5 - Math.random());
-					      this.dataList2 = shuffled.slice(0, 6);
-				})
-			},
-
-			refresh() {
-				this.getCategory()
-			},
-
-			addSearchRecord() {
-				let params = {
-					uid: uni.getStorageSync("userInfo").id,
-					keyword: this.keyword
-				}
-				addSearchRecord(params).then()
-			},
-
-			esAllSearchRecord() {
-				let nowTime = new Date().valueOf(); //转换成毫秒
+			loadHot() {
 				esSearchRecord().then(res => {
-					res.data.forEach(item => {
-						let obj = {}
-						obj.count = item.searchCount
-						obj.highLightKeyword = item.highLightKeyword
-						obj.id = item.id
-						obj.keyword = item.content
-						let jetLag = (nowTime - item.time) / 1000 / 60
-						//10分钟之内显示最新
-						if (jetLag < 10) {
-							//最新
-							obj.type = 2
-						} else if (jetLag > 10 && item.count >= 2) {
-							//最热
-							obj.type = 1
-						}
-						this.hotSearchList.push(obj)
+					const list = uniqueTexts((res.data || []).map(item => item.content || item.keyword))
+					if (list.length) {
+						this.hotSearchList = list.slice(0, 10)
+						return
+					}
+					return getAllTag(1, 10, { keyword: '' }).then(tagRes => {
+						const records = (tagRes && tagRes.data && tagRes.data.records) || []
+						this.hotSearchList = uniqueTexts(records.map(item => item.title || item.name)).slice(0, 10)
+					})
+				}).catch(() => {
+					getAllTag(1, 10, { keyword: '' }).then(tagRes => {
+						const records = (tagRes && tagRes.data && tagRes.data.records) || []
+						this.hotSearchList = uniqueTexts(records.map(item => item.title || item.name)).slice(0, 10)
+					}).catch(() => {
+						this.hotSearchList = []
 					})
 				})
-
-			},
-
-			getUserInfo(uid) {
-				if (uid == uni.getStorageSync("userInfo").id) {
-					uni.switchTab({
-						url: "/pages/user/user"
-					})
-				} else {
-					uni.navigateTo({
-						url: "/pages/otherUser/otherUser?uid=" + uid
-					})
-				}
-			},
-
+			}
 		}
 	}
 </script>

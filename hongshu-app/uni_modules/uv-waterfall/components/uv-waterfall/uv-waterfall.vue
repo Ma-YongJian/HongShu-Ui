@@ -182,39 +182,43 @@
 					this.$emit('scrolltolower')
 				})
 			},
-			// 拆分数据
+			// 拆分数据：同一批一次性分列，避免逐张插入造成卡片一个个蹦出来
 			async splitData() {
-				let rectArr = [];
-				let emitList = {};
-				if (!this.tempList.length) return
-				for (let i = 1; i <= this.columnNum; i++) {
-					const rect = await this.$uvGetRect(`#uv-waterfall-${i}`);
-					rectArr.push({ ...rect, name: i });
+				if (this._splitting) {
+					this._splitQueued = true
+					return
 				}
-				let item = this.tempList[0]
-				// 因为经过上面两个await节点查询和定时器，数组有可能会变成空[]，导致item的值为undefined
-				// 解决多次快速滚动会导致数据乱的问题
-				if (!item) return
-				const minCol = this.getMin(rectArr);
-				// 列宽可能使用的到
-				item.width = minCol.width;
-				this[`list${minCol.name}`].push(item);
-				emitList.name = `list${minCol.name}`;
-				emitList.value = item;
-				this.$emit('changeList',emitList);
-				// 移除临时数组中已处理的数据
-				this.tempList.splice(0, 1)
-				// 如果还有数据则继续执行
-				if (this.tempList.length) {
-					let _timeout = this.addTime;
-					// 部分平台在延时较短的情况会出现BUG
-					// #ifdef MP-BAIDU
-					_timeout = _timeout<200?200:_timeout;
-					// #endif
-					await this.$uv.sleep(_timeout);
-					this.splitData()
-				} else {
+				if (!this.tempList.length) return
+				this._splitting = true
+				this._splitQueued = false
+				try {
+					const rectArr = [];
+					for (let i = 1; i <= this.columnNum; i++) {
+						const rect = await this.$uvGetRect(`#uv-waterfall-${i}`);
+						rectArr.push({
+							name: i,
+							width: rect && rect.width,
+							height: (rect && rect.height) || 0
+						});
+					}
+					const items = this.tempList.splice(0, this.tempList.length)
+					items.forEach(item => {
+						if (!item) return
+						const minCol = this.getMin(rectArr);
+						item.width = minCol.width;
+						this[`list${minCol.name}`].push(item);
+						this.$emit('changeList', {
+							name: `list${minCol.name}`,
+							value: item
+						});
+						minCol.height += Number(item.noteCoverHeight || item.height || 240)
+					})
 					this.$emit('finish')
+				} finally {
+					this._splitting = false
+					if (this._splitQueued || this.tempList.length) {
+						this.splitData()
+					}
 				}
 			},
 			getMin(arr) {

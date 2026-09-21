@@ -22,10 +22,9 @@ export const getNoteById = (noteId: string) => {
  */
 export const saveNoteByDTO = (data: any) => {
   return request<any>({
-    url: "/web/note/saveNoteByDTO", // mock接口
+    url: "/web/note/saveNoteByDTO",
     method: "post",
     data: data,
-    headers: { "Content-Type": "multipart/form-data;boundary=----WebKitFormBoundaryk4ZvuPo6pkphe7Pl" },
   });
 };
 
@@ -36,10 +35,9 @@ export const saveNoteByDTO = (data: any) => {
  */
 export const updateNoteByDTO = (data: any) => {
   return request<any>({
-    url: "/web/note/updateNoteByDTO", // mock接口
+    url: "/web/note/updateNoteByDTO",
     method: "post",
     data: data,
-    headers: { "Content-Type": "multipart/form-data;boundary=----WebKitFormBoundaryk4ZvuPo6pkphe7Pl" },
   });
 };
 

@@ -22,7 +22,7 @@ export default {
 		// 每次插入数据的事件间隔，间隔越长能保证两列高度相近，但是用户体验不好，单位ms
 		addTime: {
 			type: Number,
-			default: 200
+			default: 0
 		},
 		// 瀑布流的列数，默认2，最高为5
 		columnCount: {

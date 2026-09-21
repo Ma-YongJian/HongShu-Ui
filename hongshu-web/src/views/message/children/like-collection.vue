@@ -1,6 +1,7 @@
 <template>
   <div>
-    <ul class="agree-container" v-infinite-scroll="loadMore">
+    <el-empty v-if="dataList.length === 0" description="暂无赞和收藏" />
+    <ul v-else class="agree-container" v-infinite-scroll="loadMore">
       <li class="agree-item" v-for="(item, index) in dataList" :key="index">
         <a class="user-avatar">
           <!-- https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png -->
@@ -35,7 +36,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { getNoticeLikeOrCollection } from "@/api/likeOrCollection";
-import { formateTime } from "@/utils/util";
+import { formatSessionListTime } from "@/utils/util";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -60,7 +61,7 @@ const getPageData = () => {
     const { records, total } = res.data;
     dataTotal.value = total;
     records.forEach((item: any) => {
-      item.time = formateTime(item.time);
+      item.time = formatSessionListTime(item.time);
       dataList.value.push(item);
     });
   });
@@ -83,8 +84,7 @@ textarea {
 }
 
 .agree-container {
-  width: 40rem;
-  height: 90vh;
+  width: 100%;
 
   .agree-item {
     display: flex;
@@ -154,7 +154,7 @@ textarea {
             line-height: 20px;
             font-size: 13px;
             color: #fff;
-            background-color: red;
+            background-color: var(--el-color-primary);
             text-align: center;
             border-radius: 100%;
           }

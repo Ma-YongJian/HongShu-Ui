@@ -1,129 +1,117 @@
 <template>
-	<view class="content" :style="'margin-top:'+vHeight+'rpx'">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="true" :isOpacity="false" v-if='top_show'>
-			<view class="fixed-top">
-				<view class="fixed-user">
-					<image :src="userInfo.avatar" class="avatar" mode="aspectFill"
-						@click="previewImgae(userInfo.avatar)" />
-					<view class="username">{{ userInfo.username }}</view>
+	<view class="content" :style="{ '--mine-nav-h': navHeight + 'px' }">
+		<view class="mine-sticky" :class="{ 'is-on': top_show }" :style="{ paddingTop: statusBarHeight + 'px' }">
+			<view class="mine-sticky-bar">
+				<view class="mine-sticky-side">
+					<view class="cover-btn" @click="back">
+						<tui-icon name="arrowleft" :color="top_show ? '#111827' : '#ffffff'" :size="22"></tui-icon>
+					</view>
+				</view>
+				<view class="mine-sticky-center">
+					<view class="fixed-user" v-show="top_show">
+						<image :src="avatarSrc" class="avatar" mode="aspectFill" />
+						<view class="username">{{ userInfo.username }}</view>
+					</view>
+				</view>
+				<view class="mine-sticky-side mine-sticky-right">
+					<view class="nav-chat" :class="{ 'is-light': !top_show }" @click="chat">私信</view>
 				</view>
 			</view>
-		</tui-navigation-bar>
-
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="top">
-				<view @click="back">
-					<tui-icon name="arrowleft" color="#fff" size="30"></tui-icon>
-				</view>
-			</view>
-		</tui-navigation-bar>
-		<!-- 显示图片 -->
-		<view class="image">
-			<image :src="userInfo.userCover" v-if="userInfo" mode="aspectFill" @click="previewImgae(userInfo.cover)" />
-			<image src="/static/images/toast/img_nodata.png" v-else mode="aspectFill" />
 		</view>
 
-		<!-- 主体 -->
-		<view class="main">
-			<view class="top">
-				<view class="user">
-					<view class="user-left">
-						<image :src="userInfo.avatar" class="avatar" mode="aspectFill"
-							@click="previewImgae(userInfo.avatar)" />
-						<view class="user-content">
-							<!-- <h3>{{ userInfo.username }}</h3> -->
-							<!-- <view class="user-id f">红薯号:{{ userInfo.hsId }}</view>
-							<view class="descrpition f">{{ userInfo.description }} </view> -->
-							<view class="name">{{ userInfo.username }}</view>
-							<view class="user-id f">红薯号：{{ userInfo.hsId }}</view>
-							<view class="ip f">IP属地：{{ userInfo.address }} </view>
-							<view class="user-content">
-								<view v-if="userInfo.description === null" class="descrpition-null">这个人什么都没有写～</view>
-								<view v-else class="descrpition">{{ userInfo.description }} </view>
-							</view>
-						</view>
+		<view class="cover">
+			<image :src="coverSrc" mode="aspectFill" @click="previewImgae(coverSrc)" />
+		</view>
 
+		<view class="main">
+			<view class="profile-head">
+				<view class="profile-row">
+					<image :src="avatarSrc" class="profile-avatar" mode="aspectFill"
+						@error="onAvatarError" @click="previewImgae(avatarSrc)" />
+					<view class="profile-meta">
+						<view class="name">{{ userInfo.username }}</view>
+						<view class="sub">来因号：{{ userInfo.hsId || '-' }}</view>
+						<view class="sub">IP属地：{{ userInfo.address || '未知' }}</view>
 					</view>
-					<view class="user-right">
-						<view @click="chat(userInfo.id)" class="user-message">
-							<tui-icon name="message" size="24" color="#797979"></tui-icon>
+				</view>
+				<view class="bio">{{ userInfo.description || '这个人什么都没有写～' }}</view>
+				<view class="stats-row">
+					<view class="stats">
+						<view class="stat" @click="getAllFriend(1)">
+							<text class="stat-num">{{ userInfo.followerCount || 0 }}</text>
+							<text class="stat-label">关注</text>
 						</view>
-						<tui-button v-if="T" @click="clearFollow(userInfo.id)" type="gray" height="66rpx" size="24"
-							width="120rpx">已关注</tui-button>
-						<tui-button v-else @click="follow(userInfo.id)" type="danger" height="66rpx" size="24"
-							width="120rpx">关注</tui-button>
+						<view class="stat" @click="getAllFriend(0)">
+							<text class="stat-num">{{ userInfo.fanCount || 0 }}</text>
+							<text class="stat-label">粉丝</text>
+						</view>
+						<view class="stat">
+							<text class="stat-num">{{ userInfo.trendCount || 0 }}</text>
+							<text class="stat-label">动态</text>
+						</view>
+					</view>
+					<view class="profile-actions">
+						<view class="btn-chat" @click="chat">私信</view>
+						<view class="btn-follow" :class="{ 'is-on': followed }" @click="toggleFollow">
+							{{ followed ? '已关注' : '关注' }}
+						</view>
 					</view>
 				</view>
-				<!-- <view class="info">
-					<p @click="getAllFriend(1)">关注 {{ userInfo.followerCount }}</p>
-					<p @click="getAllFriend(0)">粉丝 {{ userInfo.fanCount }}</p>
-					<p>动态 {{ userInfo.trendCount }}</p>
-				</view> -->
-				<view class="info">
-					<p class="info-item follow" @click="getAllFriend(1)">
-						<view class="info-count">{{ userInfo.followerCount }}</view>
-						<view class="info-title">关注</view>
-					</p>
-					<p class="info-item fan" @click="getAllFriend(0)">
-						<view class="info-count">{{ userInfo.fanCount }}</view>
-						<view class="info-title">粉丝</view>
-				
-					</p>
-					<p class="info-item trend">
-						<view class="info-count">{{ userInfo.trendCount }}</view>
-						<view class="info-title">动态</view>
-					</p>
-				</view>
-				<view class="">
-					<tui-tabs :tabs="tabs" :currentTab="currentTab" @change="change" sliderBgColor="red"
-						selectedColor="red" itemWidth="50%"></tui-tabs>
+			</view>
+
+			<view class="mine-tabs-ph" v-show="top_show"></view>
+			<view id="mineTabs" class="mine-tabs" :class="{ 'is-pinned': top_show }"
+				:style="tabsPinStyle">
+				<view class="mine-tab" v-for="(tab, index) in tabs" :key="index"
+					:class="{ 'is-active': currentTab === index }" @click="switchTab(index)">
+					<text class="mine-tab-text">{{ tab.name }}</text>
+					<view class="mine-tab-line"></view>
 				</view>
 			</view>
 
 			<view class="zhuti">
-				<view v-if="userInfo">
-					<Note v-if="currentTab == 0" :uid='uid' :seed='seed'> </Note>
-					<Like v-if="currentTab == 1" :uid='uid' :seed='seed'></Like>
-					<Collect v-if="currentTab == 2" :uid='uid' :seed='seed'></Collect>
-				</view>
-				<view class="nologin" v-else>
-					<button @click="login">请先登录</button>
+				<view class="tab-content" @touchstart="handleTouchStart" @touchend="handleTouchEnd">
+					<view v-show="currentTab === 0">
+						<Note :uid="uid" :seed="seed"></Note>
+					</view>
+					<view v-show="currentTab === 1">
+						<Like :uid="uid" :seed="seed"></Like>
+					</view>
+					<view v-show="currentTab === 2">
+						<Collect :uid="uid" :seed="seed"></Collect>
+					</view>
 				</view>
 			</view>
 		</view>
-
 	</view>
 </template>
 
 <script>
-	// import Trend from "@/pages/user/trends/trends"
-	// import Album from "@/pages/user/albums/albums"
-	// import Collection from "@/pages/user/collections/collections"
 	import Note from "@/pages/user/notes/notes"
 	import Like from "@/pages/user/likes/likes"
 	import Collect from "@/pages/user/collects/collects"
 	import {
 		getUserInfo
 	} from "@/api/user.js"
-
 	import {
 		isFollow,
-		followUser,
-		clearFollow
+		followUser
 	} from "@/api/follow.js"
+	import {
+		mediaUrl
+	} from '@/utils/upload.js'
+	import {
+		tokenUtil
+	} from '@/utils/token.js'
 
 	export default {
 		components: {
-			// Trend,
-			// Album,
-			// Collection
 			Note,
 			Like,
 			Collect
 		},
 		data() {
 			return {
-				current: 0,
 				currentTab: 0,
 				tabs: [{
 					name: "作品"
@@ -135,193 +123,220 @@
 				userInfo: {},
 				seed: 0,
 				uid: '',
-				T: false,
-				vHeight: 0,
-				//页面初始化高度
-				screenHeight: 0,
-				top_show:false,
-				
-				currentUser: null
+				followed: false,
+				top_show: false,
+				statusBarHeight: 0,
+				stickAt: 180,
+				startX: 0,
+				startY: 0
 			}
 		},
-
+		computed: {
+			navHeight() {
+				return (Number(this.statusBarHeight) || 0) + 44
+			},
+			avatarSrc() {
+				const u = this.userInfo || {}
+				return mediaUrl(u.avatar || u.avatarUrl)
+			},
+			coverSrc() {
+				const u = this.userInfo || {}
+				if (!u.userCover) return '/static/images/toast/img_nodata.png'
+				return mediaUrl(u.userCover)
+			},
+			tabsPinStyle() {
+				if (!this.top_show) return ''
+				return 'top:' + this.navHeight + 'px'
+			}
+		},
 		onLoad(option) {
-
-			if (typeof option.currentTab != 'undefined' || option.currentTab != null) {
-				this.currentTab = option.currentTab
+			try {
+				this.statusBarHeight = uni.getSystemInfoSync().statusBarHeight || 0
+			} catch (e) {
+				this.statusBarHeight = 0
 			}
-			this.uid = option.uid
-			this.screenHeight = uni.getSystemInfoSync().screenHeight;
-			
-			this.currentUser = uni.getStorageSync('userInfo');
-			getApp().globalData.currentUser = this.currentUser;
-			
-			if (this.goEasy.getConnectionStatus() === 'disconnected') {
-			        this.connectGoEasy();  //连接goeasy
-		    }
+			if (option && option.currentTab != null && option.currentTab !== '') {
+				this.currentTab = Number(option.currentTab) || 0
+			}
+			this.uid = (option && option.uid) || ''
+			if (!this.uid) {
+				uni.showToast({
+					title: '用户不存在',
+					icon: 'none'
+				})
+				setTimeout(() => {
+					this.back()
+				}, 400)
+				return
+			}
+			const me = uni.getStorageSync('userInfo') || {}
+			if (me.id && String(me.id) === String(this.uid)) {
+				uni.switchTab({
+					url: '/pages/user/user'
+				})
+			}
 		},
-
+		onReady() {
+			this.$nextTick(() => this.measureStick())
+		},
 		onShow() {
-			this.getUserInfo(this.uid)
-			this.isFollow()
+			if (!this.uid) return
+			this.loadUser()
+			this.loadFollow()
+			this.seed = Math.random()
+			this.$nextTick(() => this.measureStick())
+		},
+		onPageScroll(e) {
+			this._scrollTop = e.scrollTop || 0
+			this.top_show = this._scrollTop >= this.stickAt
+		},
+		onReachBottom() {
 			this.seed = Math.random()
 		},
-		
-		onPageScroll(e) {
-		
-			const that = this
-			if (e.scrollTop >= 20) {
-				this.top_show = true
-				uni.createSelectorQuery().select('.content').boundingClientRect(function(data) {
-					that.vHeight = 220
-				}).exec()
-			} else {
-				this.top_show = false
-				uni.createSelectorQuery().select('.content').boundingClientRect(function(data) {
-					that.vHeight = 0
-				}).exec()
-			}
-		
-		},
-		
 		methods: {
-			
-			connectGoEasy() {
-			        uni.showLoading();
-			        this.goEasy.connect({
-			          id: this.currentUser.id,
-			          data: {
-			            name: this.currentUser.username,
-			            avatar: this.currentUser.avatar
-			          },
-			          onSuccess: () => {
-			            console.log('GoEasy connect successfully.')
-			          },
-			          onFailed: (error) => {
-			            console.log('Failed to connect GoEasy, code:' + error.code + ',error:' + error.content);
-			          },
-			          onProgress: (attempts) => {
-			            console.log('GoEasy is connecting', attempts);
-			          }
-			        });
-			      },
-				  
-			back() {
-				uni.navigateBack({
-					delta: 1
-				})
+			switchTab(index) {
+				this.currentTab = index
 			},
-			change(e) {
+			measureStick() {
+				if (this.top_show) return
+				uni.createSelectorQuery().in(this)
+					.select('#mineTabs')
+					.boundingClientRect()
+					.exec((res) => {
+						const rect = res && res[0]
+						if (!rect) return
+						const scrollTop = this._scrollTop || 0
+						this.stickAt = Math.max(80, Math.round(rect.top + scrollTop - this.navHeight))
+					})
+			},
+			onAvatarError() {
+				this.$set(this.userInfo, 'avatar', '/static/logo.png')
+			},
+			handleTouchStart(event) {
+				this.startX = event.touches[0].pageX
+				this.startY = event.touches[0].pageY
+			},
+			handleTouchEnd(event) {
+				const endX = event.changedTouches[0].pageX
+				const endY = event.changedTouches[0].pageY
+				const deltaX = endX - this.startX
+				const deltaY = endY - this.startY
+				if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 100) {
+					if (deltaX < 0 && this.currentTab < this.tabs.length - 1) {
+						this.currentTab++
+					} else if (deltaX > 0 && this.currentTab > 0) {
+						this.currentTab--
+					}
+				}
+			},
+			changeTab(e) {
 				this.currentTab = e.index
 			},
-			login() {
-				uni.navigateTo({
-					url: "/pages/login/login"
-				})
-			},
-			getUserInfo(uid) {
-				let params = {
-					userId: uid
-				}
-				getUserInfo(params).then(res => {
-					this.userInfo = res.data
-				})
-			},
-			chat(uid) {
-				console.log(uid)
-				uni.navigateTo({
-					url: "/pages/message/privateChat/privateChat?to=" + uid
-				})
-			},
-
-			isFollow() {
-				let uid = uni.getStorageSync("userInfo").id
-				let fid = this.uid
-				let params = {
-					uid: uid,
-					fid: fid
-				}
-				isFollow(params).then(res => {
-					if (res.data) {
-						this.T = true
-					} else {
-						this.T = false
+			back() {
+				uni.navigateBack({
+					fail: () => {
+						uni.switchTab({
+							url: '/pages/index/index'
+						})
 					}
 				})
 			},
-
-			//关注用户
-			follow(fid) {
-				let curUser = uni.getStorageSync("userInfo")
-				let followDTo = {}
-				followDTo.uid = curUser.id
-				followDTo.fid = fid
-				//添加关注
-				followUser(followDTo).then(res => {
-					this.T = true;
+			ensureLogin() {
+				const token = tokenUtil.get()
+				const me = uni.getStorageSync('userInfo') || {}
+				if (token && me.id) return true
+				uni.navigateTo({
+					url: '/pages/login/login'
+				})
+				return false
+			},
+			loadUser() {
+				getUserInfo({
+					userId: this.uid
+				}).then(res => {
+					if (res.code === 200 && res.data) {
+						this.userInfo = res.data
+						this.$nextTick(() => this.measureStick())
+					} else {
+						uni.showToast({
+							title: '用户不存在',
+							icon: 'none'
+						})
+					}
 				})
 			},
-
-			clearFollow(fid) {
-
-				let user = uni.getStorageSync("userInfo")
-				let followDTo = {}
-				followDTo.uid = user.id
-				followDTo.fid = fid
-				clearFollow(followDTo).then(res => {
-					this.T = false;
+			loadFollow() {
+				if (!tokenUtil.get() || !this.uid) return
+				isFollow({
+					followerId: this.uid
+				}).then(res => {
+					this.followed = !!res.data
+				}).catch(() => {
+					this.followed = false
 				})
 			},
-
+			chat() {
+				if (!this.ensureLogin()) return
+				const uid = this.userInfo.id || this.uid
+				if (!uid) return
+				uni.navigateTo({
+					url: "/pages/chat/chat2?toUid=" + uid
+				})
+			},
+			toggleFollow() {
+				if (!this.ensureLogin()) return
+				const fid = this.userInfo.id || this.uid
+				if (!fid) return
+				const next = !this.followed
+				followUser({
+					followerId: fid
+				}).then(res => {
+					if (res.code === 200) {
+						this.followed = next
+						const fans = Number(this.userInfo.fanCount || 0)
+						this.$set(this.userInfo, 'fanCount', Math.max(0, fans + (next ? 1 : -1)))
+						this.loadUser()
+					} else {
+						uni.showToast({
+							title: res.message || '操作失败',
+							icon: 'none'
+						})
+					}
+				})
+			},
 			getAllFriend(type) {
 				uni.navigateTo({
 					url: "/pages/user/allUser/allUser?type=" + type + "&uid=" + this.uid
 				})
 			},
-			onReachBottom() {
-				this.seed = Math.random()
-			},
-
 			previewImgae(url) {
-
+				if (!url || url.indexOf('/static/') === 0) return
 				let that = this
-				let path = []
-				path.push(url)
-
 				uni.previewImage({
-					current: 0, // 当前显示图片的索引值
-					urls: path, // 需要预览的图片列表，photoList要求必须是数组
+					current: 0,
+					urls: [url],
 					longPressActions: {
 						itemList: ['保存'],
 						success: function(data) {
-
-							//进行保存
 							if (data.tapIndex == 0) {
-								let p = that.downLoadImg(url)
-								p.then((data) => {
+								that.downLoadImg(url).then((msg) => {
 									uni.showToast({
-										title: data,
+										title: msg,
 										icon: "none"
-									});
+									})
 								})
 							}
 						},
-						fail: function(err) {
-							return
-						}
+						fail: function() {}
 					}
 				})
 			},
-
-			// 保存图片至本地
 			downLoadImg(path) {
-				//下载图片资源至本地，返回文件的本地临时路径
 				return new Promise((resolve, reject) => {
 					uni.downloadFile({
 						url: path,
 						success: (res) => {
 							if (res.statusCode === 200) {
-								//保存图片至相册
 								uni.saveImageToPhotosAlbum({
 									filePath: res.tempFilePath,
 									success: function() {
@@ -330,12 +345,15 @@
 									fail: function() {
 										reject("保存失败")
 									}
-								});
+								})
+							} else {
+								reject("保存失败")
 							}
-						}
+						},
+						fail: () => reject("保存失败")
 					})
 				})
-			},
+			}
 		}
 	}
 </script>

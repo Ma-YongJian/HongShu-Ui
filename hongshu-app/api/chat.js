@@ -10,7 +10,6 @@ export function getZimToken(params) {
 	return request.get(appConfig.WEB_API + '/web/getZimToken', params)
 }
 
-
 export function getChatUserList(params) {
 	return request.get(appConfig.WEB_API + '/web/im/chat/getChatUserList', params)
 }
@@ -25,9 +24,14 @@ export function getChatRecord(page, limit, params) {
 }
 
 export function updateRecordCount(params) {
-	return request.get(appConfig.WEB_API + `/web/chat/updateRecordCount`, params)
+	return request.get(appConfig.WEB_API + `/web/im/chat/clearMessageCount`, {
+		sendUid: (params && (params.sendUid || params.sendId || params.uid)) || '',
+		type: 3
+	})
 }
 
 export function deleteRecord(params) {
-	return request.get(appConfig.WEB_API + `/web/chat/deleteRecord`, params)
+	return request.get(appConfig.WEB_API + `/web/im/chat/deleteChatUser`, {
+		sendUid: (params && (params.sendUid || params.sendId || params.uid)) || ''
+	})
 }

@@ -12,13 +12,13 @@
 					<tui-icon class="imface" name="imface" size="20" @click="openUseful(1)"></tui-icon>
 				</view>
 
-				<tui-button type="danger" height="60rpx" width="100rpx" :size="28" @click="addComment">发送</tui-button>
+				<tui-button type="primary" height="60rpx" width="100rpx" :size="28" @click="addComment">发送</tui-button>
 			</view>
 			<!-- 表情 -->
 			<view class="expression" v-if="useful_expression === 1">
 				<scroll-view class="emojis_scroll" :scroll-x="false" :scroll-y="true">
-					<view v-for="item in emojis" :key="item.emojis" class="emoji"
-						@click="ChooseToLook(`${item.emoji}`)">
+					<view v-for="(item, index) in emojis" :key="index" class="emoji"
+						@click="onChooseEmoji(index)">
 						{{ item.emoji }}
 					</view>
 				</scroll-view>
@@ -98,6 +98,12 @@
 				this.resStart += 2; //光标加2(表情是占两个位置)
 
 			},
+			onChooseEmoji(index) {
+				const row = this.emojis[index]
+				if (row && row.emoji) {
+					this.ChooseToLook(row.emoji)
+				}
+			},
 			change() {
 				this.T = false
 				if (this.value == '') {
@@ -124,128 +130,67 @@
 <style lang="scss" scoped>
 	.consult {
 		background-color: #fff;
-		height: 100vh;
-
-		.fotter {
-			position: fixed;
-			left: 0px;
-			bottom: 0px;
-			display: flex;
-
-			width: 95%;
-			justify-content: space-between;
-			align-items: center;
-
-			.fotter-content {
-				color: #878787;
-				line-height: 60rpx;
-				margin-left: 20px;
-				margin-right: 10px;
-				width: 450rpx;
-				height: 60rpx;
-				background-color: #f4f4f4;
-				padding-left: 10px;
-				bottom: 0px;
-			}
-
-		}
-
-		.shade {
-			width: 100%;
-			height: 100%;
-			background: rgba(0, 0, 0, .4);
-			position: absolute;
-			top: 0;
-			left: 0;
-		}
+		width: 100%;
 
 		.keyboard-active {
 			bottom: 0 !important;
 		}
 
 		.keyboard {
-			position: fixed;
-			bottom: -488rpx;
-			transition: bottom .3s;
-			z-index: 999;
+			position: relative;
 			width: 100%;
+			background: #fff;
 
 			.expression {
-				height: 488rpx;
+				height: 400rpx;
 				background-color: #FAFAFA;
 
 				.emojis_scroll {
 					display: block;
-					float: left;
 					width: 100%;
 					height: 400rpx;
-					padding-left: 25rpx;
+					padding-left: 16rpx;
+					box-sizing: border-box;
 				}
 
 				.emoji {
-					display: block;
-					float: left;
-					width: 100rpx;
-					height: 100rpx;
-					font-size: 70rpx;
+					display: inline-block;
+					width: 90rpx;
+					height: 90rpx;
+					font-size: 56rpx;
 					text-align: center;
-				}
-			}
-
-			.useful-content {
-				height: 488rpx;
-				background-color: #FAFAFA;
-				overflow-y: auto;
-
-				.useful-content-xiaoxi {
-					height: 104rpx;
-					text-align: center;
-					line-height: 104rpx;
-					border-bottom: 1rpx solid #F3F3F3;
+					line-height: 90rpx;
 				}
 			}
 
 			::v-deep .keyboard-tup {
 				display: flex;
 				align-items: center;
-				padding: 0 50rpx;
-
-				.uni-input-input {
-					background: #FFFFFF;
-					padding: 0 20rpx;
-				}
-
-				.plus-circle {
-					width: 56rpx;
-					height: 56rpx;
-					margin: 0 20rpx;
-				}
-
-				.useful {
-					width: 64rpx;
-					height: 64rpx;
-					color: #333333;
-				}
+				padding: 12rpx 20rpx;
+				padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
+				box-sizing: border-box;
 
 				input {
-					width: 490rpx;
-					height: 80rpx;
+					flex: 1;
+					min-width: 0;
+					height: 68rpx;
+					padding: 0 20rpx;
 					box-sizing: border-box;
-					border-radius: 8px;
+					border-radius: 34rpx;
+					background: #f3f3f2;
 				}
 
 				.imface {
-					margin-left: 10rpx;
-					margin-right: 20rpx;
+					margin-left: 12rpx;
+					margin-right: 12rpx;
 				}
 
-				height: 115rpx;
-				background-color: #F5F5F5;
+				height: auto;
+				background-color: #fff;
 			}
 
 			.active-tup {
-				height: 130rpx;
-
+				height: auto;
 			}
 		}
 	}

@@ -1,44 +1,48 @@
 <template>
-	<view class="login-container">
-		<!-- 标题 -->
-		<view class="title">登录</view>
-		
-		<!-- Logo区域 -->
-		<view class="logo-section">
-			<text class="brand-text">小红薯</text>
-		</view>
-		
-		<!-- 输入框区域 -->
-		<view class="form-section">
-			<view class="input-group">
-				<input 
-					class="input-field" 
-					placeholder="请输入手机号" 
-					v-model="userInfo.phone" 
-					type="number"
-					maxlength="11"
-				/>
+	<view class="login-page">
+		<hs-nav-bar :showBack="canBack" :border="false" background="transparent"></hs-nav-bar>
+		<view class="login-card">
+			<view class="logo-section">
+				<image class="logo-img" src="/static/logo.png" mode="heightFix"></image>
+				<text class="welcome">欢迎回来</text>
+				<text class="subtitle">登录后继续浏览来因社区</text>
 			</view>
-			
-			<view class="input-group">
-				<input 
-					class="input-field" 
-					placeholder="密码6-16位,必须包含数字和字母" 
-					v-model="userInfo.password" 
-					type="password"
-				/>
+
+			<view class="form-section">
+				<view class="input-group">
+					<tui-icon name="mobile" :size="20" color="#9ca3af"></tui-icon>
+					<input
+						class="input-field"
+						placeholder="请输入手机号"
+						v-model="userInfo.phone"
+						type="number"
+						maxlength="11"
+					/>
+				</view>
+
+				<view class="input-group">
+					<tui-icon name="pwd" :size="20" color="#9ca3af"></tui-icon>
+					<input
+						class="input-field"
+						placeholder="请输入密码"
+						v-model="userInfo.password"
+						:password="!showPwd"
+					/>
+					<view class="eye" @click="togglePwd">
+						<tui-icon :name="showPwd ? 'eye' : 'unseen'" :size="20" color="#9ca3af"></tui-icon>
+					</view>
+				</view>
 			</view>
-		</view>
-		
-		<!-- 登录按钮 -->
-		<view class="button-section">
-			<button 
-				class="login-button" 
+
+			<button
+				class="login-button"
+				:class="{ loading: loading }"
 				@click="login"
 				:disabled="loading"
 			>
-				{{ loading ? '登录中...' : '登录' }}
+				{{ loading ? '登录中...' : '登 录' }}
 			</button>
+			<view class="login-hint">— 新用户直接登录（自动注册） —</view>
 		</view>
 	</view>
 </template>
@@ -61,15 +65,27 @@
 					phone: '',
 					password: ''
 				},
-				loading: false
+				loading: false,
+				showPwd: false
 			}
 		},
 
+		computed: {
+			canBack() {
+				return getCurrentPages().length > 1
+			}
+		},
 		created() {
 			uni.hideTabBar()
 		},
+		onUnload() {
+			uni.showTabBar()
+		},
 
 		methods: {
+			togglePwd() {
+				this.showPwd = !this.showPwd
+			},
 			login() {
 				// 验证手机号
 				if (!this.userInfo.phone) {
@@ -169,90 +185,114 @@
 </script>
 
 <style scoped>
-	.login-container {
+	.login-page {
 		min-height: 100vh;
-		background-color: #ffffff;
-		padding: 0 60rpx;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: column;
+		background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 46%, #ffffff 100%);
 	}
 
-	/* 标题 */
-	.title {
-		text-align: center;
-		font-size: 48rpx;
-		font-weight: bold;
-		color: #000000;
-		padding-top: 80rpx;
-		margin-bottom: 120rpx;
+	.login-page >>> .hs-nav-root {
+		width: 100%;
+		flex-shrink: 0;
 	}
 
-	/* Logo区域 */
+	.login-card {
+		flex: 1;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 24rpx 48rpx 80rpx;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
 	.logo-section {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		justify-content: center;
-		margin-bottom: 120rpx;
+		margin-bottom: 56rpx;
 	}
 
-	.logo {
-		font-size: 80rpx;
-		margin-right: 20rpx;
+	.logo-img {
+		height: 96rpx;
+		margin-bottom: 28rpx;
 	}
 
-	.brand-text {
-		font-size: 48rpx;
-		color: #FF0000;
-		font-weight: normal;
+	.welcome {
+		font-size: 40rpx;
+		font-weight: 600;
+		color: #111827;
+		line-height: 1.4;
 	}
 
-	/* 表单区域 */
+	.subtitle {
+		margin-top: 10rpx;
+		font-size: 26rpx;
+		color: #6b7280;
+	}
+
 	.form-section {
-		margin-bottom: 80rpx;
+		margin-bottom: 48rpx;
 	}
 
 	.input-group {
-		margin-bottom: 40rpx;
-	}
-
-	.input-field {
-		width: 100%;
-		height: 96rpx;
-		line-height: 96rpx;
-		padding: 0 32rpx;
-		background-color: #ffffff;
-		border: 2rpx solid #E5E5E5;
-		border-radius: 16rpx;
-		font-size: 32rpx;
-		color: #333333;
+		display: flex;
+		align-items: center;
+		height: 100rpx;
+		padding: 0 28rpx;
+		margin-bottom: 24rpx;
+		background: #f3f4f6;
+		border-radius: 20rpx;
 		box-sizing: border-box;
 	}
 
-	.input-field::placeholder {
-		color: #999999;
+	.input-field {
+		flex: 1;
+		height: 100rpx;
+		margin-left: 16rpx;
+		font-size: 30rpx;
+		color: #111827;
 	}
 
-	/* 按钮区域 */
-	.button-section {
-		margin-top: 100rpx;
+	.input-field::placeholder {
+		color: #9ca3af;
+	}
+
+	.eye {
+		padding-left: 12rpx;
 	}
 
 	.login-button {
 		width: 100%;
 		height: 96rpx;
 		line-height: 96rpx;
-		background-color: #FF0000;
+		background-color: #3d8af5;
 		color: #ffffff;
-		font-size: 36rpx;
-		font-weight: normal;
-		border-radius: 16rpx;
+		font-size: 34rpx;
+		font-weight: 600;
+		letter-spacing: 8rpx;
+		border-radius: 20rpx;
 		border: none;
+		box-shadow: 0 12rpx 28rpx rgba(61, 138, 245, 0.28);
 	}
 
 	.login-button::after {
 		border: none;
 	}
 
-	.login-button[disabled] {
-		background-color: #CCCCCC;
-		opacity: 0.6;
+	.login-button[disabled],
+	.login-button.loading {
+		background-color: #93c5fd;
+		box-shadow: none;
+	}
+
+	.login-hint {
+		margin-top: 40rpx;
+		text-align: center;
+		font-size: 24rpx;
+		color: #bbbbbb;
+		letter-spacing: 2rpx;
 	}
 </style>

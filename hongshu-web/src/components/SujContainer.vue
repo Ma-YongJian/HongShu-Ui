@@ -39,16 +39,24 @@
       <div>
         <div class="hotspots">
           <div class="header">
-            <span style="color: #888888">热点</span>
-            <img src="@/assets/images/3.png" class="redian" crossorigin="anonymous" />
+            <span class="hotspot-label">热点</span>
+            <span class="hotspot-brand">
+              <svg class="hotspot-fire" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M12 2s3.2 3.1 3.2 6.2c0 1.6-.7 3-1.8 4 .8-.2 1.5-.6 2.1-1.2C16.8 9.6 18 7.4 18 5.5 18 8.8 20 11 20 14.2 20 18.4 16.4 22 12 22S4 18.4 4 14.2C4 10.6 7.1 8.1 8.6 6.3 9.8 4.9 12 2 12 2z"
+                />
+              </svg>
+              来因热点
+            </span>
           </div>
           <div class="hotspot-list">
             <div class="hotspot-item" v-for="(item, index) in hotList" :key="index">
               <p class="hotspot-index">{{ index + 1 }}</p>
               <div class="hotspot-title" @click="searchPage(item.content)">
                 <span class="text">{{ item.content }}</span>
-                <img src="@/assets/images/1.png" crossorigin="anonymous" />
-                <img v-show="item.searchCount > 10" src="@/assets/images/2.png" crossorigin="anonymous" />
+                <span class="hot-tag is-new">新</span>
+                <span v-show="item.searchCount > 10" class="hot-tag is-hot">热</span>
               </div>
               <span class="hotspot-score">{{ item.searchCount }}</span>
             </div>
@@ -120,18 +128,13 @@ onMounted(() => {
 });
 </script>
 <style lang="less" scoped>
-.redian {
-  width: 90px;
-  margin-left: 8px;
-}
-//隐藏滚动条
 .sug-container-wrapper::-webkit-scrollbar {
   display: none;
 }
 
 .sug-container-wrapper.query-trending {
   position: relative;
-  padding-top: 100%;
+  max-height: min(70vh, 560px);
 }
 
 .sug-container-wrapper {
@@ -142,14 +145,13 @@ onMounted(() => {
     0 0.25rem 2rem 0 rgba(0, 0, 0, 0.08),
     0 0.0625rem 0.25rem 0 rgba(0, 0, 0, 0.04);
   border-radius: 0.75rem;
-  overflow: scroll;
+  overflow: auto;
   z-index: 9999;
 }
 
 .sug-container.query-trending {
   width: 100%;
-  position: absolute;
-  top: 0;
+  position: relative;
 
   .history {
     padding: 0.25rem;
@@ -229,9 +231,8 @@ onMounted(() => {
         border: 0.0625rem solid transparent;
         cursor: pointer;
       }
-      :hover {
-        cursor: pointer; /* 显示小手指针 */
-        transform: scale(1.1); /* 鼠标移入时按钮稍微放大 */
+      .history-item:hover {
+        background: rgba(59, 130, 246, 0.08);
       }
     }
   }
@@ -281,20 +282,18 @@ onMounted(() => {
         align-items: center;
       }
 
+      .sug-item:hover {
+        background: rgba(59, 130, 246, 0.06);
+      }
+
       .sug-text {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         display: flex;
         align-items: center;
-        justify-content: center;
         height: 1.25rem;
         cursor: pointer;
-      }
-      :hover {
-        cursor: pointer; /* 显示小手指针 */
-        transform: scale(1.1); /* 鼠标移入时按钮稍微放大 */
-        transform-origin: left center; /* 调整缩放基点为左边中心 */
       }
     }
   }
@@ -305,18 +304,40 @@ onMounted(() => {
     .header {
       padding: 0.5rem 0.75rem;
       height: 2rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .hotspot-label {
+      color: rgba(51, 51, 51, 0.45);
+      font-size: 0.75rem;
+    }
+
+    .hotspot-brand {
+      margin-left: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--el-color-primary);
+    }
+
+    .hotspot-fire {
+      flex-shrink: 0;
     }
 
     .hotspot-item:first-child {
-      color: #ff2442;
+      color: var(--el-color-primary);
     }
 
     .hotspot-item:nth-child(2) {
-      color: rgb(128, 0, 94);
+      color: #7c3aed;
     }
 
     .hotspot-item:nth-child(3) {
-      color: #ff24a4;
+      color: var(--el-color-primary-light-3);
     }
 
     .hotspot-item {
@@ -326,6 +347,7 @@ onMounted(() => {
       height: 2.5rem;
       cursor: pointer;
       color: rgba(51, 51, 51, 0.6);
+      border-radius: 0.5rem;
 
       .hotspot-index {
         display: flex;
@@ -349,21 +371,34 @@ onMounted(() => {
         height: 100%;
         flex: 1;
 
-        img {
-          margin-left: 0.375rem;
-          height: 0.975rem;
-        }
-
         .text {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
-      }
-      :hover {
-        cursor: pointer; /* 显示小手指针 */
-        transform: scale(1.1); /* 鼠标移入时按钮稍微放大 */
-        transform-origin: left center; /* 调整缩放基点为左边中心 */
+
+        .hot-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: 6px;
+          height: 16px;
+          padding: 0 4px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 600;
+          line-height: 1;
+          color: #fff;
+          flex-shrink: 0;
+        }
+
+        .hot-tag.is-new {
+          background: #f59e0b;
+        }
+
+        .hot-tag.is-hot {
+          background: var(--el-color-primary);
+        }
       }
 
       .hotspot-score {
@@ -374,12 +409,10 @@ onMounted(() => {
         line-height: 120%;
       }
     }
-  }
-}
 
-.sug-container.query-trending {
-  width: 100%;
-  position: absolute;
-  top: 0;
+    .hotspot-item:hover {
+      background: rgba(59, 130, 246, 0.06);
+    }
+  }
 }
 </style>

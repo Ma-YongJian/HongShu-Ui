@@ -45,6 +45,7 @@ export default defineConfig({
         '/dev-api': {
           target: 'http://localhost:8080',
           changeOrigin: true,
+          ws: true,
           rewrite: (p) => p.replace(/^\/dev-api/, '')
         },
         '/profile': {

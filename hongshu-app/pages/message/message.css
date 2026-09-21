@@ -1,118 +1,185 @@
-::v-deep.uni-scroll-view-refresh__spinner>circle{
-   color:#8c8c8c !important;
-}
-::v-deep.uni-scroll-view-refresh-inner>svg {	
-   fill: #8c8c8c  !important;
-}
-
-::v-deep.uni-scroll-view-refresh-inner{
-	box-shadow: 0 0 0 #fff;
+.message-page {
+	min-height: 100vh;
+	background: #fff;
+	display: flex;
+	flex-direction: column;
 }
 
-.content .nav {
-	margin-top: 12rpx;
+.nav {
+	height: 88rpx;
 	display: flex;
 	align-items: center;
-	justify-content: center; /* 水平居中 */
-	font-weight: bold; /* 加粗 */
+	justify-content: center;
+	background: #fff;
 }
 
-.page{
-	height: 95vh;
+.nav-title {
+	font-size: 34rpx;
+	font-weight: 600;
+	color: #111827;
 }
 
-.tabs {
-	height: 120rpx;
+.page {
+	flex: 1;
+	height: 0;
+	background: #fff;
 }
 
-.tabs-body {
-	width: 600rpx;
-	margin: auto;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.tabs-body .item {
-	position: relative;
+.guest-box {
+	margin: 160rpx 48rpx 0;
+	padding: 48rpx 32rpx;
+	background: #f8fafc;
+	border-radius: 24rpx;
 	text-align: center;
 }
 
-.tabs-body .item .name {
+.guest-title {
+	font-size: 30rpx;
+	color: #374151;
+}
+
+.guest-btn {
+	margin: 28rpx auto 0;
+	width: 220rpx;
+	height: 72rpx;
+	line-height: 72rpx;
+	border-radius: 36rpx;
+	background: #3d8af5;
+	color: #fff;
 	font-size: 28rpx;
 }
 
-.container {
-	padding-bottom: env(safe-area-inset-bottom);
+.msg-top-bar {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	margin: 30rpx 0 12rpx;
 }
 
-.tui-item-box {
-	width: 100%;
+.msg-item {
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 }
 
-.tui-msg-box {
-	display: flex;
-	align-items: center;
+.icon-wrap {
+	position: relative;
+	width: 100rpx;
+	height: 100rpx;
+	margin-bottom: 12rpx;
 }
 
-.tui-msg-pic {
+.icon-bg {
+	width: 100rpx;
+	height: 100rpx;
+	border-radius: 35rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.badge-corner {
+	position: absolute;
+	top: -8rpx;
+	right: -12rpx;
+	min-width: 32rpx;
+	height: 32rpx;
+	padding: 0 8rpx;
+	border-radius: 16rpx;
+	background: #ef4444;
+	color: #fff;
+	font-size: 20rpx;
+	line-height: 32rpx;
+	text-align: center;
+	z-index: 1;
+}
+
+.msg-label {
+	font-size: 26rpx;
+	color: #333;
+}
+
+.session-list {
+	padding-bottom: 160rpx;
+}
+
+.empty-tip {
+	padding: 80rpx 0;
+	text-align: center;
+	color: #9ca3af;
+	font-size: 26rpx;
+}
+
+.session-row {
+	display: flex;
+	align-items: center;
+	padding: 20rpx 24rpx;
+	height: 140rpx;
+	box-sizing: border-box;
+	background: #fff;
+	border-bottom: 1rpx solid #f3f4f6;
+}
+
+.session-avatar {
 	width: 100rpx;
 	height: 100rpx;
 	border-radius: 50%;
-	display: block;
-	margin-right: 24rpx;
 	flex-shrink: 0;
+	background: #f3f4f6;
 }
 
-.tui-msg-item {
-	max-width: 500rpx;
-	min-height: 80rpx;
-	overflow: hidden;
+.session-mid {
+	margin-left: 20rpx;
+	flex: 1;
+	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	justify-content: space-between;
+	gap: 12rpx;
 }
 
-.tui-msg-name {
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	font-size: 30rpx;
-	line-height: 1;
-	color: #262b3a;
-}
-
-.tui-msg-content {
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	font-size: 25rpx;
-	line-height: 1;
-	color: #9397a4;
-}
-
-.tui-msg-right {
-	max-width: 180rpx;
-	height: 88rpx;
-	margin-left: auto;
-	text-align: right;
+.session-line {
 	display: flex;
-	flex-direction: column;
+	align-items: center;
 	justify-content: space-between;
-	align-items: flex-end;
+	gap: 16rpx;
 }
 
-.tui-right-dot {
-	height: 76rpx !important;
-	padding-bottom: 10rpx !important;
-
+.session-name {
+	flex: 1;
+	min-width: 0;
+	font-size: 32rpx;
+	font-weight: 500;
+	color: #333;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.tui-msg-time {
-	width: 100%;
+.session-time {
+	flex-shrink: 0;
+	color: #949495;
 	font-size: 24rpx;
-	line-height: 24rpx;
-	color: #9397a4;
+}
+
+.session-preview {
+	flex: 1;
+	min-width: 0;
+	color: #949495;
+	font-size: 26rpx;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.session-badge {
+	flex-shrink: 0;
+	min-width: 32rpx;
+	height: 32rpx;
+	padding: 0 8rpx;
+	border-radius: 16rpx;
+	background: #ef4444;
+	color: #fff;
+	font-size: 20rpx;
+	line-height: 32rpx;
+	text-align: center;
 }

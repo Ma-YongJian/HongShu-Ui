@@ -1,65 +1,70 @@
 <template>
   <div class="container" id="container">
     <div v-if="isLogin" class="push-container">
-      <div class="header"><span class="header-icon"></span><span class="header-title">发布图文</span></div>
+      <div class="header">
+        <span class="header-icon"></span>
+        <span class="header-title">{{ note.id ? "编辑笔记" : "发布图文" }}</span>
+      </div>
+
       <div class="img-list">
+        <div class="section-label">
+          <span class="required">*</span>图片
+          <span class="count">{{ fileList.length }}/9</span>
+        </div>
         <el-upload
           v-model:file-list="fileList"
-          action="http://localhost:88/api/util/oss/saveBatch/0"
+          :action="uploadAction"
           list-type="picture-card"
           multiple
           :limit="9"
+          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
           :headers="uploadHeader"
           :auto-upload="false"
+          :on-preview="handlePreview"
+          :on-exceed="() => ElMessage.warning('最多上传 9 张图片')"
         >
-          <el-icon>
-            <Plus />
-          </el-icon>
+          <div class="upload-plus">
+            <el-icon :size="22"><Plus /></el-icon>
+            <span>上传图片</span>
+          </div>
         </el-upload>
-
-        <el-dialog v-model="dialogVisible">
-          <img w-full :src="dialogImageUrl" alt="Preview Image" />
+        <p class="upload-tip">支持 JPG / PNG / WEBP，单次最多 9 张</p>
+        <el-dialog v-model="dialogVisible" width="640px" append-to-body>
+          <img class="preview-img" :src="dialogImageUrl" alt="预览" />
         </el-dialog>
       </div>
-      <el-divider style="margin: 0.75rem; width: 96%" />
+
       <div class="push-content">
+        <div class="section-label"><span class="required">*</span>标题</div>
         <el-input
           v-model="note.title"
           maxlength="20"
           show-word-limit
           type="text"
-          placeholder="请输入标题"
+          placeholder="填写标题会有更多赞哦"
           class="input-title"
         />
+        <div class="section-label">正文</div>
         <el-input
           v-model="note.content"
           maxlength="250"
           show-word-limit
-          :autosize="{ minRows: 4, maxRows: 5 }"
+          :autosize="{ minRows: 4, maxRows: 6 }"
           type="textarea"
-          placeholder="填写更全面的描述信息，让更多的人看到你吧❤️"
+          placeholder="添加正文描述，让更多人看到你"
         />
-        <div class="btns">
-          <button class="css-fm44j css-osq2ks dyn">
-            <span class="btn-content" @click="addTag"># 话题</span></button
-          ><button class="css-fm44j css-osq2ks dyn">
-            <span class="btn-content"><span>@</span> 用户</span></button
-          ><button class="css-fm44j css-osq2ks dyn">
-            <span class="btn-content">
-              <div class="smile"></div>
-              表情
-            </span>
-          </button>
-        </div>
+
+        <div class="section-label">标签 {{ dynamicTags.length }}/5</div>
         <div class="tag-list">
           <el-tag
             v-for="tag in dynamicTags"
             :key="tag"
             closable
-            :disable-transitions="false"
-            @close="handleClose(tag)"
+            round
+            effect="plain"
+            type="primary"
             class="tag-item"
-            type="danger"
+            @close="handleClose(tag)"
           >
             {{ tag }}
           </el-tag>
@@ -67,96 +72,85 @@
             v-if="inputVisible"
             ref="InputRef"
             v-model="inputValue"
-            style="width: 3.125rem"
+            maxlength="12"
             size="small"
+            style="width: 96px"
             @keyup.enter="handleInputConfirm"
-            @blur="handleInputBlur"
+            @blur="handleInputConfirm"
           />
-          <el-button
-            v-else
-            type="warning"
-            size="small"
-            @click="showInput"
-            plain
-            id="tagContainer"
-            :disabled="dynamicTags.length >= 5"
-          >
+          <el-button v-else type="primary" size="small" plain round :disabled="dynamicTags.length >= 5" @click="showInput">
             + 标签
           </el-button>
         </div>
-        <div class="hot-tag">
-          <span class="tag-title-text">推荐标签：</span>
+        <div v-if="hotTags.length" class="hot-tag">
+          <span class="tag-title-text">推荐：</span>
           <el-tag
             v-for="tag in hotTags"
             :key="tag"
             class="hot-tag-item"
-            type="warning"
+            type="info"
+            effect="plain"
+            round
             @click="selectHotTag(tag)"
-            :disabled="dynamicTags.length >= 5"
           >
             {{ tag }}
           </el-tag>
         </div>
       </div>
-      <el-divider style="margin: 0.75rem; width: 96%" />
+
       <div class="categorys">
+        <div class="section-label"><span class="required">*</span>分类</div>
         <el-cascader
           ref="CascaderRef"
           v-model="categoryList"
           :options="options"
-          @change="handleChange"
           :props="props"
-          placeholder="请选择分类"
+          placeholder="请选择笔记分类"
+          style="width: 100%"
+          @change="handleChange"
         />
       </div>
+
       <div class="submit">
-        <el-button type="danger" loading :disabled="true" v-if="pushLoading">发布</el-button>
-        <button class="publishBtn" @click="pubslish()" v-else>
-          <span class="btn-content">发布</span>
-        </button>
-        <button class="clearBtn">
-          <span class="btn-content" @click="resetData">取消</span>
-        </button>
+        <el-button type="primary" round :loading="pushLoading" @click="pubslish">
+          {{ note.id ? "保存" : "发布" }}
+        </el-button>
+        <el-button round @click="resetData">清空</el-button>
       </div>
     </div>
-    <div v-else>
-      <el-empty description="用户未登录" />
+    <div v-else class="push-guest">
+      <el-empty description="登录后即可发布笔记">
+        <el-button type="primary" round @click="openLogin()">去登录</el-button>
+      </el-empty>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, nextTick, onMounted } from "vue";
+import { ref, nextTick, inject } from "vue";
 import { Plus } from "@element-plus/icons-vue";
 import { useRoute } from "vue-router";
-import type { UploadUserFile, CascaderProps, ElInput } from "element-plus";
+import type { UploadUserFile, CascaderProps, ElInput, UploadFile } from "element-plus";
 import { ElMessage } from "element-plus";
 import { useUserStore } from "@/store/userStore";
 import { getCategoryTreeData } from "@/api/category";
 import { saveNoteByDTO, getNoteById, updateNoteByDTO } from "@/api/note";
 import { getTagByKeyword } from "@/api/tag";
 import { getFileFromUrl } from "@/utils/util";
-// import Schema from "async-validator";
-// import Crop from "@/components/Crop.vue";
+import { baseURL } from "@/constant/constant";
+
 const props: CascaderProps = {
   label: "title",
   value: "id",
-  checkStrictly: true, // 允许选择父级节点
+  checkStrictly: true,
 };
 const CascaderRef = ref<any>(null);
-
-// const rules = {
-//   title: { required: true, message: "标题不能为空" },
-//   content: { required: true, message: "内容不能为空" },
-//   category: { required: true, message: "分类不能为空" },
-// };
-// const validator = new Schema(rules);
-
 const userStore = useUserStore();
 const route = useRoute();
+const openLogin = inject("openLogin", () => {});
+const uploadAction = baseURL + "web/oss/saveBatch";
 
 const fileList = ref<UploadUserFile[]>([]);
-
 const dialogImageUrl = ref("");
 const dialogVisible = ref(false);
 const uploadHeader = ref({
@@ -165,11 +159,6 @@ const uploadHeader = ref({
 const categoryList = ref<Array<any>>([]);
 const options = ref([]);
 const note = ref<any>({});
-const showTagState = ref(false);
-const selectTagList = ref<Array<any>>([]);
-const currentPage = ref(1);
-const pageSize = 10;
-const tagTotal = ref(0);
 const pushLoading = ref(false);
 const isLogin = ref(false);
 const inputValue = ref("");
@@ -178,95 +167,53 @@ const inputVisible = ref(false);
 const InputRef = ref<InstanceType<typeof ElInput>>();
 const hotTags = ref<Array<string>>([]);
 
-const handleClose = (tag: string) => {
-  dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1);
+const handlePreview = (file: UploadFile) => {
+  dialogImageUrl.value = file.url || "";
+  dialogVisible.value = true;
 };
 
-const handleInputBlur = () => {
-  inputVisible.value = false;
-  // showTagState.value = false;
+const handleClose = (tag: string) => {
+  dynamicTags.value = dynamicTags.value.filter((item) => item !== tag);
 };
 
 const showInput = () => {
   inputVisible.value = true;
-  nextTick(() => {
-    InputRef.value!.input!.focus();
-    addTag();
-  });
+  nextTick(() => InputRef.value?.input?.focus());
+};
+
+const addTag = (raw: string) => {
+  const tag = raw.trim();
+  if (!tag) return;
+  if (dynamicTags.value.includes(tag)) {
+    ElMessage.warning("标签已添加");
+    return;
+  }
+  if (dynamicTags.value.length >= 5) {
+    ElMessage.warning("最多只能选择 5 个标签");
+    return;
+  }
+  dynamicTags.value.push(tag);
 };
 
 const handleInputConfirm = () => {
-  if (inputValue.value) {
-    dynamicTags.value.push(inputValue.value);
-  }
+  addTag(inputValue.value);
   inputVisible.value = false;
   inputValue.value = "";
-  showTagState.value = false;
-};
-
-watch(
-  () => inputValue.value,
-  () => {
-    addTag();
-  }
-);
-
-// 监听外部点击
-onMounted(() => {
-  if (!isLogin.value) {
-    return;
-  }
-  document.getElementById("container")!.addEventListener("click", function (e) {
-    var event = e || window.event;
-    var target = event.target || (event.srcElement as any);
-    // if(target.id == "name") {
-    const tagContainer = document.getElementById("tagContainer");
-    if (tagContainer == null) return;
-
-    if (tagContainer.contains(target)) {
-      console.log("in");
-    } else {
-      showTagState.value = false;
-    }
-  });
-});
-
-const addTag = () => {
-  selectTagList.value = [];
-  currentPage.value = 1;
-  setData();
-  showTagState.value = true;
-};
-
-const setData = () => {
-  getTagByKeyword(currentPage.value, pageSize, inputValue.value).then((res) => {
-    const { records, total } = res.data;
-    selectTagList.value.push(...records);
-    tagTotal.value = total;
-  });
 };
 
 const selectHotTag = (val: string) => {
-  if (dynamicTags.value.length < 5) {
-    dynamicTags.value.push(val);
-  } else {
-    // 如果已选择 5 个标签，弹出提示
-    ElMessage.warning("最多只能选择 5 个标签");
-  }
+  addTag(val);
 };
 
 const handleChange = (ids: Array<any>) => {
   categoryList.value = ids;
-  // 选中后关闭下拉框
-  CascaderRef.value.togglePopperVisible();
+  CascaderRef.value?.togglePopperVisible();
 };
 
 const getHotTag = () => {
-  getTagByKeyword(1, pageSize, "").then((res) => {
-    const { records } = res.data;
-    records.forEach((item: any) => {
-      hotTags.value.push(item.title);
-    });
+  getTagByKeyword(1, 10, "").then((res) => {
+    const { records } = res.data || {};
+    hotTags.value = (records || []).map((item: any) => item.title).filter(Boolean);
   });
 };
 
@@ -277,54 +224,68 @@ const getNoteByIdMethod = (noteId: string) => {
     const urls = JSON.parse(data.urls);
     urls.forEach((item: string) => {
       const fileName = item.substring(item.lastIndexOf("/") + 1);
-
-      getFileFromUrl(item, fileName).then((res: any) => {
-        fileList.value.push({ name: fileName, url: item, raw: res });
+      getFileFromUrl(item, fileName).then((file: any) => {
+        fileList.value.push({ name: fileName, url: item, raw: file });
       });
     });
-    categoryList.value.push(data.cpid);
-    categoryList.value.push(data.cid);
-
-    data.tagList.forEach((item: any) => {
-      dynamicTags.value.push(item.title);
-    });
+    categoryList.value = [data.cpid, data.cid].filter(Boolean);
+    dynamicTags.value = (data.tagList || []).map((item: any) => item.title);
   });
 };
 
-// 上传图片功能
+const resolveCoverUrl = () => {
+  const first = fileList.value[0] as any;
+  if (first?.url) return first.url;
+  if (first?.raw) return URL.createObjectURL(first.raw);
+  return "";
+};
+
 const pubslish = () => {
-  //验证
-  if (fileList.value.length <= 0 || note.value.title === null || categoryList.value.length <= 0) {
-    ElMessage.error("请选择图片，标签，分类～");
+  if (!fileList.value.length) {
+    ElMessage.warning("请上传图片");
+    return;
+  }
+  if (!String(note.value.title || "").trim()) {
+    ElMessage.warning("请填写标题");
+    return;
+  }
+  if (!categoryList.value.length) {
+    ElMessage.warning("请选择分类");
+    return;
+  }
+  const coverUrl = resolveCoverUrl();
+  if (!coverUrl) {
+    ElMessage.warning("图片读取失败，请重新上传");
     return;
   }
   pushLoading.value = true;
-  let params = new FormData();
-  //注意此处对文件数组进行了参数循环添加
-
+  const params = new FormData();
   fileList.value.forEach((file: any) => {
-    params.append("uploadFiles", file.raw);
+    if (file.raw) params.append("uploadFiles", file.raw);
   });
-
   note.value.count = fileList.value.length;
   note.value.type = 1;
-  // note.value.content = document.getElementById("post-textarea")!.innerHTML.replace(/<[^>]*>[^<]*(<[^>]*>)?/gi, "");
+  note.value.title = String(note.value.title).trim();
   note.value.cpid = categoryList.value[0];
-  note.value.cid = categoryList.value[1];
+  note.value.cid = categoryList.value[1] || categoryList.value[0];
   note.value.tagList = dynamicTags.value;
+
   const coverImage = new Image();
-  coverImage.src = fileList.value[0].url!;
   coverImage.onload = () => {
     const size = coverImage.width / coverImage.height;
     note.value.noteCoverHeight = size >= 1.3 ? 200 : 300;
-    const noteData = JSON.stringify(note.value);
-    params.append("noteData", noteData);
-    if (note.value.id !== null && note.value.id !== undefined) {
+    params.append("noteData", JSON.stringify(note.value));
+    if (note.value.id) {
       updateNote(params);
     } else {
       saveNote(params);
     }
   };
+  coverImage.onerror = () => {
+    pushLoading.value = false;
+    ElMessage.error("封面图加载失败，请重新选择图片");
+  };
+  coverImage.src = coverUrl;
 };
 
 const updateNote = (params: FormData) => {
@@ -345,7 +306,7 @@ const saveNote = (params: FormData) => {
   saveNoteByDTO(params)
     .then(() => {
       resetData();
-      ElMessage.success("发布成功,请等待审核结果");
+      ElMessage.success("发布成功，请等待审核");
     })
     .catch(() => {
       ElMessage.error("发布失败");
@@ -361,20 +322,19 @@ const resetData = () => {
   fileList.value = [];
   pushLoading.value = false;
   dynamicTags.value = [];
+  inputVisible.value = false;
+  inputValue.value = "";
 };
 
 const initData = () => {
   isLogin.value = userStore.isLogin();
-  if (isLogin.value) {
-    const noteId = route.query.noteId as string;
-    if (noteId !== "" && noteId !== undefined) {
-      getNoteByIdMethod(noteId);
-    }
-    getCategoryTreeData().then((res) => {
-      options.value = res.data;
-    });
-    getHotTag();
-  }
+  if (!isLogin.value) return;
+  const noteId = route.query.noteId as string;
+  if (noteId) getNoteByIdMethod(noteId);
+  getCategoryTreeData().then((res) => {
+    options.value = res.data;
+  });
+  getHotTag();
 };
 
 initData();
@@ -384,6 +344,7 @@ initData();
 :deep(.el-upload-list--picture-card .el-upload-list__item) {
   width: 100px;
   height: 100px;
+  border-radius: 8px;
 }
 
 :deep(.el-upload-list__item.is-success .el-upload-list__item-status-label) {
@@ -393,214 +354,127 @@ initData();
 :deep(.el-upload--picture-card) {
   width: 100px;
   height: 100px;
-}
-
-a {
-  text-decoration: none;
+  border-radius: 8px;
+  border-color: #dbeafe;
+  background: #eff6ff;
 }
 
 .container {
   flex: 1;
-  padding-top: 72px;
+  padding: 72px 24px 32px;
+  width: 67%;
+  margin: 0 auto;
+  box-sizing: border-box;
+
+  .push-guest {
+    padding-top: 80px;
+  }
 
   .push-container {
-    margin-left: 11vw;
-    margin-top: 1vw;
-    width: 720px;
-    border-radius: 8px;
+    width: 100%;
+    max-width: 720px;
+    margin-top: 16px;
+    padding-bottom: 8px;
+    border-radius: 12px;
     box-sizing: border-box;
     box-shadow: var(--el-box-shadow-lighter);
+    background: #fff;
+  }
 
-    .header {
-      padding: 15px 20px;
-      line-height: 16px;
-      font-size: 16px;
-      font-weight: 400;
+  .header {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
 
-      .header-icon {
-        position: relative;
-        top: 2px;
-        display: inline-block;
-        width: 6px;
-        height: 16px;
-        background: #3a64ff;
+    .header-icon {
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      margin-right: 8px;
+      background: var(--el-color-primary);
+      border-radius: 3px;
+    }
+  }
 
-        border-radius: 3px;
-        margin-right: 3px;
-      }
+  .section-label {
+    margin: 4px 0 10px;
+    font-size: 13px;
+    color: rgba(51, 51, 51, 0.7);
+
+    .required {
+      margin-right: 4px;
+      color: #f56c6c;
     }
 
-    .img-list {
-      width: 650px;
-      margin: auto;
-      padding: 6px 6px 6px 6px;
+    .count {
+      margin-left: 6px;
+      color: rgba(51, 51, 51, 0.45);
+    }
+  }
+
+  .img-list,
+  .push-content,
+  .categorys {
+    padding: 8px 20px;
+  }
+
+  .upload-plus {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--el-color-primary);
+    font-size: 12px;
+  }
+
+  .upload-tip {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: rgba(51, 51, 51, 0.45);
+  }
+
+  .preview-img {
+    display: block;
+    width: 100%;
+  }
+
+  .input-title {
+    margin-bottom: 14px;
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .hot-tag {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+
+    .tag-title-text {
+      font-size: 13px;
+      color: rgba(51, 51, 51, 0.45);
     }
 
-    .push-content {
-      padding: 6px 12px 6px 12px;
-      position: relative;
-
-      .hot-tag {
-        .tag-title-text {
-          font-size: 0.875rem;
-          color: #484848;
-          margin: 0.125rem 0;
-        }
-        .hot-tag-item {
-          cursor: pointer;
-          margin: 0.3125rem 0.3125rem 0 0.3125rem;
-        }
-        :hover {
-          transform: scale(1.2); /* 鼠标移入时按钮稍微放大 */
-        }
-      }
-
-      .tag-list {
-        margin: 0.825rem 0;
-        .tag-item {
-          margin-right: 0.3125rem;
-        }
-      }
-
-      .scroll-tag-container {
-        position: absolute;
-        width: 98%;
-        background-color: #fff;
-        z-index: 99999;
-        border: 1px solid #f4f4f4;
-        height: 300px;
-        overflow: auto;
-
-        .scrollbar-tag-item {
-          display: flex;
-          align-items: center;
-          height: 30px;
-          margin: 10px;
-          text-align: center;
-          border-radius: 4px;
-          padding-left: 2px;
-          color: #484848;
-          font-size: 14px;
-        }
-
-        .scrollbar-tag-item:hover {
-          background-color: #f8f8f8;
-        }
-      }
-
-      .input-title {
-        margin-bottom: 12px;
-        font-size: 15px;
-      }
-
-      .input-content {
-        font-size: 12px;
-      }
-
-      .post-content:empty::before {
-        content: attr(placeholder);
-        color: #ccc;
-        font-size: 14px;
-      }
-
-      .post-content {
-        cursor: text;
-        margin-top: 10px;
-        width: 100%;
-        min-height: 90px;
-        max-height: 300px;
-        margin-bottom: 10px;
-        background: #fff;
-        border: 1px solid #d9d9d9;
-        border-radius: 4px;
-        padding: 6px 12px 22px;
-        outline: none;
-        overflow-y: auto;
-        text-rendering: optimizeLegibility;
-        font-size: 14px;
-        line-height: 22px;
-      }
-
-      .post-content:focus,
-      .post-content:hover {
-        border: 1px solid #3a64ff;
-      }
+    .hot-tag-item {
+      cursor: pointer;
     }
+  }
 
-    .btns {
-      padding: 5px 12px 10px 2px;
-
-      button {
-        min-width: 62px;
-        width: 62px;
-        margin: 0 6px 0 0;
-        height: 18px;
-      }
-
-      .css-fm44j {
-        -webkit-font-smoothing: antialiased;
-        appearance: none;
-        font-family:
-          RedNum,
-          RedZh,
-          RedEn,
-          -apple-system;
-        vertical-align: middle;
-        text-decoration: none;
-        border: 1px solid rgb(217, 217, 217);
-        outline: none;
-        user-select: none;
-        cursor: pointer;
-        display: inline-flex;
-        -webkit-box-pack: center;
-        justify-content: center;
-        -webkit-box-align: center;
-        align-items: center;
-        margin-right: 16px;
-        border-radius: 4px;
-        background-color: white;
-        color: rgb(38, 38, 38);
-        height: 24px;
-        font-size: 12px;
-      }
-    }
-
-    .categorys {
-      padding: 0 12px 10px 12px;
-    }
-
-    .submit {
-      padding: 10px 12px 10px 12px;
-      margin-top: 10px;
-
-      button {
-        width: 100px;
-        height: 36px;
-        font-size: 15px;
-        display: inline-block;
-        margin-left: 250px;
-        margin-bottom: 2px;
-        cursor: pointer; /* 显示小手指针 */
-        transition:
-          background-color 0.3s,
-          color 0.3s; /* 添加过渡效果 */
-      }
-      button:hover {
-        transform: scale(1.05); /* 鼠标移入时按钮稍微放大 */
-      }
-
-      .publishBtn {
-        background-color: #ff2442;
-        color: #fff;
-        border-radius: 24px;
-      }
-
-      .clearBtn {
-        border-radius: 24px;
-        margin-left: 10px;
-        border: 1px solid rgb(217, 217, 217);
-      }
-    }
+  .submit {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px 20px;
   }
 }
 </style>

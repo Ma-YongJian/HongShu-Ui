@@ -1,173 +1,144 @@
 <template>
-	<view class="content">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav"  @click="back">
-				<tui-icon name="arrowleft" size="25"></tui-icon>
-				<h3>编辑资料</h3>
-			</view>
-		</tui-navigation-bar>
+	<view class="edit-page">
+		<hs-nav-bar title="编辑资料"></hs-nav-bar>
 
-		<view class="body">
-			<view class="body-img">
-				<image :src="userInfo.userCover" mode="aspectFill" />
-				<view class="body-rz">
-					<tui-icon name="attestation" size="20" color="#ff0000" v-if='userInfo.fanCount>0'></tui-icon>
-					<tui-icon name="attestation" size="20" color="#878787" v-else></tui-icon>
-					<p>获取认证</p>
+		<view class="avatar-card">
+			<view class="avatar-wrap" @click="chooseAvatar">
+				<image :src="avatarSrc" mode="aspectFill"></image>
+				<view class="camera">
+					<tui-icon name="camera" size="16" color="#fff"></tui-icon>
 				</view>
 			</view>
+			<view class="avatar-hint">点击更换头像</view>
+		</view>
 
-			<view class="center">
-				<view class="avatar">
-					<image :src="userInfo.avatar" mode="aspectFill"></image>
-				</view>
-				<view class="center-button">
-					<button @click="updateImg(1)">更换头像</button>
-					<button @click="updateImg(2)">更换封面</button>
-				</view>
+		<view class="cell-card">
+			<view class="cell" @click="updateInfo(1)">
+				<view class="cell-label">昵称</view>
+				<view class="cell-value">{{ userInfo.username || '未设置' }}</view>
+				<tui-icon name="arrowright" size="18" color="#c4c4c4"></tui-icon>
+			</view>
+			<view class="cell" @click="updateInfo(2)">
+				<view class="cell-label">性别</view>
+				<view class="cell-value">{{ genderText }}</view>
+				<tui-icon name="arrowright" size="18" color="#c4c4c4"></tui-icon>
+			</view>
+			<view class="cell" @click="updateInfo(3)">
+				<view class="cell-label">生日</view>
+				<view class="cell-value">{{ userInfo.birthday || '未设置' }}</view>
+				<tui-icon name="arrowright" size="18" color="#c4c4c4"></tui-icon>
+			</view>
+			<view class="cell" @click="updateInfo(4)">
+				<view class="cell-label">简介</view>
+				<view class="cell-value">{{ userInfo.description || '介绍一下自己吧' }}</view>
+				<tui-icon name="arrowright" size="18" color="#c4c4c4"></tui-icon>
+			</view>
+			<view class="cell" @click="updateInfo(5)">
+				<view class="cell-label">地区</view>
+				<view class="cell-value">{{ userInfo.address || '未设置' }}</view>
+				<tui-icon name="arrowright" size="18" color="#c4c4c4"></tui-icon>
+			</view>
+			<view class="cell" @click="updateInfo(6)">
+				<view class="cell-label">标签</view>
+				<view class="cell-value">{{ userInfo.tags || '添加个人标签' }}</view>
+				<tui-icon name="arrowright" size="18" color="#c4c4c4"></tui-icon>
+			</view>
+			<view class="cell cell-last" @click="chooseCover">
+				<view class="cell-label">背景图</view>
+				<image class="cover-thumb" :src="coverSrc" mode="aspectFill"></image>
+				<tui-icon name="arrowright" size="18" color="#c4c4c4"></tui-icon>
 			</view>
 		</view>
 
-		<view class="info">
-			<ul>
-				<li class="info-item">
-					<view class="info-item-zhuti" @click="updateInfo(1)">
-						<view class="title">昵称</view>
-						<view class="cont">{{ userInfo.username }}</view>
-						<view class="icon"><tui-icon name="arrowright" size="25"></tui-icon></view>
-					</view>
+		<tui-modal :show="sexShow" @click="updateSex" @cancel="hideSex" content="请选择性别" :button="radioSex"></tui-modal>
+		<tui-datetime ref="dateTime" :type="type" :startYear="startYear" :endYear="endYear" :cancelColor="cancelColor"
+			:color="color" :setDateTime="setDateTime" :unitTop="unitTop" :radius="radius" @confirm="changeBirthday">
+		</tui-datetime>
 
-				</li>
-				<li class="info-item">
-					<view class="info-item-zhuti" @click="updateInfo(2)">
-						<view class="title">性别</view>
-						<view class="cont">{{ userInfo.gender == 1 ? '男' : '女' }}</view>
-						<view class="icon"><tui-icon name="arrowright" size="25"></tui-icon></view>
-					</view>
-
-					<tui-modal :show="sexShow" @click="updateSex" @cancel="hideSex" content="请选择性别"
-						:button="radioSex"></tui-modal>
-				</li>
-				<li class="info-item">
-					<view class="info-item-zhuti" @click="updateInfo(3)">
-						<view class="title">生日</view>
-						<view class="cont">{{ userInfo.birthday }}</view>
-						<view class="icon"><tui-icon name="arrowright" size="25"></tui-icon></view>
-					</view>
-
-					<tui-datetime ref="dateTime" :type="type" :startYear="startYear" :endYear="endYear"
-						:cancelColor="cancelColor" :color="color" :setDateTime="setDateTime" :unitTop="unitTop"
-						:radius="radius" @confirm="changeBirthday">
-					</tui-datetime>
-				</li>
-				<li class="info-item">
-					<view class="info-item-zhuti" @click="updateInfo(4)">
-						<view class="title">简介</view>
-						<view class="cont">{{ userInfo.description }}</view>
-						<view class="icon"><tui-icon name="arrowright" size="25"></tui-icon></view>
-					</view>
-				</li>
-				<li class="info-item">
-					<view class="info-item-zhuti" @click="updateInfo(5)">
-						<view class="title">地址</view>
-						<view class="cont">{{ userInfo.address }}</view>
-						<view class="icon"><tui-icon name="arrowright" size="25"></tui-icon></view>
-					</view>
-
-					<!--picker-view start-->
-					<view class="tui-mask-screen" :class="[showPickerStatus?'tui-mask-show':'']" @tap="hidePicker">
-					</view>
-					<view class="tui-picker-box" :class="[showPickerStatus?'tui-pickerbox-show':'']">
-						<view class="picker-header tui-list-item">
-							<view class="btn-cancle" hover-class="tui-opcity" :hover-stay-time="150"
-								@tap.stop="hidePicker">取消</view>
-							<view class="btn-sure" hover-class="tui-opcity" :hover-stay-time="150" @tap.stop="picker">确定
-							</view>
-						</view>
-						<picker-view indicator-style="height: 50px;" class="picker-view" :value="value"
-							@change="columnPicker">
-							<picker-view-column>
-								<view v-for="(item,index) in proviceArr" :key="index" class="item">{{item}}</view>
-							</picker-view-column>
-							<picker-view-column>
-								<view v-for="(item,index) in cityArr" :key="index" class="item">{{item}}</view>
-							</picker-view-column>
-							<picker-view-column>
-								<view v-for="(item,index) in districtArr" :key="index" class="item">{{item}}</view>
-							</picker-view-column>
-						</picker-view>
-					</view>
-				</li>
-			</ul>
+		<view class="tui-mask-screen" :class="[showPickerStatus?'tui-mask-show':'']" @tap="hidePicker"></view>
+		<view class="tui-picker-box" :class="[showPickerStatus?'tui-pickerbox-show':'']">
+			<view class="picker-header tui-list-item">
+				<view class="btn-cancle" @tap.stop="hidePicker">取消</view>
+				<view class="btn-sure" @tap.stop="picker">确定</view>
+			</view>
+			<picker-view indicator-style="height: 50px;" class="picker-view" :value="value" @change="columnPicker">
+				<picker-view-column>
+					<view v-for="(item,index) in proviceArr" :key="index" class="item">{{item}}</view>
+				</picker-view-column>
+				<picker-view-column>
+					<view v-for="(item,index) in cityArr" :key="index" class="item">{{item}}</view>
+				</picker-view-column>
+				<picker-view-column>
+					<view v-for="(item,index) in districtArr" :key="index" class="item">{{item}}</view>
+				</picker-view-column>
+			</picker-view>
 		</view>
-		<view class="fotter"></view>
 	</view>
 </template>
 
 <script>
-	import {
-		getUserInfo,
-		updateUser
-	} from "@/api/user.js"
+	import { getUserInfo, updateUser } from "@/api/user.js"
 	import cityData from '@/utils/picker.city.js'
-	export default {
-		components: {
+	import { mediaUrl, uploadImage } from '@/utils/upload.js'
 
-		},
+	export default {
 		data() {
 			return {
 				userInfo: {},
 				uid: '',
 				sexShow: false,
 				radioSex: [{
-						text: '男',
-						type: 'red',
-					},
-					{
-						text: '女',
-						type: 'red',
-					}
-				],
-
+					text: '男',
+					type: 'primary',
+				}, {
+					text: '女',
+					type: 'primary',
+				}],
 				type: 2,
-				startYear: 1980,
-				endYear: 2030,
+				startYear: 1900,
+				endYear: new Date().getFullYear(),
 				cancelColor: '#888',
-				color: '#5677fc',
+				color: '#3b82f6',
 				setDateTime: '',
-				result: '',
 				unitTop: false,
 				radius: false,
-
-
 				proviceArr: [],
 				cityArr: [],
 				districtArr: [],
 				value: [0, 0, 0],
-				iconHidden: true,
 				showPickerStatus: false,
-				text: ["请选择", "请选择", "请选择"],
-				searchKey: ""
+				uploading: false
 			}
-
 		},
-
+		computed: {
+			avatarSrc() {
+				return mediaUrl(this.userInfo.avatar)
+			},
+			coverSrc() {
+				if (!this.userInfo.userCover) return '/static/images/toast/img_nodata.png'
+				return mediaUrl(this.userInfo.userCover)
+			},
+			genderText() {
+				const gender = this.userInfo.gender
+				if (gender === 1 || gender === '1') return '男'
+				if (gender === 0 || gender === '0') return '女'
+				return '未设置'
+			}
+		},
 		onLoad(options) {
-			this.getUser(options.userId)
-
+			const cached = uni.getStorageSync("userInfo") || {}
+			const queryId = options && options.userId && options.userId !== 'undefined' ? options.userId : ''
+			this.uid = String(queryId || cached.id || '').trim()
 			this.proviceArr = this.toArr(cityData);
 			this.cityArr = this.toArr(cityData[0].children);
 			this.districtArr = this.toArr(cityData[0].children[0].children)
-
 		},
-		onShow(options) {
-
-		},
-		created() {
-
+		onShow() {
+			if (this.uid) {
+				this.getUser(this.uid)
+			}
 		},
 		methods: {
-
 			toArr(object) {
 				let arr = [];
 				for (let i in object) {
@@ -181,108 +152,128 @@
 				})
 			},
 			getUser(uid) {
-				let params = {
+				getUserInfo({
 					userId: uid
-				}
-				getUserInfo(params).then(res => {
-					this.userInfo = res.data
-
+				}).then(res => {
+					if (res.code === 200 && res.data) {
+						this.userInfo = res.data
+						uni.setStorageSync("userInfo", Object.assign({}, uni.getStorageSync("userInfo") || {}, res.data))
+					}
 				})
-
 			},
-			updateImg(type) {
-				uni.navigateTo({
-					url: "/pages/user/info/updateImg/updateImg?type=" + type
+			saveProfile(patch) {
+				return updateUser(patch || {}).then(res => {
+					if (res.code !== 200) {
+						uni.showToast({
+							title: res.message || '保存失败',
+							icon: 'none'
+						})
+						return Promise.reject(res)
+					}
+					this.userInfo = Object.assign({}, this.userInfo, res.data || patch || {})
+					uni.setStorageSync("userInfo", Object.assign({}, uni.getStorageSync("userInfo") || {}, this.userInfo))
+					uni.showToast({
+						title: '保存成功',
+						icon: 'none'
+					})
+					return res
+				})
+			},
+			chooseAvatar() {
+				this.pickAndUpload('avatar')
+			},
+			chooseCover() {
+				this.pickAndUpload('userCover')
+			},
+			pickAndUpload(field) {
+				if (this.uploading) return
+				uni.chooseImage({
+					count: 1,
+					sizeType: ['compressed', 'original'],
+					sourceType: ['album', 'camera'],
+					success: (res) => {
+						const filePath = res.tempFilePaths[0]
+						this.uploading = true
+						uni.showLoading({
+							title: '上传中'
+						})
+						uploadImage(filePath).then((path) => {
+							const patch = {}
+							patch[field] = path
+							return this.saveProfile(patch)
+						}).catch((err) => {
+							uni.showToast({
+								title: (err && err.message) || '上传失败',
+								icon: 'none'
+							})
+						}).then(() => {
+							this.uploading = false
+							uni.hideLoading()
+						})
+					}
 				})
 			},
 			updateInfo(index) {
-				if (index == 1 || index == 4) {
-					//修改昵称和简介
+				if (index == 1 || index == 4 || index == 6) {
 					uni.navigateTo({
 						url: "/pages/user/info/updateInfo/updateInfo?type=" + index
 					})
 				} else if (index == 2) {
-					//更改性别
 					this.sexShow = true
 				} else if (index == 3) {
-					//修改生日
-					this.$refs.dateTime.show();
+					this.setDateTime = this.userInfo.birthday || ''
+					this.$refs.dateTime && this.$refs.dateTime.show();
 				} else {
 					this.showPicker()
 				}
 			},
-
 			updateSex(e) {
-				let index = e.index;
-
-				if (e.index == 0) {
-					this.userInfo.gender = 1;
-				} else {
-					this.userInfo.gender = 0;
-				}
-				updateUser(this.userInfo).then(res => {
+				this.saveProfile({
+					gender: e.index == 0 ? '1' : '0'
+				}).then(() => {
 					this.hideSex();
 				})
-
 			},
 			hideSex() {
 				this.sexShow = false;
 			},
-			//修改生日
 			changeBirthday(e) {
-
-				this.userInfo.birthday = e.result;
-				updateUser(this.userInfo).then()
+				this.saveProfile({
+					birthday: e.result
+				})
 			},
-
-
-			//picker change切换事件
-			columnPicker: function(e) {
+			columnPicker(e) {
 				let value = e.detail.value;
-				//如果两者下标不一致，表示滚动过
 				if (this.value[0] !== value[0]) {
-					this.proviceArr = this.proviceArr;
 					this.cityArr = this.toArr(cityData[value[0]].children);
 					this.districtArr = this.toArr(cityData[value[0]].children[0].children);
 					this.value = [value[0], 0, 0]
 				} else if (this.value[1] !== value[1]) {
-					this.proviceArr = this.proviceArr;
-					this.cityArr = this.cityArr;
 					this.districtArr = this.toArr(cityData[value[0]].children[value[1]].children);
 					this.value = [value[0], value[1], 0]
 				} else {
 					this.value = value
 				}
-
 			},
-			//确定按钮
-			picker: function(e) {
+			picker() {
 				let value = this.value;
 				if (cityData.length > 0) {
 					let provice = cityData[value[0]].text;
 					let city = cityData[value[0]].children[value[1]].text;
 					let district = cityData[value[0]].children[value[1]].children[value[2]].text;
-					this.text = [provice, city, district];
-
-					let address = ''
-					address += provice + ' ' + city + ' ' + district
-
-					this.userInfo.address = address
-					updateUser(this.userInfo).then(res => {
+					this.saveProfile({
+						address: provice + ' ' + city + ' ' + district
+					}).then(() => {
 						this.showPickerStatus = false
 					})
 				}
-
 			},
-			// 显示picker-view
-			showPicker: function() {
+			showPicker() {
 				this.showPickerStatus = true
 			},
-			// 隐藏picker-view
-			hidePicker: function() {
+			hidePicker() {
 				this.showPickerStatus = false
-			},
-
+			}
 		}
 	}
 </script>

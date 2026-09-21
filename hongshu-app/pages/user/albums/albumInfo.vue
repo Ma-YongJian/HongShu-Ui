@@ -1,22 +1,19 @@
 <template>
 	<view class="container">
-		<tui-navigation-bar backgroundColor="#fff" :isFixed="false" :isOpacity="false">
-			<view class="nav">
-				<view class="n-left">
-					<tui-icon name="arrowleft" size="24" @click="back"></tui-icon>
-					<view>专辑详情</view>
-
+		<hs-nav-bar title="专辑详情">
+			<template #right>
+				<view class="hs-nav-action" @click="popup">
+					<tui-icon name="more-fill" size="20"></tui-icon>
 				</view>
-				<view><tui-icon name="more-fill" size="20" @click="popup"></tui-icon></view>
-			</view>
-		</tui-navigation-bar>
+			</template>
+		</hs-nav-bar>
 		<scroll-view scroll-y class="page" @scrolltolower="loadData">
 			<view class="info">
 				<view class="info-center">
 					<view class="title">{{ albumInfo.name }}专辑</view>
 					<view class="count">{{ albumInfo.imgCount }}张图片</view>
 					<view class="avatar">
-						<image :src="albumInfo.avatar" mode="aspectFill" :lazy-load='true' />
+						<image :src="mediaUrl(albumInfo.avatar)" mode="aspectFill" :lazy-load='true' />
 					</view>
 					<view class="username">{{ albumInfo.username }}</view>
 				</view>
@@ -35,13 +32,13 @@
 											@click="delAffirm(item.id)"></tui-icon>
 									</view>
 									<view class="del-affirm" v-if="isshow && delMids.includes(item.id)"><tui-icon
-											name="circle-fill" color="#ff626c" size="24"
+											name="circle-fill" color="#3d8af5" size="24"
 											@click="delCancel(item.id)"></tui-icon>
 									</view>
 								</view>
 
 								<view @click="getImgInfo(item.id,item.status)">
-									<image class="cover" :src="item.cover" mode="aspectFill" :lazy-load='true' />
+									<image class="cover" :src="mediaUrl(item.noteCover || item.cover)" mode="aspectFill" :lazy-load='true' />
 								</view>
 								<view class="card-nums">
 									{{ item.count }}
@@ -71,7 +68,7 @@
 				<view class="f-del-cicle" v-if="T">
 					<tui-icon name="circle" color="#d6d6d6" size="28" @click="isAll"></tui-icon>
 				</view>
-				<view class="del-affirm" v-else><tui-icon name="circle-fill" color="#ff626c" size="28"
+				<view class="del-affirm" v-else><tui-icon name="circle-fill" color="#3d8af5" size="28"
 						@click="cancalAll"></tui-icon></view>
 				<view>全选</view>
 
@@ -150,12 +147,16 @@
 		getAlbum
 	} from "@/api/album.js"
 	import {
-		addBrowseRecord
-	} from "@/api/browseRecord.js"
+		mapNoteMedia,
+		mediaUrl
+	} from '@/utils/upload.js'
 	import {
-		stdout
-	} from "process"
+		openNote,
+		emitNoteDeleted,
+		noteDeletedMixin
+	} from '@/utils/noteNav.js'
 	export default {
+		mixins: [noteDeletedMixin],
 		data() {
 			return {
 				albumId: '',
@@ -250,6 +251,7 @@
 			this.getAlbum()
 		},
 		methods: {
+			mediaUrl,
 			back() {
 				uni.navigateBack({
 					delta: 1
@@ -263,7 +265,7 @@
 				}
 
 				getAllImgByAlbum(this.page, this.limit, params).then(res => {
-					this.dataList = res.data.records
+					this.dataList = (res.data.records || []).map(item => mapNoteMedia(item))
 					this.total = res.data.total
 				})
 			},
@@ -298,14 +300,13 @@
 					}
 
 					getAllImgByAlbum(this.page, this.limit, params).then(res => {
-						this.dataList.push(...res.data.records)
+						this.dataList.push(...(res.data.records || []).map(item => mapNoteMedia(item)))
 
 					})
 				}, 100)
 			},
 
 			getImgInfo(mid, status) {
-
 				if (status == 0) {
 					uni.showToast({
 						title: "图片正在上传中...",
@@ -313,16 +314,7 @@
 					});
 					return
 				}
-
-				let data = {}
-				data.uid = uni.getStorageSync("userInfo").id
-				data.mid = mid
-
-				addBrowseRecord(data).then(res => {
-					uni.navigateTo({
-						url: "/pages/main/main?mid=" + mid
-					})
-				})
+				openNote(mid)
 			},
 
 			popup() {
@@ -394,19 +386,32 @@
 			},
 			//删除
 			delRecord() {
-
-				deleteImgs(this.delMids, this.uid).then(res => {
+				if (!this.delMids || !this.delMids.length) {
 					uni.showToast({
-						title: "删除成功"
+						title: '请先选择',
+						icon: 'none'
 					})
-
+					return
+				}
+				deleteImgs(this.delMids).then(res => {
+					if (!res || res.code !== 200) {
+						uni.showToast({
+							title: (res && (res.message || res.msg)) || '删除失败',
+							icon: 'none'
+						})
+						return
+					}
+					uni.showToast({
+						title: "删除成功",
+						icon: 'none'
+					})
+					this.delMids.forEach((id) => emitNoteDeleted(id))
 					setTimeout(() => {
 						this.page = 1
 						this.getAllImgByAlbum()
 						this.isshow = false
 						this.delMids = []
-					}, 1000)
-
+					}, 400)
 				})
 			}
 		}

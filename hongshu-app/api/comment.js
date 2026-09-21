@@ -6,11 +6,22 @@ import {
 } from '../config/config.js'
 
 export function addComment(data) {
-	return request.post(appConfig.WEB_API + '/web/comment/addComment', data)
+	const payload = {
+		nid: data.nid || data.mid || data.noteId,
+		noteUid: data.noteUid,
+		pid: data.pid == null || data.pid === 0 || data.pid === '0' ? '0' : String(data.pid),
+		replyId: data.replyId == null || data.replyId === 0 ? '0' : String(data.replyId),
+		replyUid: data.replyUid == null || data.replyUid === 0 ? '0' : String(data.replyUid),
+		level: data.level || 1,
+		content: data.content
+	}
+	return request.post(appConfig.WEB_API + '/web/comment/saveCommentByDTO', payload)
 }
 
 export function getAllTwoCommentByOneId(page, limit, params) {
-	return request.get(appConfig.WEB_API + `/web/comment/getAllTwoCommentByOneId/${page}/${limit}`, params)
+	return request.get(appConfig.WEB_API + `/web/comment/getTwoCommentByOneCommentId/${page}/${limit}`, {
+		oneCommentId: (params && (params.oneCommentId || params.id || params.cid)) || ''
+	})
 }
 
 
@@ -46,5 +57,7 @@ export function getAllComment(page, limit, params) {
 }
 
 export function delComment(params) {
-	return request.get(appConfig.WEB_API + `/web/comment/delComment`, params)
+	return request.get(appConfig.WEB_API + '/web/comment/deleteCommentById', {
+		commentId: (params && (params.commentId || params.id)) || ''
+	})
 }
