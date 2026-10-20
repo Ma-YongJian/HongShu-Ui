@@ -2,12 +2,12 @@
   <img alt="LiveIn" src="https://image.mayongjian.cn/2026/02/04/988b7ef2e1d243fbb9c5f40d7ac76d8b.png" width="100"/>
 </p>
 
-<h1 align="center">LiveIn · Frontend</h1>
+<h1 align="center">LiveIn</h1>
 <p align="center">
-  <b>A full-stack social community inspired by Xiaohongshu · Web / Admin / UniApp</b>
+  <b>A full-stack social community inspired by Xiaohongshu</b><br/>Notes · Blog · Marketplace · Shop · Live · IM · AI
 </p>
 <p align="center">
-  This is the open-source frontend. The live demo runs the Pro All-Platform Edition (marketplace, shop, AI, live streaming, Flutter, YinXun, and more).
+  Web / Admin / UniApp / Flutter / Electron / Merchant Portal / Creator Center
 </p>
 
 
@@ -15,138 +15,92 @@
   <b>English</b> · <a href="./README.zh-CN.md">简体中文</a>
 </p>
 <p align="center">
-  <a href="https://gitee.com/Maverick_Ma/hongshu-ui/stargazers"><img src="https://gitee.com/Maverick_Ma/hongshu-ui/badge/star.svg?theme=dark" alt="Gitee stars"/></a>
-  <a href="https://github.com/Ma-YongJian/HongShu-Ui/stargazers"><img src="https://img.shields.io/github/stars/Ma-YongJian/HongShu-Ui?style=flat&logo=github" alt="GitHub stars"/></a>
+  <a href="https://gitee.com/Maverick_Ma/hongshu/stargazers"><img src="https://gitee.com/Maverick_Ma/hongshu/badge/star.svg?theme=dark" alt="Gitee stars"/></a>
+  <a href="https://github.com/Ma-YongJian/HongShu/stargazers"><img src="https://img.shields.io/github/stars/Ma-YongJian/HongShu?style=flat&logo=github" alt="GitHub stars"/></a>
   <a href="https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#"><img src="https://img.shields.io/badge/Pro%20Source-Get%20Access-ff4d4f" alt="Get Pro source"/></a>
   <a href="https://hongshu.website/"><img src="https://img.shields.io/badge/Live%20Demo-Visit-3d8af5" alt="Live demo"/></a>
-  <a href="https://github.com/Ma-YongJian/HongShu-Ui/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT license"/></a>
+  <a href="https://github.com/Ma-YongJian/HongShu/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT license"/></a>
 </p>
 
 <p align="center">
-  <a href="https://hongshu.website/"><b>▶ Live Demo (Pro All-Platform Edition)</b></a>
+  <a href="https://hongshu.website/"><b>▶ Live Demo</b></a>
   &nbsp;·&nbsp;
   <a href="https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#"><b>▶ Get Pro Source</b></a>
   &nbsp;·&nbsp;
   <a href="https://www.bilibili.com/video/BV1dr7Gz9E53/"><b>▶ Demo Video</b></a>
 </p>
 
-> **This repository is the free open-source frontend.** Use it with the [LiveIn backend](https://github.com/Ma-YongJian/HongShu) to run the core community workflow.  
-> **The live demo showcases the Pro All-Platform Edition** (marketplace, shop, AI, live streaming, Flutter, YinXun, and more). See the [Pro source guide](https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#) for editions and pricing.
+> **A mature, production-deployed project that is ready to use and continuously evolving.**
+>
+> **This repository is the open-source learning edition. Clone it and run the core community workflow.**
 
 ---
 
 ## Try It Online
 
-> The demo runs the All-Platform Edition. The server has limited resources, so it may occasionally be slow.
+> The demo server has limited resources. If it is occasionally slow, please refresh and try again.
 
 | Platform | Entry | Notes |
-| --- | --- | --- |
-| **Consumer Web** | [Open](https://hongshu.website/) | Full community, commerce, and AI experience on desktop |
-| **Arco Admin** | [Open](https://hongshu.website/arco-admin/) | Operations dashboard on desktop |
-| **UniApp H5** | [Open H5](https://hongshu.website/app/)　Scan <img src="doc/images/h5.png" width="72"/> | Best on mobile |
-| **Flutter H5** | [Open H5](https://hongshu.website/app-flutter/)　Scan <img src="doc/images/h5-flutter.png" width="72"/> | Mobile experience, Pro edition |
+| :---: | :---: | :---: |
+| **Web** | [Open](https://hongshu.website/) | Desktop, responsive |
+| **Operations Admin** | [Open](https://hongshu.website/arco-admin/) | Desktop |
+| **Creator Center** | [Open](https://hongshu.website/creator/login/) | Desktop |
+| **Merchant Portal** | [Open](https://hongshu.website/merchant/) | Desktop |
+| **UniApp H5** | [Open](https://hongshu.website/app/) or scan <img src="doc/images/h5.png" width="72"/> | Best on mobile |
+| **Flutter H5** | [Open](https://hongshu.website/app-flutter/) or scan <img src="doc/images/h5-flutter.png" width="72"/> | Best on mobile |
 | **WeChat Mini Program** | <img src="doc/images/wxamp.png" width="72"/> | Trial build |
-| **Android** | <img src="doc/images/Android.png" width="72"/> | Test build |
-| **iOS** | Coming soon | Source delivered; App Store release is in progress |
+| **Android** | [Download](https://image.mayongjian.cn/packages/laiyin-android-0.1.0.apk) | Test build |
+| **iOS** | Coming soon | Test build |
+| **Windows** | [Download](https://image.mayongjian.cn/packages/laiyin-windows-0.1.0-x64.exe) | Test build |
+| **Mac** | [Download](https://image.mayongjian.cn/packages/laiyin-macos-0.1.0-arm64.dmg) | Test build |
 
 ---
 
 ## Choose an Edition
 
-> The open-source edition is free for learning and running the core community. Choose a Pro edition if you need marketplace, shop, AI, microservices, or the exact demo experience. Source code is not encrypted and may be modified and deployed by your team.
+> The open-source edition is free for learning and running a notes community. For marketplace, shop, AI, microservices, or the full demo experience, see the [Pro editions](https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#).
 
 | Goal | Recommendation |
-| --- | --- |
-| Learn Vue 3 + UniApp and run a notes community | **Open Source Edition (this repository + backend, free)** |
-| Graduation project or personal product with marketplace, payments, and the full UniApp experience | **Monolith Edition** |
-| Service decomposition, gateway, and multi-instance IM for a team | **Microservices Edition** |
-| LLM-powered creation and automated content moderation | **Microservices AI Edition** |
-| Full shop system with a merchant portal | **Microservices Shop Edition** |
-| The complete demo experience (AI + shop + Flutter + YinXun + live streaming + VIP) | **All-Platform Edition (recommended)** |
-
-### Open Source vs. Pro All-Platform Edition
-
-| Capability | Open Source (this repo) | Pro All-Platform (demo) |
-| --- | :---: | :---: |
-| Vue 3 Web community + admin + image/text notes | ● | ● |
-| Core UniApp community workflow (H5 / App) | ● | ● |
-| Likes, favorites, comments, follows · albums and tags · text DMs | ● | ● |
-| Arco operations dashboard · Creator Center · merchant portal | — | ● |
-| Marketplace pages · shop · checkout | — | ● |
-| AI creation / chat | — | ● |
-| Live streaming · VIP · Flutter app · YinXun (3 clients) | — | ● |
-| Chinese / English / Vietnamese i18n · Google Maps | — | ● |
-
-<p align="center">
-  <a href="https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#"><b>👉 View the full comparison and get Pro source</b></a>
-</p>
+| --- | :---: |
+| Learn Spring Boot + Vue + UniApp and run a notes community | **Open Source Edition (this repository)** |
+| Graduation project or personal product with recommendation, marketplace, payments, and other complete capabilities | **Monolith Edition** |
+| Advanced team setup with microservices, gateway, multiple instances, and IM | **Microservices Edition** |
+| LLM ecosystem and an independent AI platform for creation, moderation, and customer service | **Microservices AI Edition** |
+| Commercial deployment with a full shop system and merchant portal | **Microservices Shop Edition** |
+| The complete live-demo experience | **All-Platform Edition (recommended)** |
 
 ---
 
 ## Who Is It For?
 
 | Students / Job Seekers | Full-Stack Learning | Founders / Custom Development |
-| --- | --- | --- |
-| Strong enough for a graduation project; demonstrates multi-client development and community interactions | Vue 3 + Pinia + UniApp with a separated frontend and backend | Monetize a content community through marketplace, shop, or membership |
+| :---: | --- | :---: |
+| Strong enough for a graduation project and clearly demonstrates architecture, recommendation algorithms, IM, payments, and AI | Spring Boot, Spring Cloud, Vue 3, UniApp, Flutter, and Electron | Monetize a content community through marketplace, shop, or membership |
 
 ---
 
-## Repository Structure (Open Source Frontend)
+## What Is in This Repository?
 
-| Directory | Description |
-| --- | --- |
-| `hongshu-web` | Consumer Web (Vue 3 + Element Plus) |
-| `hongshu-admin` | Admin (RuoYi Vue 3) |
-| `hongshu-app` | Core UniApp community workflow |
-
-The merchant portal, Creator Center, Flutter app, YinXun, and Arco Admin are delivered in Pro editions. Choose the edition that matches your learning, graduation, or production needs. See the [Pro Source guide](https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#) for details.
+|  | Details |
+| :---: | --- |
+| Backend | Spring Boot **monolith** · JDK 8 · MySQL · Redis · WebSocket + Redis MQ |
+| Frontend | [HongShu-Ui](https://gitee.com/Maverick_Ma/hongshu-ui): Vue 3 Web, RuoYi Admin, UniApp |
+| Included | Discover / publish image notes · likes, favorites, comments, follows · albums and tags · text DMs · local / MinIO storage |
 
 ### Repositories
 
-> If this project helps you, please give both the frontend and [backend](https://github.com/Ma-YongJian/HongShu) repositories a **Star**.
+> If this project helps you, please give it a **Star 🌟**.
 
 | Repository | Description | Gitee | GitHub |
-| --- | --- | --- | --- |
-| **HongShu** | Open-source backend | [gitee.com/Maverick_Ma/hongshu](https://gitee.com/Maverick_Ma/hongshu) | [github.com/Ma-YongJian/HongShu](https://github.com/Ma-YongJian/HongShu) |
-| **HongShu-Ui** | Open-source frontend (this repository) | [gitee.com/Maverick_Ma/hongshu-ui](https://gitee.com/Maverick_Ma/hongshu-ui) | [github.com/Ma-YongJian/HongShu-Ui](https://github.com/Ma-YongJian/HongShu-Ui) |
+| :---: | :---: | :---: | :---: |
+| **HongShu** | Backend (this repository) | [☞ gitee](https://gitee.com/Maverick_Ma/hongshu) | [☞ github](https://github.com/Ma-YongJian/HongShu) |
+| **HongShu-Ui** | Frontend | [☞ gitee](https://gitee.com/Maverick_Ma/hongshu-ui) | [☞ github](https://github.com/Ma-YongJian/HongShu-Ui) |
 
 ---
 
-## Purchase and Support
+## Documentation & Resources
 
-> **Process:** Add us on WeChat (note **Pro**) → confirm the edition and purchase → receive the source code (usually immediately, within 24 hours at the latest).
-
-<table align="center">
-<tr>
-<td align="center" width="50%">
-
-#### Pro Inquiries / Custom Development
-<img src="doc/images/wx.png" width="150"/>
-
-Note: **Pro**  
-Edition selection · source delivery · custom development
-
-</td>
-<td align="center" width="50%">
-
-#### WeChat Official Account (Docs / Thesis Materials)
-<img src="doc/images/gongzhonghao.jpg" width="150"/>
-
-Deployment guides · architecture · proposal and thesis materials
-
-</td>
-</tr>
-</table>
-
-<p align="center">
-  <a href="https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#"><b>👉 View the detailed comparison and get Pro source</b></a>
-</p>
-
----
-
-## Documentation
-
-Deployment guides, architecture notes, proposal materials, and thesis resources are available through our WeChat Official Account. Search for **LiveIn**:
+The complete project documentation includes the project overview, core features, technical architecture, deployment guide, proposal report, graduation thesis, and more. It is available through our WeChat Official Account:
 
 <p align="center">
   <img src="doc/images/gongzhonghao-search.png" width="320"/><br/>
@@ -242,11 +196,11 @@ If this project has helped you, you can buy the author a coffee. Thank you for s
 
 ---
 
-## License and Notice
+## Open Source Notice
 
 This repository is released under the [MIT License](https://opensource.org/licenses/MIT). It is **free for learning and exchange, but resale is prohibited**. Beware of counterfeit repositories and unauthorized resellers.  
-"LiveIn" (来因) is a development codename and is **not affiliated with Xiaohongshu**. Demo assets come from the internet and will be removed upon a valid infringement request.  
-You are responsible for legal and regulatory compliance if you use this project commercially. The scope of Pro source licensing and delivery is defined by the Yuque documentation.
+"LiveIn" (来因) is a development codename and is not affiliated with Xiaohongshu. Demo assets come from the internet and are used only for feature demonstrations. Please contact the author for removal if they infringe your rights.  
+You are responsible for legal and regulatory compliance if you use this project commercially.
 
 ---
 

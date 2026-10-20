@@ -2,12 +2,12 @@
   <img alt="来因 LiveIn" src="https://image.mayongjian.cn/2026/02/04/988b7ef2e1d243fbb9c5f40d7ac76d8b.png" width="100"/>
 </p>
 
-<h1 align="center">来因 · LiveIn · 前端</h1>
+<h1 align="center">来因 · LiveIn</h1>
 <p align="center">
-  <b>仿小红书全栈社区 · Web / 管理后台 / UniApp</b>
+  <b>仿小红书全栈社区系统</b><br/>笔记 · 博客 · 闲置 · 商城 · 直播 · IM · AI
 </p>
 <p align="center">
-  本仓库是开源版前端。演示站为 Pro 全端版（含闲置、商城、AI、直播、Flutter、因讯）。
+  Web / 管理后台 / UniApp / Flutter / Electron / 商家端 / 创作中心
 </p>
 
 
@@ -15,138 +15,92 @@
   <a href="./README.md">English</a> · <b>简体中文</b>
 </p>
 <p align="center">
-  <a href="https://gitee.com/Maverick_Ma/hongshu-ui/stargazers"><img src="https://gitee.com/Maverick_Ma/hongshu-ui/badge/star.svg?theme=dark" alt="Gitee star"/></a>
-  <a href="https://github.com/Ma-YongJian/HongShu-Ui/stargazers"><img src="https://img.shields.io/github/stars/Ma-YongJian/HongShu-Ui?style=flat&logo=github" alt="GitHub star"/></a>
+  <a href="https://gitee.com/Maverick_Ma/hongshu/stargazers"><img src="https://gitee.com/Maverick_Ma/hongshu/badge/star.svg?theme=dark" alt="Gitee star"/></a>
+  <a href="https://github.com/Ma-YongJian/HongShu/stargazers"><img src="https://img.shields.io/github/stars/Ma-YongJian/HongShu?style=flat&logo=github" alt="GitHub star"/></a>
   <a href="https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#"><img src="https://img.shields.io/badge/Pro%20源码-立即获取-ff4d4f" alt="获取 Pro"/></a>
   <a href="https://hongshu.website/"><img src="https://img.shields.io/badge/在线演示-演示站-3d8af5" alt="演示站"/></a>
-  <a href="https://gitee.com/Maverick_Ma/hongshu-ui/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT"/></a>
+  <a href="https://gitee.com/Maverick_Ma/hongshu/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT"/></a>
 </p>
 
 <p align="center">
-  <a href="https://hongshu.website/"><b>▶ 在线演示（Pro 全端版）</b></a>
+  <a href="https://hongshu.website/"><b>▶ 演示站 </b></a>
   &nbsp;·&nbsp;
   <a href="https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#"><b>▶ 获取 Pro 源码 </b></a>
   &nbsp;·&nbsp;
   <a href="https://www.bilibili.com/video/BV1dr7Gz9E53/"><b>▶ 演示视频</b></a>
 </p>
 
-> **本仓库是开源学习版前端（免费）**，配合 [HongShu 后端](https://gitee.com/Maverick_Ma/hongshu) 可跑通社区主链路。  
-> **演示站为 Pro 全端版**（闲置、商城、AI、直播、Flutter、因讯等），完整档位与源码见 [Pro 版源码说明](https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#)。
+> **已部署上线的成熟项目、开箱即用，持续迭代升级中**
+> 
+> **本仓库是开源学习版，克隆即可跑通社区主链路**
 
 ---
 
 ## 立即体验
 
-> 演示站即全端版效果。服务器配置有限，偶发缓慢请稍候。
+> 服务器配置有限，[演示站](https://hongshu.website/) 偶发缓慢请刷新重试。
 
-| 端 | 入口 | 说明 |
-| --- | --- | --- |
-| **C 端 Web** | [立即访问](https://hongshu.website/) | 电脑浏览，完整社区 / 交易 / AI |
-| **Arco 管理端** | [立即访问](https://hongshu.website/arco-admin/) | 电脑浏览，运营后台 |
-| **UniApp H5** | [打开 H5](https://hongshu.website/app/)　扫码 <img src="doc/images/h5.png" width="72"/> | 手机体验最佳 |
-| **Flutter H5** | [打开 H5](https://hongshu.website/app-flutter/)　扫码 <img src="doc/images/h5-flutter.png" width="72"/> | 手机体验，全端版 |
-| **微信小程序** | <img src="doc/images/wxamp.png" width="72"/> | 体验版 |
-| **Android** | <img src="doc/images/Android.png" width="72"/> | 测试包 |
-| **iOS** | 安装包待发布 | 源码已交付，商店包按节奏上架 |
+| 业务端 |                                                   入口                                                    | 说明 |
+| :---: |:-------------------------------------------------------------------------------------------------------:| :---: |
+| **Web端** |                                   [☞ 点击访问](https://hongshu.website/)                                    | 电脑访问，支持响应式 |
+| **运营管理端** |                              [☞ 点击访问](https://hongshu.website/arco-admin/)                              | 电脑访问 |
+| **创作中心端** |                            [☞ 点击访问](https://hongshu.website/creator/login/)                             | 电脑访问 |
+| **商家端** |                               [☞ 点击访问](https://hongshu.website/merchant/)                               | 电脑访问 |
+| **UniApp H5** |         [☞ 点击访问](https://hongshu.website/app/) 或 扫码体验 <img src="doc/images/h5.png" width="72"/>         | 手机体验 |
+| **Flutter H5** | [☞ 点击访问](https://hongshu.website/app-flutter/) 或 扫码体验 <img src="doc/images/h5-flutter.png" width="72"/> | 手机体验 |
+| **微信小程序** |                              <img src="doc/images/wxamp.png" width="72"/>                               | 体验版 |
+| **Android** |                 [☞ 点击下载](https://image.mayongjian.cn/packages/laiyin-android-0.1.0.apk)                 | 测试包 |
+| **iOS** |                                                   待发布                                                   | 测试包 |
+| **Windows** |               [☞ 点击下载](https://image.mayongjian.cn/packages/laiyin-windows-0.1.0-x64.exe)               | 测试包 |
+| **Mac** |               [☞ 点击下载](https://image.mayongjian.cn/packages/laiyin-macos-0.1.0-arm64.dmg)               | 测试包 |
 
 ---
 
 ## 怎么选版本
 
-> 开源版免费学习、跑通社区。需要闲置、商城、AI、微服务或演示站同款，按档购买即可。源码未加密，允许二开与自行上线。
+> 开源版免费学习、跑通笔记社区。需要闲置、商城、AI、微服务或演示站同款，可查看 [Pro版](https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#)。
 
-| 你的目标 | 建议 |
-| --- | --- |
-| 学习 Vue3 + UniApp，跑通笔记社区 | **开源版（本仓库 + 后端，免费）** |
-| 毕设 / 个人，要闲置交易 + 支付 + 完整 UniApp | **单体版** |
-| 团队要拆服务、网关、多实例 IM | **微服务版** |
-| 只要大模型创作 / 机审 | **微服务-AI 版** |
-| 只要系统商城 + 商家端 | **微服务-Shop 版** |
-| 要演示站同款（AI + 商城 + Flutter + 因讯 + 直播 + VIP） | **全端版（推荐）** |
-
-### 开源版 vs 演示站（Pro 全端版）
-
-| 能力 | 开源版（本仓库） | Pro 全端版（演示站） |
-| --- | :---: | :---: |
-| Vue3 Web 社区 + 管理端 + 图文笔记 | ● | ● |
-| UniApp 社区主链路（H5 / App） | ● | ● |
-| 赞藏评关 · 专辑标签 · 文本私信 | ● | ● |
-| Arco 运营后台 · 创作中心 · 商家端 | — | ● |
-| 闲置交易页 · 系统商城 · 支付收银台 | — | ● |
-| AI 创作 / 对话 | — | ● |
-| 直播 · VIP · Flutter 主站 · 因讯三端 | — | ● |
-| 中 / 英 / 越 i18n、谷歌地图 | — | ● |
-
-<p align="center">
-  <a href="https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#"><b>👉 查看详细对比表并获取 Pro 源码</b></a>
-</p>
+| 你的需求 | 建议 |
+| --- | :---: |
+| 学习 SpringBoot + Vue + UniApp，跑通笔记社区 | **开源版（本仓库）** |
+| 毕设 / 个人，要推荐算法、闲置交易、支付等完整能力 | **单体版** |
+| 团队进阶，要微服务、网关、多实例、IM | **微服务版** |
+| 大模型体系 + 独立AI中台， AI创作 / AI审核 / AI客服 | **微服务-AI 版** |
+| 商业化落地，系统商城 + 商家端 | **微服务-Shop 版** |
+| 演示站同款 | **全端版（推荐）** |
 
 ---
 
 ## 适合谁
 
 | 学生 / 求职 | 全栈学习 | 创业 / 二开 |
-| --- | --- | --- |
-| 毕设分量够，能讲清多端与社区交互 | Vue3 + Pinia + UniApp、前后端分离 | 内容社区要变现：闲置、商城、会员选一条主线 |
+| :---: | --- | :---: |
+| 毕设分量够、能讲清架构与推荐算法 有IM / 支付 / AI | SpringBoot、SpringCloud、Vue3、UniApp、Flutter、Electron | 内容社区要变现：闲置、商城、会员选一条主线 |
 
 ---
 
-## 本仓库目录（开源版前端）
+## 本仓库介绍
 
-| 目录 | 说明 |
-| --- | --- |
-| `hongshu-web` | C 端 Web（Vue3 + Element Plus） |
-| `hongshu-admin` | 管理端（RuoYi Vue3） |
-| `hongshu-app` | UniApp 社区主链路 |
-
-商家端、创作中心、Flutter、因讯、Arco 管理端等在 Pro 中交付。想要对齐演示站，请购买对应 Pro 档。可按学习、毕设或上线需要选择档位，详细说明见 [《Pro 版源码》](https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#)。
+|  | 实际情况 |
+| :---: | --- |
+| 后端 | Spring Boot **单体** · JDK 8 · MySQL · Redis · WebSocket + Redis MQ |
+| 前端 | Vue3 Web、RuoYi 管理端、UniApp |
+| 有 | 发现 / 发布图文 · 赞藏评关 · 专辑标签 · 文本私信 · 本地 / MinIO |
 
 ### 仓库地址
 
-> 如果这个项目对你有帮助，欢迎给前端仓和 [后端仓](https://gitee.com/Maverick_Ma/hongshu) 都点一个 **Star**。
-
 | 仓库 | 说明 | Gitee | GitHub |
-| --- | --- | --- | --- |
-| **HongShu** | 开源版后端 | [gitee.com/Maverick_Ma/hongshu](https://gitee.com/Maverick_Ma/hongshu) | [github.com/Ma-YongJian/HongShu](https://github.com/Ma-YongJian/HongShu) |
-| **HongShu-Ui** | 开源版前端（本仓库） | [gitee.com/Maverick_Ma/hongshu-ui](https://gitee.com/Maverick_Ma/hongshu-ui) | [github.com/Ma-YongJian/HongShu-Ui](https://github.com/Ma-YongJian/HongShu-Ui) |
+| :---: | :---: | :---: | --- |
+| **HongShu** | 后端（本仓库） | [☞ gitee](https://gitee.com/Maverick_Ma/hongshu) | [☞ github](https://github.com/Ma-YongJian/HongShu) |
+| **HongShu-Ui** | 前端 | [☞ gitee](https://gitee.com/Maverick_Ma/hongshu-ui) | [☞ github](https://github.com/Ma-YongJian/HongShu-Ui) |
 
----
-
-## 购买与咨询
-
-> **流程：** 加微信（备注 **Pro版**）→ 确认档位并购买 → 交付源码（通常立即，最迟 24 小时）。
-
-<table align="center">
-<tr>
-<td align="center" width="50%">
-
-#### 加微信买 Pro / 定制
-<img src="doc/images/wx.png" width="150"/>
-
-备注：**Pro版**  
-档位确认 · 源码交付 · 功能定制
-
-</td>
-<td align="center" width="50%">
-
-#### 公众号（文档 / 论文资料）
-<img src="doc/images/gongzhonghao.jpg" width="150"/>
-
-部署文档 · 架构说明 · 开题 / 论文资料
-
-</td>
-</tr>
-</table>
-
-<p align="center">
-  <a href="https://www.yuque.com/xiaomage-ippj7/kaoqwn/rqslw69egcbgx7v7?singleDoc#"><b>👉 查看详细对比表并获取 Pro 源码</b></a>
-</p>
+> 如果这个项目对你有帮助，欢迎 **Star🌟**。
 
 ---
 
 ## 文档与资料
 
-搭建文档、架构说明、开题 / 论文资料在公众号，搜索「来因」自取：
+全套项目文档包括项目简介、核心功能介绍、技术架构、搭建部署、开题报告、毕业论文等，已整理并放至公众号，按需自取即可：
 
 <p align="center">
   <img src="doc/images/gongzhonghao-search.png" width="320"/><br/>
@@ -157,7 +111,7 @@
 
 ## 支持项目
 
-如果这个项目对你有帮助，欢迎请作者喝杯咖啡，感谢支持项目持续维护。
+如果这个项目对你有帮助，欢迎请作者喝杯咖啡☕️，感谢支持项目持续维护。
 
 <p align="center">
   <img src="doc/images/pay.png" width="540" alt="微信赞赏 / 支付宝赞赏 / 支付宝闪速"/>
@@ -165,9 +119,7 @@
 
 ---
 
-## 演示截图（Pro 演示站）
-
-> 点击下方平台展开截图。
+## 演示截图（演示站）
 
 <details open>
 <summary><b>App</b> (10 张)</summary>
@@ -238,21 +190,19 @@
 
 </details>
 
-> 创作中心与商家端也可在[演示站](https://hongshu.website/)中体验。
-
 ---
 
-## 开源版声明
+## 开源声明
 
-本仓库基于 [MIT](https://opensource.org/licenses/MIT) 开源，**免费学习交流，禁止转售**。谨防假冒仓库与代购。  
-项目名称「来因 · LiveIn」为开发代号，**与「小红书」无商业关联**。演示素材来自网络，侵权联系删除。  
-如需商用请自行保证合法合规，运营风险自负。Pro 源码授权与交付范围以语雀说明为准。
+本仓库基于 [MIT](https://opensource.org/licenses/MIT) 开源，**免费学习交流，禁止转售**。谨防假冒仓库与倒卖。  
+项目名称「来因 · LiveIn」为开发代号，与「小红书」无商业关联。演示站所用素材来源于网络仅用于功能展示，如涉及侵权请联系作者删除。  
+如需商用请自行保证合法合规，运营风险自负。
 
 ---
 
 ## 致谢
 
-来因参考了多份开源方案，感谢原作者：
+【来因 · LiveIn】参考了多份开源方案，感谢原作者：
 
 - [RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) / [RuoYi-Cloud](https://gitee.com/y_project/RuoYi-Cloud)
 - [RuoYi-Vue-Plus](https://gitee.com/dromara/RuoYi-Vue-Plus) / [RuoYi-Cloud-Plus](https://gitee.com/dromara/RuoYi-Cloud-Plus)
@@ -262,4 +212,4 @@
 - [AJ-Captcha](https://gitee.com/belief-team/captcha)
 - [七牛云](https://portal.qiniu.com/signup?utm_source=kaiyuan&utm_media=mogu) 对象存储
 - [JetBrains](https://www.jetbrains.com/) 开源 License
-- [百度千帆](https://ai.baidu.com/ai-doc/ANTIPORN/ek3h6x90n) 审核能力说明
+- [百度千帆](https://ai.baidu.com/ai-doc/ANTIPORN/ek3h6x90n) 审核能力
